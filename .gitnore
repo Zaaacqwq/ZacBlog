@@ -1,0 +1,6 @@
+# Ignore everything
+*
+
+# Exclude frontend and backend folders
+!/frontend/
+!/backend/
