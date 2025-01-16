@@ -1,6 +1,6 @@
 <template>
   <el-row :gutter="20">
-    <el-col :sm="3" class="hidden-xs-only" style="opacity:0;">左侧占位</el-col>
+    <el-col :sm="3" class="hidden-xs-only" style="opacity:0;">Left PlaceHolder</el-col>
     <el-col :xs="24" :sm="18">
       <el-card style="background-color: rgba(255, 255, 255,1)" class="first-card">
         <div slot="header" class="total blog-info">
@@ -44,49 +44,49 @@
           </el-popover>
         </div> -->
         <el-table :data="blog.blogFilesNew" :border="true" style="width: 99.99%;">
-          <el-table-column align="center" min-width="30%" prop="remark" label="附件">
+          <el-table-column align="center" min-width="30%" prop="remark" label="Attachment">
             <template slot-scope="scope">
               <el-row>
-                <el-col :span="6"><div class="blogFilesInfoName">名称：</div></el-col>
+                <el-col :span="6"><div class="blogFilesInfoName">Name:</div></el-col>
                 <el-col :span="18"><el-input v-model="scope.row.fileOriginName" disabled/></el-col>
               </el-row>
               <el-row style="margin-top: 4px;">
-                <el-col :span="6"><div class="blogFilesInfoName">大小：</div></el-col>
+                <el-col :span="6"><div class="blogFilesInfoName">Size:</div></el-col>
                 <el-col :span="18"><el-input v-model="scope.row.fileSize" disabled/></el-col>
               </el-row>
               <el-row style="margin-top: 4px;">
-                <el-col :span="6"><div class="blogFilesInfoName">类型：</div></el-col>
+                <el-col :span="6"><div class="blogFilesInfoName">Type:</div></el-col>
                 <el-col :span="18"><el-input v-model="scope.row.fileSuffix" disabled/></el-col>
               </el-row>
             </template>
           </el-table-column>
-          <el-table-column align="center" min-width="50%" prop="remark" label="备注">
+          <el-table-column align="center" min-width="50%" prop="remark" label="Remark">
             <template slot-scope="scope">
               <el-input v-model="scope.row.remark" type="textarea" :rows="6" size="small" disabled />
             </template>
           </el-table-column>
-          <el-table-column align="center" min-width="20%" label="操作">
+          <el-table-column align="center" min-width="20%" label="Action">
             <template slot-scope="scope">
-              <el-button size="mini" plain @click="handleDownload(scope.row)">下载</el-button>
+              <el-button size="mini" plain @click="handleDownload(scope.row)">Download</el-button>
             </template>
           </el-table-column>
         </el-table>
         <div class="author">
           <ul>
-            <li>作者 {{blog.createBy}}</li>
-            <li>发表时间 {{blog.createTime}}</li>
+            <li>Author: {{blog.createBy}}</li>
+            <li>Time Published: {{blog.createTime}}</li>
           </ul>
         </div>
         <el-card shadow="never" class="comments">
           <div class="header" style="padding-bottom: 10px;">
-            评论
+            Comments
           </div>
           <comment></comment>
         </el-card>
       </el-card>
       </el-col>
       <el-col :xs="24" :sm="0"></el-col>
-    <el-col :sm="3" class="hidden-xs-only" style="opacity:0;">右侧占位</el-col>
+    <el-col :sm="3" class="hidden-xs-only" style="opacity:0;">Right PlaceHolder</el-col>
     <!-- 设置底部距离的 -->
     <el-backtop :bottom="60">
           <div

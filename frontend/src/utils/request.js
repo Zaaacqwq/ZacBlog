@@ -48,9 +48,9 @@ service.interceptors.response.use(res => {
       return res.data
     }
     if (code === 401) {
-      MessageBox.confirm('登录状态已过期，您可以继续留在该页面，或者重新登录', '系统提示', {
-          confirmButtonText: '重新登录',
-          cancelButtonText: '取消',
+      MessageBox.confirm('Login session has expired. You can stay on this page or log in again.', 'System Notification', {
+          confirmButtonText: 'Login Again',
+          cancelButtonText: 'Cancel',
           type: 'warning'
         }
       ).then(() => {
@@ -58,7 +58,7 @@ service.interceptors.response.use(res => {
           location.href = '/index';
         })
       }).catch(() => {});
-      return Promise.reject('无效的会话，或者会话已过期，请重新登录。')
+      return Promise.reject('Invalid session or session has expired. Please log in again.')
     } else if (code === 500) {
       Message({
         message: msg,
@@ -78,13 +78,13 @@ service.interceptors.response.use(res => {
     console.log('err' + error)
     let { message } = error;
     if (message == "Network Error") {
-      message = "后端接口连接异常";
+      message = "Backend API connection error";
     }
     else if (message.includes("timeout")) {
-      message = "系统接口请求超时";
+      message = "System interface request timeout";
     }
     else if (message.includes("Request failed with status code")) {
-      message = "系统接口" + message.substr(message.length - 3) + "异常";
+      message = "System interface error: " + message.substr(message.length - 3);
     }
     Message({
       message: message,
@@ -97,7 +97,7 @@ service.interceptors.response.use(res => {
 
 // 通用下载方法
 export function download(url, params, filename) {
-  downloadLoadingInstance = Loading.service({ text: "正在下载数据，请稍候", spinner: "el-icon-loading", background: "rgba(0, 0, 0, 0.7)", })
+  downloadLoadingInstance = Loading.service({ text: "Downloading data, please wait", spinner: "el-icon-loading", background: "rgba(0, 0, 0, 0.7)", })
   return service.post(url, params, {
     transformRequest: [(params) => { return tansParams(params) }],
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -116,7 +116,7 @@ export function download(url, params, filename) {
     downloadLoadingInstance.close();
   }).catch((r) => {
     console.error(r)
-    Message.error('下载文件出现错误，请联系管理员！')
+    Message.error('An error occurred while downloading the file. Please contact the administrator!')
     downloadLoadingInstance.close();
   })
 }

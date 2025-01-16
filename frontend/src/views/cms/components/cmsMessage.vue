@@ -1,6 +1,6 @@
 <template>
   <el-row :gutter="20">
-    <el-col :sm="5" class="hidden-xs-only" style="opacity:0;">左侧占位</el-col>
+    <el-col :sm="5" class="hidden-xs-only" style="opacity:0;">Left PlaceHolder</el-col>
     <el-col :xs="24" :sm="14">
       <el-container style="opacity: 0.9" class="message">
         <el-card class="animate__animated animate__fadeInLeft publish">
@@ -11,7 +11,7 @@
             <el-avatar v-else :src="avatar" size="large"></el-avatar>
             <div>
               <div class="nkname">
-                <span class="name" v-if="token==null">匿名用户</span>
+                <span class="name" v-if="token==null">Anonymous User</span>
                 <span class="name" v-else>{{name}} </span>
               </div>
             </div>
@@ -19,7 +19,7 @@
           <el-form :model="messageForm" :rules="messageFormRules" ref="messageFormRef">
             <el-form-item prop="content">
               <el-input @blur="blur" :rows="5" v-model="messageForm.content" type="textarea" maxlength="100"
-                show-word-limit placeholder="请输入你的留言"></el-input>
+                show-word-limit placeholder="Enter your message"></el-input>
             </el-form-item>
             <el-form-item>
               <el-row>
@@ -27,7 +27,7 @@
                   <Emoji @output="output"></Emoji>
                 </el-col>
                 <el-col :span="12" style="text-align: right">
-                  <el-button type="primary" @click="publish">点击发表</el-button>
+                  <el-button type="primary" @click="publish">Click to Publish</el-button>
                 </el-col>
               </el-row>
             </el-form-item>
@@ -41,7 +41,7 @@
         </el-card>
       </el-container>
     </el-col>
-    <el-col :sm="5" class="hidden-xs-only" style="opacity:0;">右侧占位</el-col>
+    <el-col :sm="5" class="hidden-xs-only" style="opacity:0;">Right PlaceHolder</el-col>
     <!-- 设置底部距离的 -->
     <el-backtop :bottom="60">
       <div style="{
@@ -106,7 +106,7 @@
           content: [{
             min: 0,
             max: 100,
-            message: "留言内容不超过100字！"
+            message: "Message should not exceed 100 characters!"
           }]
         },
         cursorIndexStart: null,//光标选中开始的位置
@@ -160,18 +160,18 @@
         this.$refs.messageFormRef.validate(async valid => {
           if (!valid) return
           if (this.messageForm.content == null || this.messageForm.content == '') {
-            this.$modal.msgError("留言内容不能为空！");
+            this.$modal.msgError("Message content cannot be empty!");
             return;
           }
           if (token == null || token == '') {
-            this.messageForm.createBy = "匿名用户"
+            this.messageForm.createBy = "Anonymous User"
             this.messageForm.type = '0'
           } else {
             this.messageForm.createBy = this.$store.getters.name
             this.messageForm.type = '0'
           }
           cmsAddMessage(this.messageForm).then(response => {
-            this.$modal.msgSuccess("留言发表成功");
+            this.$modal.msgSuccess("Message published successfully");
             this.reset();
             this.getMessageList();
           });
@@ -188,18 +188,18 @@
         this.$refs.messageFormRef.validate(async valid => {
           if (!valid) return
           if (this.messageForm.content == null || this.messageForm.content == '') {
-            this.$modal.msgError("评论内容不能为空！");
+            this.$modal.msgError("Comment content cannot be empty!");
             return;
           }
           if (token == null || token == '') {
-            this.messageForm.createBy = "匿名用户"
+            this.messageForm.createBy = "Anonymous User"
             this.messageForm.type = '1'
           } else {
             this.messageForm.createBy = this.$store.getters.name
             this.messageForm.type = '1'
           }
           cmsAddMessage(this.messageForm).then(response => {
-            this.$modal.msgSuccess("评论发表成功");
+            this.$modal.msgSuccess("Comment published successfully");
             this.reset();
             this.getMessageList();
           });

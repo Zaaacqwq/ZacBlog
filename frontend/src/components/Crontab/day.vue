@@ -2,49 +2,49 @@
 	<el-form size="small">
 		<el-form-item>
 			<el-radio v-model='radioValue' :label="1">
-				日，允许的通配符[, - * ? / L W]
+				Day, allows wildcards [, - * ? / L W]
 			</el-radio>
 		</el-form-item>
 
 		<el-form-item>
 			<el-radio v-model='radioValue' :label="2">
-				不指定
+				Not specified
 			</el-radio>
 		</el-form-item>
 
 		<el-form-item>
 			<el-radio v-model='radioValue' :label="3">
-				周期从
+				Cycle from
 				<el-input-number v-model='cycle01' :min="1" :max="30" /> -
-				<el-input-number v-model='cycle02' :min="cycle01 ? cycle01 + 1 : 2" :max="31" /> 日
+				<el-input-number v-model='cycle02' :min="cycle01 ? cycle01 + 1 : 2" :max="31" /> Day
 			</el-radio>
 		</el-form-item>
 
 		<el-form-item>
 			<el-radio v-model='radioValue' :label="4">
-				从
-				<el-input-number v-model='average01' :min="1" :max="30" /> 号开始，每
-				<el-input-number v-model='average02' :min="1" :max="31 - average01 || 1" /> 日执行一次
+				From
+				<el-input-number v-model='average01' :min="1" :max="30" /> start, every
+				<el-input-number v-model='average02' :min="1" :max="31 - average01 || 1" /> days execute once
 			</el-radio>
 		</el-form-item>
 
 		<el-form-item>
 			<el-radio v-model='radioValue' :label="5">
-				每月
-				<el-input-number v-model='workday' :min="1" :max="31" /> 号最近的那个工作日
+				Nearest weekday to the
+				<el-input-number v-model='workday' :min="1" :max="31" /> of the month
 			</el-radio>
 		</el-form-item>
 
 		<el-form-item>
 			<el-radio v-model='radioValue' :label="6">
-				本月最后一天
+				Last day of the month
 			</el-radio>
 		</el-form-item>
 
 		<el-form-item>
 			<el-radio v-model='radioValue' :label="7">
-				指定
-				<el-select clearable v-model="checkboxList" placeholder="可多选" multiple style="width:100%">
+				Specify
+				<el-select clearable v-model="checkboxList" placeholder="Multiple selection allowed" multiple style="width:100%">
 					<el-option v-for="item in 31" :key="item" :value="item">{{item}}</el-option>
 				</el-select>
 			</el-radio>

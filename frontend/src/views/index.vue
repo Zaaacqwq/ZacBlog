@@ -3,12 +3,11 @@
   
     <el-row :gutter="20">
       <el-col :sm="24" :lg="12" style="padding-left: 20px">
-        <h2>若依后台管理框架</h2>
+        <h2>Zac Admin Framework</h2>
         <p>
-          一直想做一款后台管理系统，看了很多优秀的开源项目但是发现没有合适自己的。于是利用空闲休息时间开始自己写一套后台系统。如此有了若依管理系统。，她可以用于所有的Web应用程序，如网站管理后台，网站会员中心，CMS，CRM，OA等等，当然，您也可以对她进行深度定制，以做出更强系统。所有前端后台代码封装过后十分精简易上手，出错概率低。同时支持移动客户端访问。系统会陆续更新一些实用功能。
-        </p>
+          I always wanted to create an admin management system. After exploring many excellent open-source projects, I couldn't find one that suited my needs. So, during my spare time, I started developing my own admin system. Thus, the Ruoyi Admin System was born. It can be used for various web applications such as website admin panels, member centers, CMS, CRM, OA, etc. Of course, you can deeply customize it to build a more powerful system. All front-end and back-end code is highly streamlined and easy to learn, minimizing error rates. It also supports mobile client access. The system will continue to be updated with practical features.        </p>
         <p>
-          <b>当前版本:</b> <span>v{{ version }}</span>
+          <b>Current Version:</b> <span>v{{ version }}</span>
         </p>
         <p>
           <el-tag type="danger">&yen;</el-tag>
@@ -19,8 +18,8 @@
             size="mini"
             icon="el-icon-s-home"
             plain
-            @click="goTarget('http://ruoyi.vip')"
-            >访问主页</el-button
+            @click="goTarget('https://zaaacqwq.github.io/')"
+            >Visit Homepage</el-button
           >
         </p>
       </el-col>
@@ -28,12 +27,12 @@
       <el-col :sm="24" :lg="12" style="padding-left: 50px">
         <el-row>
           <el-col :span="12">
-            <h2>技术选型</h2>
+            <h2>Technology Stack</h2>
           </el-col>
         </el-row>
         <el-row>
           <el-col :span="6">
-            <h4>后端技术</h4>
+            <h4>Backend Technologies</h4>
             <ul>
               <li>SpringBoot</li>
               <li>Spring Security</li>
@@ -45,7 +44,7 @@
             </ul>
           </el-col>
           <el-col :span="6">
-            <h4>前端技术</h4>
+            <h4>Frontend Technologies</h4>
             <ul>
               <li>Vue</li>
               <li>Vuex</li>

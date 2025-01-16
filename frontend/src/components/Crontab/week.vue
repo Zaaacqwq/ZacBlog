@@ -2,19 +2,19 @@
 	<el-form size='small'>
 		<el-form-item>
 			<el-radio v-model='radioValue' :label="1">
-				周，允许的通配符[, - * ? / L #]
+				Week, allows wildcards [, - * ? / L #]
 			</el-radio>
 		</el-form-item>
 
 		<el-form-item>
 			<el-radio v-model='radioValue' :label="2">
-				不指定
+				Not specified
 			</el-radio>
 		</el-form-item>
 
 		<el-form-item>
 			<el-radio v-model='radioValue' :label="3">
-				周期从星期
+				Cycle from week
 				<el-select clearable v-model="cycle01">
 					<el-option
 						v-for="(item,index) of weekList"
@@ -39,8 +39,8 @@
 
 		<el-form-item>
 			<el-radio v-model='radioValue' :label="4">
-				第
-				<el-input-number v-model='average01' :min="1" :max="4" /> 周的星期
+				The
+				<el-input-number v-model='average01' :min="1" :max="4" /> week of
 				<el-select clearable v-model="average02">
 					<el-option v-for="(item,index) of weekList" :key="index" :label="item.value" :value="item.key">{{item.value}}</el-option>
 				</el-select>
@@ -49,7 +49,7 @@
 
 		<el-form-item>
 			<el-radio v-model='radioValue' :label="5">
-				本月最后一个星期
+				Last week of this month
 				<el-select clearable v-model="weekday">
 					<el-option v-for="(item,index) of weekList" :key="index" :label="item.value" :value="item.key">{{item.value}}</el-option>
 				</el-select>
@@ -58,8 +58,8 @@
 
 		<el-form-item>
 			<el-radio v-model='radioValue' :label="6">
-				指定
-				<el-select clearable v-model="checkboxList" placeholder="可多选" multiple style="width:100%">
+				Specify
+				<el-select clearable v-model="checkboxList" placeholder="Multiple selection allowed" multiple style="width:100%">
 					<el-option v-for="(item,index) of weekList" :key="index" :label="item.value" :value="item.key">{{item.value}}</el-option>
 				</el-select>
 			</el-radio>
@@ -82,31 +82,31 @@ export default {
 			weekList: [
 				{
 					key: 2,
-					value: '星期一'
+					value: 'Monday'
 				},
 				{
 					key: 3,
-					value: '星期二'
+					value: 'Tuesday'
 				},
 				{
 					key: 4,
-					value: '星期三'
+					value: 'Wednesday'
 				},
 				{
 					key: 5,
-					value: '星期四'
+					value: 'Thursday'
 				},
 				{
 					key: 6,
-					value: '星期五'
+					value: 'Friday'
 				},
 				{
 					key: 7,
-					value: '星期六'
+					value: 'Saturday'
 				},
 				{
 					key: 1,
-					value: '星期日'
+					value: 'Sunday'
 				}
 			],
 			checkNum: this.$options.propsData.check

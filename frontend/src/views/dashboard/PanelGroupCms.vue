@@ -7,7 +7,7 @@
         </div>
         <div class="card-panel-description">
           <div class="card-panel-text">
-            总阅读量
+            Total Views
           </div>
           <count-to :start-val="0" :end-val="views" :duration="2600" class="card-panel-num" />
         </div>
@@ -20,7 +20,7 @@
         </div>
         <div class="card-panel-description">
           <div class="card-panel-text">
-            文章总数
+            Total Blogs
           </div>
           <count-to :start-val="0" :end-val="blog" :duration="3000" class="card-panel-num" />
         </div>
@@ -33,7 +33,7 @@
         </div>
         <div class="card-panel-description">
           <div class="card-panel-text">
-            评论总数
+            Total Comments
           </div>
           <count-to :start-val="0" :end-val="comment" :duration="3200" class="card-panel-num" />
         </div>
@@ -46,7 +46,7 @@
         </div>
         <div class="card-panel-description">
           <div class="card-panel-text">
-            留言总数
+            Total Messages
           </div>
           <count-to :start-val="0" :end-val="message" :duration="3600" class="card-panel-num" />
         </div>

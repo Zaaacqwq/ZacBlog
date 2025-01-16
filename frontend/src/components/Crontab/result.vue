@@ -1,11 +1,11 @@
 <template>
 	<div class="popup-result">
-		<p class="title">最近5次运行时间</p>
+		<p class="title">Last 5 Run Times</p>
 		<ul class="popup-result-scroll">
 			<template v-if='isShow'>
 				<li v-for='item in resultList' :key="item">{{item}}</li>
 			</template>
-			<li v-else>计算结果中...</li>
+			<li v-else>Calculating results...</li>
 		</ul>
 	</div>
 </template>
@@ -327,11 +327,11 @@ export default {
 			}
 			// 判断100年内的结果条数
 			if (resultArr.length == 0) {
-				this.resultList = ['没有达到条件的结果！'];
+				this.resultList = ['No results meeting the conditions!'];
 			} else {
 				this.resultList = resultArr;
 				if (resultArr.length !== 5) {
-					this.resultList.push('最近100年内只有上面' + resultArr.length + '条结果！')
+					this.resultList.push('Only the above ${resultArr.length} results were found within the last 100 years!')
 				}
 			}
 			// 计算完成-显示结果

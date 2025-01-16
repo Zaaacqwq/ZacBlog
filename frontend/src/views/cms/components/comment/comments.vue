@@ -18,7 +18,7 @@
         </span>
         <span class="comment-reply" @click="showCommentInput(item)">
           <svg-icon icon-class="comment" />
-          <span style="margin-left: 5px;">回复</span>
+          <span style="margin-left: 5px;">Reply</span>
         </span>
       </div>
       <div class="reply">
@@ -27,19 +27,19 @@
             <span class="from-name">{{reply.createBy}}</span><span>: </span>
             <span class="to-name" v-show="reply.parentId!=reply.mainId">@{{reply.pcreateBy}}</span>
             <span v-show="reply.delFlag=='0'">{{reply.content}}</span>
-            <span v-show="reply.delFlag=='1'" style="color: #909399;">该评论已被删除！</span>
+            <span v-show="reply.delFlag=='1'" style="color: #909399;">The comment has been deleted!</span>
           </div>
           <div class="reply-bottom">
             <span>{{reply.createTime}}</span>
             <span class="reply-text" @click="showCommentInput(item, reply)">
               <svg-icon icon-class="comment" />
-              <span style="margin-left: 5px;">回复</span>
+              <span style="margin-left: 5px;">Reply</span>
             </span>
           </div>
         </div>
         <div class="write-reply" v-if="item.children!=null" @click="showCommentInput(item)">
           <i class="el-icon-edit"></i>
-          <span class="add-comment">添加新评论</span>
+          <span class="add-comment">Add New Comment</span>
         </div>
         <input-component :show="showItemId === item.id"
                          :value="inputComment"
@@ -121,7 +121,7 @@
         let token = getToken();
         this.reset();
         if (token==null || token == '') {
-          this.commentLikeForm.createBy = "匿名用户"
+          this.commentLikeForm.createBy = "Anonymous User"
           this.commentLikeForm.commentId = item.id
           this.commentLikeForm.likeNum = item.likeNum
         } else {
@@ -140,7 +140,7 @@
         let token = getToken();
         this.reset();
         if (token==null || token == '') {
-          this.commentLikeForm.createBy = "匿名用户"
+          this.commentLikeForm.createBy = "Anonymous User"
           this.commentLikeForm.commentId = item.id
           this.commentLikeForm.likeNum = item.likeNum
         } else {
@@ -195,11 +195,11 @@
       showCommentInput(item, reply) {
         if (reply) {
           this.inputComment = ""
-          this.name = "回复@" + reply.createBy + ":"
+          this.name = "Reply@" + reply.createBy + ":"
           this.id = reply.id
         } else {
           this.inputComment = ''
-          this.name = '写下你的评论'
+          this.name = 'Leave your comment'
           this.id = item.id
         }
         this.showItemId = item.id

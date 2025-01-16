@@ -1,6 +1,6 @@
 <template>
   <div :class="className" :style="{height:height,width:width}" >
-    <h3 class="title">分类</h3>
+    <h3 class="title">Category</h3>
     <div id="pieChartId" style="height: 280px;width: 100%;"></div>
   </div>
 </template>
@@ -85,7 +85,7 @@ export default {
         },
         series: [
           {
-            name: '分类',
+            name: 'Category',
             type: 'pie',
             roseType: 'radius',
             radius: [15, 75],

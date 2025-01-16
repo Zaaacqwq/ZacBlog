@@ -2,11 +2,11 @@ export default [
   {
     layout: 'colFormItem',
     tagIcon: 'input',
-    label: '手机号',
+    label: 'Phone Number',
     vModel: 'mobile',
     formId: 6,
     tag: 'el-input',
-    placeholder: '请输入手机号',
+    placeholder: 'Enter your phone number',
     defaultValue: '',
     span: 24,
     style: { width: '100%' },
@@ -23,7 +23,7 @@ export default [
     changeTag: true,
     regList: [{
       pattern: '/^1(3|4|5|7|8|9)\\d{9}$/',
-      message: '手机号格式错误'
+      message: 'Invalid phone number format'
     }]
   }
 ]

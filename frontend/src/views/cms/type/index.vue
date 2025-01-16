@@ -1,32 +1,32 @@
 <template>
   <div class="app-container">
-    <el-form :model="queryParams" ref="queryForm" :inline="true" v-show="showSearch" label-width="68px">
-      <el-form-item label="分类名称" prop="typeName">
-        <el-input v-model="queryParams.typeName" placeholder="请输入分类名称" clearable size="small"
+    <el-form :model="queryParams" ref="queryForm" :inline="true" v-show="showSearch">
+      <el-form-item label="Category Name" prop="typeName">
+        <el-input v-model="queryParams.typeName" placeholder="Enter category name" clearable size="small"
           @keyup.enter.native="handleQuery" />
       </el-form-item>
       <el-form-item>
-        <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
-        <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>
+        <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">Search</el-button>
+        <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">Reset</el-button>
       </el-form-item>
     </el-form>
 
     <el-row :gutter="10" class="mb8">
       <el-col :span="1.5">
         <el-button type="primary" plain icon="el-icon-plus" size="mini" @click="handleAdd"
-          v-hasPermi="['cms:type:add']">新增</el-button>
+          v-hasPermi="['cms:type:add']">Add</el-button>
       </el-col>
       <el-col :span="1.5">
         <el-button type="success" plain icon="el-icon-edit" size="mini" :disabled="single" @click="handleUpdate"
-          v-hasPermi="['cms:type:edit']">修改</el-button>
+          v-hasPermi="['cms:type:edit']">Edit</el-button>
       </el-col>
       <el-col :span="1.5">
         <el-button type="danger" plain icon="el-icon-delete" size="mini" :disabled="multiple" @click="handleDelete"
-          v-hasPermi="['cms:type:remove']">删除</el-button>
+          v-hasPermi="['cms:type:remove']">Delete</el-button>
       </el-col>
       <el-col :span="1.5">
         <el-button type="warning" plain icon="el-icon-download" size="mini" @click="handleExport"
-          v-hasPermi="['cms:type:export']">导出</el-button>
+          v-hasPermi="['cms:type:export']">Export</el-button>
       </el-col>
       <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
     </el-row>
@@ -34,7 +34,7 @@
     <el-table v-loading="loading" :data="typeList" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" />
       <!-- <el-table-column label="分类ID" align="center" prop="typeId" /> -->
-      <el-table-column label="分类图像" align="center" prop="typePic" width="100">
+      <el-table-column label="Category Image" align="center" prop="typePic" width="130">
         <template slot-scope="scope">
           <el-image style="width: 28px;height: 28px; border-radius: 50%; margin-right: 10px" :src="scope.row.typePicLink" lazy :preview-src-list="[scope.row.typePicLink]" v-if="scope.row.typePicType == '0'">
             <div slot="error" class="image-slot">
@@ -48,20 +48,20 @@
           </el-image>
         </template>
       </el-table-column>
-      <el-table-column label="分类名称" align="center" prop="typeName" />
-      <el-table-column label="博客数量" align="center" prop="blogNum" />
-      <el-table-column label="创建者" align="center" prop="createBy" />
-      <el-table-column label="创建时间" align="center" prop="createTime" width="100">
+      <el-table-column label="Category Name" align="center" prop="typeName" />
+      <el-table-column label="Blog Count" align="center" prop="blogNum" />
+      <el-table-column label="Creator" align="center" prop="createBy" />
+      <el-table-column label="Creation Time" align="center" prop="createTime" width="120">
         <template slot-scope="scope">
           <span>{{ parseTime(scope.row.createTime, '{y}-{m}-{d} {h}:{i}:{s}') }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
+      <el-table-column label="Actions" align="center" class-name="small-padding fixed-width">
         <template slot-scope="scope">
           <el-button size="mini" type="text" icon="el-icon-edit" @click="handleUpdate(scope.row)"
-            v-hasPermi="['cms:type:edit']">修改</el-button>
+            v-hasPermi="['cms:type:edit']">Edit</el-button>
           <el-button size="mini" type="text" icon="el-icon-delete" @click="handleDelete(scope.row)"
-            v-hasPermi="['cms:type:remove']">删除</el-button>
+            v-hasPermi="['cms:type:remove']">Delete</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -71,17 +71,17 @@
 
     <!-- 添加或修改分类管理对话框 -->
     <el-dialog :title="title" :visible.sync="open" :before-close="cancel" width="500px" append-to-body>
-      <el-form ref="form" :model="form" :rules="rules" label-width="80px">
-        <el-form-item label="分类名称" prop="typeName">
-          <el-input v-model="form.typeName" placeholder="请输入分类名称" />
+      <el-form ref="form" :model="form" :rules="rules" label-width="130px">
+        <el-form-item label="Category Name" prop="typeName">
+          <el-input v-model="form.typeName" placeholder="Enter category name" />
         </el-form-item>
-        <el-form-item label="分类图像">
+        <el-form-item label="Category Image">
           <el-radio-group v-model="form.typePicType">
-            <el-radio-button label="0">地址</el-radio-button>
-            <el-radio-button label="1">上传</el-radio-button>
+            <el-radio-button label="0">URL</el-radio-button>
+            <el-radio-button label="1">Upload</el-radio-button>
           </el-radio-group>
           <div v-show="form.typePicType == '0'" class="tabBlock">
-            <el-input v-model="form.typePicLink" placeholder="请输入图片地址 https://" style="margin-bottom: 10px;" />
+            <el-input v-model="form.typePicLink" placeholder="Enter image URL https://" style="margin-bottom: 10px;" />
             <el-image :src="form.typePicLink" :preview-src-list="[form.typePicLink]" fit="cover" class="typePic" >
               <div slot="error" class="image-slot">
                 <i class="el-icon-collection"></i>
@@ -94,8 +94,8 @@
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="submitForm">确 定</el-button>
-        <el-button @click="cancel">取 消</el-button>
+        <el-button type="primary" @click="submitForm">Confirm</el-button>
+        <el-button @click="cancel">Cancel</el-button>
       </div>
     </el-dialog>
   </div>
@@ -148,7 +148,7 @@
         rules: {
           typeName: [{
             required: true,
-            message: "分类名称不能为空",
+            message: "Category name cannot be empty",
             trigger: "blur"
           }],
         }
@@ -216,7 +216,7 @@
       handleAdd() {
         this.reset();
         this.open = true;
-        this.title = "添加分类管理";
+        this.title = "Add Category Management";
       },
       /** 修改按钮操作 */
       handleUpdate(row) {
@@ -225,7 +225,7 @@
         getType(typeId).then(response => {
           this.form = response.data;
           this.open = true;
-          this.title = "修改分类管理";
+          this.title = "Edit Category Management";
         });
       },
       /** 提交按钮 */
@@ -234,13 +234,13 @@
           if (valid) {
             if (this.form.typeId != null) {
               updateType(this.form).then(response => {
-                this.$modal.msgSuccess("修改成功");
+                this.$modal.msgSuccess("Update successful");
                 this.open = false;
                 this.getList();
               });
             } else {
               addType(this.form).then(response => {
-                this.$modal.msgSuccess("新增成功");
+                this.$modal.msgSuccess("Addition successful");
                 this.open = false;
                 this.getList();
               });
@@ -252,11 +252,11 @@
       handleDelete(row) {
         const typeIds = row.typeId || this.ids;
         let name = row.typeName || this.names;
-        this.$modal.confirm('是否确认删除"' + name + '"？').then(function() {
+        this.$modal.confirm('Are you sure you want to delete"' + name + '"?').then(function() {
           return delType(typeIds);
         }).then(() => {
           this.getList();
-          this.$modal.msgSuccess("删除成功");
+          this.$modal.msgSuccess("Deletion successful");
         }).catch(() => {});
       },
       /** 导出按钮操作 */

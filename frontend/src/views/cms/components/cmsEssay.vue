@@ -1,6 +1,6 @@
 <template>
   <el-row :gutter="20">
-    <el-col :sm="3" class="hidden-xs-only" style="opacity:0;">左侧占位</el-col>
+    <el-col :sm="3" class="hidden-xs-only" style="opacity:0;">Left PlaceHolder</el-col>
     <el-col :xs="24" :sm="18">
       <el-container>
         <el-timeline class="animate__animated animate__fadeInLeft">
@@ -16,7 +16,7 @@
         </el-timeline>
       </el-container>
     </el-col>
-    <el-col :sm="3" class="hidden-xs-only" style="opacity:0;">右侧占位</el-col>
+    <el-col :sm="3" class="hidden-xs-only" style="opacity:0;">Right PlaceHolder</el-col>
     <!-- 设置底部距离的 -->
     <el-backtop :bottom="60">
           <div

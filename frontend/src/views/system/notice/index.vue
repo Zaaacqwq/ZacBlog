@@ -1,70 +1,70 @@
 <template>
   <div class="app-container">
-    <el-form :model="queryParams" ref="queryForm" :inline="true" v-show="showSearch" label-width="68px">
-      <el-form-item label="公告标题" prop="noticeTitle">
-        <el-input v-model="queryParams.noticeTitle" placeholder="请输入公告标题" clearable size="small"
+    <el-form :model="queryParams" ref="queryForm" :inline="true" v-show="showSearch">
+      <el-form-item label="Announcement Title" prop="noticeTitle">
+        <el-input v-model="queryParams.noticeTitle" placeholder="Enter announcement title" clearable size="small"
           @keyup.enter.native="handleQuery" />
       </el-form-item>
-      <el-form-item label="操作人员" prop="createBy">
-        <el-input v-model="queryParams.createBy" placeholder="请输入操作人员" clearable size="small"
+      <el-form-item label="Operator" prop="createBy">
+        <el-input v-model="queryParams.createBy" placeholder="Enter operator" clearable size="small"
           @keyup.enter.native="handleQuery" />
       </el-form-item>
-      <el-form-item label="类型" prop="noticeType">
-        <el-select v-model="queryParams.noticeType" placeholder="公告类型" clearable size="small">
+      <el-form-item label="Type" prop="noticeType">
+        <el-select v-model="queryParams.noticeType" placeholder="Announcement type" clearable size="small">
           <el-option v-for="dict in dict.type.sys_notice_type" :key="dict.value" :label="dict.label"
             :value="dict.value" />
         </el-select>
       </el-form-item>
       <el-form-item>
-        <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
-        <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>
+        <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">Search</el-button>
+        <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">Reset</el-button>
       </el-form-item>
     </el-form>
 
     <el-row :gutter="10" class="mb8">
       <el-col :span="1.5">
         <el-button type="primary" plain icon="el-icon-plus" size="mini" @click="handleAdd"
-          v-hasPermi="['system:notice:add']">新增</el-button>
+          v-hasPermi="['system:notice:add']">Add</el-button>
       </el-col>
       <el-col :span="1.5">
         <el-button type="success" plain icon="el-icon-edit" size="mini" :disabled="single" @click="handleUpdate"
-          v-hasPermi="['system:notice:edit']">修改</el-button>
+          v-hasPermi="['system:notice:edit']">Edit</el-button>
       </el-col>
       <el-col :span="1.5">
         <el-button type="danger" plain icon="el-icon-delete" size="mini" :disabled="multiple" @click="handleDelete"
-          v-hasPermi="['system:notice:remove']">删除</el-button>
+          v-hasPermi="['system:notice:remove']">Delete</el-button>
       </el-col>
       <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
     </el-row>
 
     <el-table v-loading="loading" :data="noticeList" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" />
-      <el-table-column label="序号" align="center" prop="noticeId" width="100" />
-      <el-table-column label="公告标题" align="center" prop="noticeTitle" :show-overflow-tooltip="true" />
-      <el-table-column label="公告类型" align="center" prop="noticeType" width="100">
+      <el-table-column label="ID" align="center" prop="noticeId" width="100" />
+      <el-table-column label="Announcement Title" align="center" prop="noticeTitle" :show-overflow-tooltip="true" />
+      <el-table-column label="Type" align="center" prop="noticeType" width="130">
         <template slot-scope="scope">
           <dict-tag :options="dict.type.sys_notice_type" :value="scope.row.noticeType" />
         </template>
       </el-table-column>
-      <el-table-column label="状态" align="center" prop="status" width="100">
+      <el-table-column label="Status" align="center" prop="status" width="100">
         <template slot-scope="scope">
           <dict-tag :options="dict.type.sys_notice_status" :value="scope.row.status" />
         </template>
       </el-table-column>
-      <el-table-column label="创建者" align="center" prop="createBy" width="100" />
-      <el-table-column label="创建时间" align="center" prop="createTime" width="100">
+      <el-table-column label="Creator" align="center" prop="createBy" width="100" />
+      <el-table-column label="Creation Time" align="center" prop="createTime" width="120">
         <template slot-scope="scope">
           <span>{{ parseTime(scope.row.createTime, '{y}-{m}-{d}') }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
+      <el-table-column label="Actions" align="center" class-name="small-padding fixed-width">
         <template slot-scope="scope">
           <el-button size="mini" type="text" icon="el-icon-edit" @click="handleUpdate(scope.row)"
-            v-hasPermi="['system:notice:edit']">修改</el-button>
+            v-hasPermi="['system:notice:edit']">Edit</el-button>
           <el-button size="mini" type="text" icon="el-icon-delete" @click="handleDelete(scope.row)"
-            v-hasPermi="['system:notice:remove']">删除</el-button>
+            v-hasPermi="['system:notice:remove']">Delete</el-button>
           <el-button size="mini" type="text" icon="el-icon-folder-opened" @click="fileList(scope.row)"
-            v-hasPermi="['system:notice:query']">资源列表</el-button>
+            v-hasPermi="['system:notice:query']">Resource List</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -74,23 +74,23 @@
 
     <!-- 添加或修改公告对话框 -->
     <el-dialog :title="title" :visible.sync="open" :before-close="cancel" width="780px" append-to-body>
-      <el-form ref="form" :model="form" :rules="rules" label-width="80px">
+      <el-form ref="form" :model="form" :rules="rules" label-width="170px">
         <el-row>
-          <el-col :span="12">
-            <el-form-item label="公告标题" prop="noticeTitle">
-              <el-input v-model="form.noticeTitle" placeholder="请输入公告标题" />
+          <el-col>
+            <el-form-item label="Announcement Title" prop="noticeTitle">
+              <el-input v-model="form.noticeTitle" placeholder="Enter announcement title" />
             </el-form-item>
           </el-col>
-          <el-col :span="12">
-            <el-form-item label="公告类型" prop="noticeType">
-              <el-select v-model="form.noticeType" placeholder="请选择">
+          <el-col>
+            <el-form-item label="Type" prop="noticeType">
+              <el-select v-model="form.noticeType" placeholder="Select">
                 <el-option v-for="dict in dict.type.sys_notice_type" :key="dict.value" :label="dict.label"
                   :value="dict.value"></el-option>
               </el-select>
             </el-form-item>
           </el-col>
-          <el-col :span="24">
-            <el-form-item label="状态">
+          <el-col>
+            <el-form-item label="Status">
               <el-radio-group v-model="form.status">
                 <el-radio v-for="dict in dict.type.sys_notice_status" :key="dict.value" :label="dict.value">
                   {{dict.label}}
@@ -98,16 +98,16 @@
               </el-radio-group>
             </el-form-item>
           </el-col>
-          <el-col :span="24">
-            <el-form-item label="内容">
+          <el-col>
+            <el-form-item label="Content">
               <cmsEditor v-model="form.noticeContent" @getFileId="getFileId" :min-height="192" />
             </el-form-item>
           </el-col>
         </el-row>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="submitForm">确 定</el-button>
-        <el-button @click="cancel">取 消</el-button>
+        <el-button type="primary" @click="submitForm">Confirm</el-button>
+        <el-button @click="cancel">Cancel</el-button>
       </div>
     </el-dialog>
 
@@ -116,7 +116,7 @@
       <el-table v-loading="loading" :data="fileInfoList">
         <el-table-column type="selection" width="55" align="center" />
         <!-- <el-table-column label="文件主键id" align="center" prop="fileId" /> -->
-        <el-table-column label="图片预览" align="center" prop="pic" >
+        <el-table-column label="Image Preview" align="center" prop="pic" >
           <template slot-scope="scope">
             <el-image
                 style="width: 120px;height: 60px;"
@@ -126,9 +126,9 @@
               </el-image>
           </template>
         </el-table-column>
-        <el-table-column label="文件名称" align="center" prop="fileOriginName" />
-        <el-table-column label="文件类型" align="center" prop="fileSuffix" />
-        <el-table-column label="文件大小" align="center" prop="fileSizeInfo" />
+        <el-table-column label="File Name" align="center" prop="fileOriginName" />
+        <el-table-column label="File Type" align="center" prop="fileSuffix" />
+        <el-table-column label="File Size" align="center" prop="fileSizeInfo" />
         <!-- <el-table-column label="存储文件名称" align="center" prop="fileObjectName" /> -->
         <!-- <el-table-column label="存储路径" align="center" prop="filePath" /> -->
         <!-- <el-table-column label="创建者" align="center" prop="createBy" /> -->
@@ -137,14 +137,14 @@
             <span>{{ parseTime(scope.row.createTime, '{y}-{m}-{d} {h}:{i}:{s}') }}</span>
           </template>
         </el-table-column> -->
-        <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
+        <el-table-column label="Action" align="center" class-name="small-padding fixed-width">
           <template slot-scope="scope">
             <el-button
               size="mini"
               type="text"
               icon="el-icon-download"
               @click="handleDownload(scope.row)"
-            >下载</el-button>
+            >Download</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -210,12 +210,12 @@
         rules: {
           noticeTitle: [{
             required: true,
-            message: "公告标题不能为空",
+            message: "Announcement title cannot be empty",
             trigger: "blur"
           }],
           noticeType: [{
             required: true,
-            message: "公告类型不能为空",
+            message: "Announcement type cannot be empty",
             trigger: "change"
           }]
         },
@@ -237,9 +237,9 @@
       },
       // 取消按钮
       cancel() {
-        this.$confirm('是否放弃此次编辑？', '系统提示', {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
+        this.$confirm('Are you sure you want to discard this edit?', 'System Alert', {
+          confirmButtonText: 'Confirm',
+          cancelButtonText: 'Cancel',
           type: 'warning'
         }).then(() => {
           let fileids = this.fileIds;
@@ -282,7 +282,7 @@
       handleAdd() {
         this.reset();
         this.open = true;
-        this.title = "添加公告";
+        this.title = "Add Announcement";
       },
       /** 修改按钮操作 */
       handleUpdate(row) {
@@ -291,7 +291,7 @@
         getNotice(noticeId).then(response => {
           this.form = response.data;
           this.open = true;
-          this.title = "修改公告";
+          this.title = "Edit Announcement";
         });
       },
       /** 提交按钮 */
@@ -307,7 +307,7 @@
                   };
                   addFileNoticeInfo(fileNoticeInfo).then(response => {});
                 }
-                this.$modal.msgSuccess("修改成功");
+                this.$modal.msgSuccess("Edit successful");
                 this.fileIds.length = 0;
                 this.open = false;
                 this.getList();
@@ -321,7 +321,7 @@
                   };
                   addFileNoticeInfo(fileNoticeInfo).then(response => {});
                 }
-                this.$modal.msgSuccess("新增成功");
+                this.$modal.msgSuccess("Add successful");
                 this.fileIds.length = 0;
                 this.open = false;
                 this.getList();
@@ -333,12 +333,12 @@
       /** 删除按钮操作 */
       handleDelete(row) {
         const noticeIds = row.noticeId || this.ids
-        this.$modal.confirm('是否确认删除公告编号为"' + noticeIds + '"的数据项？').then(function() {
+        this.$modal.confirm('Are you sure you want to delete the announcement with ID "' + noticeIds + '"?').then(function() {
           delFileNoticeInfo(noticeIds).then().then(response => {});
           return delNotice(noticeIds);
         }).then(() => {
           this.getList();
-          this.$modal.msgSuccess("删除成功");
+          this.$modal.msgSuccess("Delete successful");
         }).catch(() => {});
       },
       getFileId(data) {
@@ -363,7 +363,7 @@
           };
           this.fileInfoList = response.data;
           this.fileListOpen = true;
-          this.title = "资源列表";
+          this.title = "Resource List";
           this.loading = false;
         });
       },

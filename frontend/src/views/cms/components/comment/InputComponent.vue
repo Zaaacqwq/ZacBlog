@@ -18,8 +18,8 @@
               <Emoji @output="output"></Emoji>
             </el-col>
             <el-col :span="12" style="text-align: right">
-              <span class="cancel" @click="cancel">取消</span>
-              <el-button class="btn" type="success" round @click="commitComment">确定</el-button>
+              <span class="cancel" @click="cancel">Cancel</span>
+              <el-button class="btn" type="success" round @click="commitComment">Confirm</el-button>
             </el-col>
           </el-row>
         </div>

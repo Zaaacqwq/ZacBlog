@@ -14,13 +14,12 @@
       ref="upload"
     >
       <!-- 上传按钮 -->
-      <el-button size="mini" type="primary">选取文件</el-button>
+      <el-button size="mini" type="primary">Select File</el-button>
       <!-- 上传提示 -->
       <div class="el-upload__tip" slot="tip" v-if="showTip">
-        请上传
-        <template v-if="fileSize"> 大小不超过 <b style="color: #f56c6c">{{ fileSize }}MB</b> </template>
-        <template v-if="fileType"> 格式为 <b style="color: #f56c6c">{{ fileType.join("/") }}</b> </template>
-        的文件
+        Please Upload 
+        <template v-if="fileSize"> files smaller than <b style="color: #f56c6c">{{ fileSize }}MB</b> </template>
+        <template v-if="fileType"> in format <b style="color: #f56c6c">{{ fileType.join("/") }}</b> </template>
       </div>
     </el-upload>
 
@@ -31,7 +30,7 @@
           <span class="el-icon-document"> {{ getFileName(file.name) }} </span>
         </el-link>
         <div class="ele-upload-list__item-content-action">
-          <el-link :underline="false" @click="handleDelete(index)" type="danger">删除</el-link>
+          <el-link :underline="false" @click="handleDelete(index)" type="danger">Delete</el-link>
         </div>
       </li>
     </transition-group>
@@ -122,7 +121,7 @@ export default {
           return false;
         });
         if (!isTypeOk) {
-          this.$message.error(`文件格式不正确, 请上传${this.fileType.join("/")}格式文件!`);
+          this.$message.error(`Invalid file format. Please upload files in ${this.fileType.join("/")} format!`);
           return false;
         }
       }
@@ -130,7 +129,7 @@ export default {
       if (this.fileSize) {
         const isLt = file.size / 1024 / 1024 < this.fileSize;
         if (!isLt) {
-          this.$message.error(`上传文件大小不能超过 ${this.fileSize} MB!`);
+          this.$message.error(`File size cannot exceed ${this.fileSize} MB!`);
           return false;
         }
       }
@@ -138,15 +137,15 @@ export default {
     },
     // 文件个数超出
     handleExceed() {
-      this.$message.error(`上传文件数量不能超过 ${this.limit} 个!`);
+      this.$message.error(`You cannot upload more than ${this.limit} files!`);
     },
     // 上传失败
     handleUploadError(err) {
-      this.$message.error("上传失败, 请重试");
+      this.$message.error("Upload failed. Please try again.");
     },
     // 上传成功回调
     handleUploadSuccess(res, file) {
-      this.$message.success("上传成功");
+      this.$message.success("Upload successful");
       this.fileList.push({ name: res.fileName, url: res.fileName });
       this.$emit("input", this.listToString(this.fileList));
     },

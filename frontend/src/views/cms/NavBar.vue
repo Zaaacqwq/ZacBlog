@@ -4,7 +4,7 @@
     <div class="bg-purple-light">
       <el-menu :default-active="activeIndex" router class="el-menu-demo" mode="horizontal" style="border: none;"
         background-color="rgba(0,0,0,0)" text-color="#fff" active-text-color="#ffd04b">
-        <el-menu-item index="/cms/main/cmsIndex"><i class="el-icon-s-home" style="color: rgba(255, 255, 255);"></i>首页
+        <el-menu-item index="/cms/main/cmsIndex"><i class="el-icon-s-home" style="color: rgba(255, 255, 255);"></i>Home
         </el-menu-item>
         <el-menu-item :index="item.path" v-for="item in menulist" :key="item.id">
           <!--                图标-->
@@ -18,7 +18,7 @@
       <el-menu :default-active="activeIndex" router background-color="rgba(84,92,100,0.5)" text-color="#fff"
         active-text-color="#ffd04b">
         <el-menu-item index="/cms/main/cmsIndex" @click="menuAway"><i class="el-icon-s-home"
-            style="color: rgba(255, 255, 255);"></i>首页</el-menu-item>
+            style="color: rgba(255, 255, 255);"></i>Home</el-menu-item>
         <el-menu-item :index="item.path" v-for="item in menulist" :key="item.id" @click="menuAway">
           <!--                图标-->
           <i :class="item.icon" style="color: rgba(255, 255, 255);"></i>
@@ -33,7 +33,7 @@
     </div>
 
     <div v-if="searchInput" class="search_input">
-      <el-input @focus="checkInput" @blur="notSearching()" class="search" placeholder="搜索博客"
+      <el-input @focus="checkInput" @blur="notSearching()" class="search" placeholder="Search Blogs"
         prefix-icon="el-icon-search" v-model="queryInfo.query" size="mini">
       </el-input>
       <ul v-if="searching">
@@ -54,10 +54,10 @@
         </div>
         <el-dropdown-menu slot="dropdown">
           <router-link target="_blank" to="/index">
-            <el-dropdown-item>管理博客</el-dropdown-item>
+            <el-dropdown-item>Manage Blogs</el-dropdown-item>
           </router-link>
           <el-dropdown-item divided @click.native="logout">
-            <span>退出登录</span>
+            <span>Logout</span>
           </el-dropdown-item>
         </el-dropdown-menu>
       </el-dropdown>
@@ -67,7 +67,7 @@
         <!-- <el-avatar class="avatar" src="avatar" @error="errorHandler">
             <i class="el-icon-s-custom" @click="tologin"/>
           </el-avatar> -->
-        <p class="avatar-Name" @click="tologin">登录|注册</p>
+        <p class="avatar-Name" @click="tologin">Login|Register</p>
       </div>
     </div>
   </el-header>
@@ -101,19 +101,19 @@
         searching: false,
         menulist: [{
             id: 1,
-            authName: '随笔',
+            authName: 'Notes',
             path: '/cms/main/essay',
             icon: 'el-icon-edit',
           },
           {
             id: 2,
-            authName: '留言',
+            authName: 'Comments',
             path: '/cms/main/message',
             icon: 'el-icon-chat-dot-round',
           },
           {
             id: 3,
-            authName: '文档',
+            authName: 'About me',
             path: '/cms/doucument',
             icon: 'el-icon-document',
           },
@@ -250,9 +250,9 @@
         window.open(routeUrl.href, '_blank');
       },
       async logout() {
-        this.$confirm('确定注销并退出系统登录吗？', '提示', {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
+        this.$confirm('Are you sure you want to log out and exit the system?', 'Notice', {
+          confirmButtonText: 'Confirm',
+          cancelButtonText: 'Cancel',
           type: 'warning'
         }).then(() => {
           this.$store.dispatch('LogOut').then(() => {

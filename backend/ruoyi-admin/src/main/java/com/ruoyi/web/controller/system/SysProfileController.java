@@ -59,7 +59,7 @@ public class SysProfileController extends BaseController
     /**
      * 修改用户
      */
-    @Log(title = "个人信息", businessType = BusinessType.UPDATE)
+    @Log(title = "Personal Information", businessType = BusinessType.UPDATE)
     @PutMapping
     public AjaxResult updateProfile(@RequestBody SysUser user)
     {
@@ -69,12 +69,12 @@ public class SysProfileController extends BaseController
         if (StringUtils.isNotEmpty(user.getPhonenumber())
                 && UserConstants.NOT_UNIQUE.equals(userService.checkPhoneUnique(user)))
         {
-            return AjaxResult.error("修改用户'" + user.getUserName() + "'失败，手机号码已存在");
+            return AjaxResult.error("Failed to update user '\" + user.getUserName() + \"', phone number already exists");
         }
         if (StringUtils.isNotEmpty(user.getEmail())
                 && UserConstants.NOT_UNIQUE.equals(userService.checkEmailUnique(user)))
         {
-            return AjaxResult.error("修改用户'" + user.getUserName() + "'失败，邮箱账号已存在");
+            return AjaxResult.error("Failed to update user '\" + user.getUserName() + \"', email address already exists");
         }
         user.setUserId(sysUser.getUserId());
         user.setPassword(null);
@@ -88,13 +88,13 @@ public class SysProfileController extends BaseController
             tokenService.setLoginUser(loginUser);
             return AjaxResult.success();
         }
-        return AjaxResult.error("修改个人信息异常，请联系管理员");
+        return AjaxResult.error("An error occurred while updating personal information. Please contact the administrator.");
     }
 
     /**
      * 重置密码
      */
-    @Log(title = "个人信息", businessType = BusinessType.UPDATE)
+    @Log(title = "Personal Information", businessType = BusinessType.UPDATE)
     @PutMapping("/updatePwd")
     public AjaxResult updatePwd(String oldPassword, String newPassword)
     {
@@ -103,11 +103,11 @@ public class SysProfileController extends BaseController
         String password = loginUser.getPassword();
         if (!SecurityUtils.matchesPassword(oldPassword, password))
         {
-            return AjaxResult.error("修改密码失败，旧密码错误");
+            return AjaxResult.error("Failed to change password, old password is incorrect");
         }
         if (SecurityUtils.matchesPassword(newPassword, password))
         {
-            return AjaxResult.error("新密码不能与旧密码相同");
+            return AjaxResult.error("New password cannot be the same as the old password");
         }
         if (userService.resetUserPwd(userName, SecurityUtils.encryptPassword(newPassword)) > 0)
         {
@@ -116,13 +116,13 @@ public class SysProfileController extends BaseController
             tokenService.setLoginUser(loginUser);
             return AjaxResult.success();
         }
-        return AjaxResult.error("修改密码异常，请联系管理员");
+        return AjaxResult.error("An error occurred while changing the password. Please contact the administrator.");
     }
 
     /**
      * 头像上传
      */
-    @Log(title = "用户头像", businessType = BusinessType.UPDATE)
+    @Log(title = "User Avatar", businessType = BusinessType.UPDATE)
     @PostMapping("/avatar")
     public AjaxResult avatar(@RequestParam("avatarfile") MultipartFile file) throws IOException
     {
@@ -144,6 +144,6 @@ public class SysProfileController extends BaseController
                 return ajax;
             }
         }
-        return AjaxResult.error("上传图片异常，请联系管理员");
+        return AjaxResult.error("An error occurred while uploading the image. Please contact the administrator.");
     }
 }

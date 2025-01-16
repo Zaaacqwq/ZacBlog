@@ -7,7 +7,7 @@
       <el-avatar v-else :src="avatar" size="large"></el-avatar>
       <div>
         <div class="nkname">
-          <span class="name" v-if="token==null">匿名用户</span>
+          <span class="name" v-if="token==null">Anonymous User</span>
           <span class="name" v-else>{{name}} </span>
         </div>
       </div>
@@ -15,7 +15,7 @@
     <el-form :model="messageForm" :rules="messageFormRules" ref="messageFormRef">
       <el-form-item prop="content">
         <el-input @blur="blur" :rows="5" v-model="messageForm.content" type="textarea" maxlength="100" show-word-limit
-          placeholder="请输入你的评论"></el-input>
+          placeholder="Leave your comment"></el-input>
       </el-form-item>
       <el-form-item style="text-align: right">
         <el-row>
@@ -23,12 +23,12 @@
             <Emoji @output="output"></Emoji>
           </el-col>
           <el-col :span="12" style="text-align: right">
-            <el-button type="primary" @click="publish">点击发表</el-button>
+            <el-button type="primary" @click="publish">Click to publish</el-button>
           </el-col>
         </el-row>
       </el-form-item>
     </el-form>
-    <el-divider v-if="messageList.length>0"><span style="color: #999;font-size: small;">最新评论</span></el-divider>
+    <el-divider v-if="messageList.length>0"><span style="color: #999;font-size: small;">Latest Comment</span></el-divider>
     <comment :comments="messageList" @replyConfirm="commitComment"></comment>
     <pagination v-show="total>0" :total="total" :page.sync="queryParams.pageNum" :limit.sync="queryParams.pageSize"
       @pagination="getMessageList" />
@@ -81,7 +81,7 @@
           content: [{
             min: 0,
             max: 100,
-            message: "评论内容不超过100字！"
+            message: "Message should not exceed 100 characters!"
           }]
         },
         cursorIndexStart: null,//光标选中开始的位置
@@ -135,18 +135,18 @@
         this.$refs.messageFormRef.validate(async valid => {
           if (!valid) return
           if (this.messageForm.content == null || this.messageForm.content == '') {
-            this.$modal.msgError("评论内容不能为空！");
+            this.$modal.msgError("Comment content cannot be empty!");
             return;
           }
           if (token == null || token == '') {
-            this.messageForm.createBy = "匿名用户"
+            this.messageForm.createBy = "Anonymous User"
             this.messageForm.type = '0'
           } else {
             this.messageForm.createBy = this.$store.getters.name
             this.messageForm.type = '0'
           }
           cmsAddComment(this.messageForm).then(response => {
-            this.$modal.msgSuccess("评论发表成功");
+            this.$modal.msgSuccess("Comment published successfully");
             this.reset();
             this.getMessageList();
           });
@@ -163,18 +163,18 @@
         this.$refs.messageFormRef.validate(async valid => {
           if (!valid) return
           if (this.messageForm.content == null || this.messageForm.content == '') {
-            this.$modal.msgError("评论内容不能为空！");
+            this.$modal.msgError("Comment content cannot be empty!");
             return;
           }
           if (token == null || token == '') {
-            this.messageForm.createBy = "匿名用户"
+            this.messageForm.createBy = "Anonymous User"
             this.messageForm.type = '1'
           } else {
             this.messageForm.createBy = this.$store.getters.name
             this.messageForm.type = '1'
           }
           cmsAddComment(this.messageForm).then(response => {
-            this.$modal.msgSuccess("评论发表成功");
+            this.$modal.msgSuccess("Comment published successfully");
             this.reset();
             this.getMessageList();
           });

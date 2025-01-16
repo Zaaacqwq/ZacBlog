@@ -1,0 +1,11 @@
+cd G:\Coding\Blog
+git status
+git add frontend
+git commit -m "Updated frontend UI components and fixed styling issues"
+git push
+
+cd G:\Coding\Blog
+git status
+git add backend
+git commit -m "Added new API endpoint for user authentication"
+git push

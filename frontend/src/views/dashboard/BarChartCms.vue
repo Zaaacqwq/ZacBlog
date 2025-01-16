@@ -1,6 +1,6 @@
 <template>
   <div :class="className" :style="{height:height,width:width}" >
-    <h3 class="title">随笔 总:{{total}}篇</h3>
+    <h3 class="title">Notes Total: {{total}}</h3>
     <div id="barChartId" style="height: 280px;width: 100%;"></div>
   </div>
 </template>
@@ -94,7 +94,7 @@ export default {
           }
         }],
         series: [{
-          name: '随笔',
+          name: 'Notes',
           type: 'bar',
           stack: 'vistors',
           barWidth: '60%',

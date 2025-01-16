@@ -1,38 +1,38 @@
 <template>
   <div class="app-container">
     <el-form :model="queryParams" ref="queryForm" :inline="true" v-show="showSearch" label-width="68px">
-      <el-form-item label="标题" prop="title">
-        <el-input v-model="queryParams.title" placeholder="请输入标题" clearable size="small"
+      <el-form-item label="Title" prop="title">
+        <el-input v-model="queryParams.title" placeholder="Enter title" clearable size="small"
           @keyup.enter.native="handleQuery" />
       </el-form-item>
-      <el-form-item label="状态" prop="status">
-        <el-select v-model="queryParams.status" placeholder="请选择状态" clearable size="small">
+      <el-form-item label="Status" prop="status">
+        <el-select v-model="queryParams.status" placeholder="Select status" clearable size="small">
           <el-option v-for="dict in dict.type.cms_blog_status" :key="dict.value" :label="dict.label"
             :value="dict.value" />
         </el-select>
       </el-form-item>
       <el-form-item>
-        <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
-        <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>
+        <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">Search</el-button>
+        <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">Reset</el-button>
       </el-form-item>
     </el-form>
 
     <el-row :gutter="10" class="mb8">
       <el-col :span="1.5">
         <el-button type="primary" plain icon="el-icon-plus" size="mini" @click="handleAdd"
-          v-hasPermi="['cms:blog:add']">新增</el-button>
+          v-hasPermi="['cms:blog:add']">Add</el-button>
       </el-col>
       <el-col :span="1.5">
         <el-button type="success" plain icon="el-icon-edit" size="mini" :disabled="single" @click="handleUpdate"
-          v-hasPermi="['cms:blog:edit']">修改</el-button>
+          v-hasPermi="['cms:blog:edit']">Edit</el-button>
       </el-col>
       <el-col :span="1.5">
         <el-button type="danger" plain icon="el-icon-delete" size="mini" :disabled="multiple" @click="handleDelete"
-          v-hasPermi="['cms:blog:remove']">删除</el-button>
+          v-hasPermi="['cms:blog:remove']">Delete</el-button>
       </el-col>
       <el-col :span="1.5">
         <el-button type="warning" plain icon="el-icon-download" size="mini" @click="handleExport"
-          v-hasPermi="['cms:blog:export']">导出</el-button>
+          v-hasPermi="['cms:blog:export']">Export</el-button>
       </el-col>
       <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
     </el-row>
@@ -41,7 +41,7 @@
       :row-class-name="tableRowClassName">
       <el-table-column type="selection" width="55" align="center" />
       <!-- <el-table-column label="ID" align="center" prop="id" /> -->
-      <el-table-column label="首图预览" align="center" prop="blogPic" >
+      <el-table-column label="Cover Image Preview" align="center" prop="blogPic" >
         <template slot-scope="scope">
           <el-image
             v-if="scope.row.blogPicType == '0'"
@@ -62,40 +62,40 @@
           </el-image>
         </template>
       </el-table-column>
-      <el-table-column label="标题" align="center" prop="title" />
+      <el-table-column label="Title" align="center" prop="title" />
       <!-- <el-table-column label="内容" align="center" prop="content" /> -->
       <!-- <el-table-column label="置顶" align="center" prop="top" /> -->
-      <el-table-column label="分类" align="center" prop="types">
+      <el-table-column label="Category" align="center" prop="types">
         <template slot-scope="scope">
           <el-tag size="mini" v-for="tag in scope.row.types" :key="tag.typeId" type="info">{{tag.typeName}}</el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="标签" align="center" prop="tags">
+      <el-table-column label="Tags" align="center" prop="tags">
         <template slot-scope="scope">
           <el-tag effect="plain" size="mini" v-for="tag in scope.row.tags" :key="tag.tagId" type="success">
             {{tag.tagName}}</el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="阅读量" align="center" prop="views" />
-      <el-table-column label="状态" align="center" prop="status">
+      <el-table-column label="Views" align="center" prop="views" />
+      <el-table-column label="Status" align="center" prop="status">
         <template slot-scope="scope">
           <dict-tag :options="dict.type.cms_blog_status" :value="scope.row.status" />
         </template>
       </el-table-column>
-      <el-table-column label="创建者" align="center" prop="createBy" />
-      <el-table-column label="创建时间" align="center" prop="createTime" width="100">
+      <el-table-column label="Creator" align="center" prop="createBy" />
+      <el-table-column label="Creation Time" align="center" prop="createTime" width="120">
         <template slot-scope="scope">
           <span>{{ parseTime(scope.row.createTime, '{y}-{m}-{d} {h}:{i}:{s}') }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
+      <el-table-column label="Actions" align="center" class-name="small-padding fixed-width">
         <template slot-scope="scope">
           <el-button size="mini" type="text" icon="el-icon-edit" @click="handleUpdate(scope.row)"
-            v-hasPermi="['cms:blog:edit']">修改</el-button>
+            v-hasPermi="['cms:blog:edit']">Edit</el-button>
           <el-button size="mini" type="text" icon="el-icon-delete" @click="handleDelete(scope.row)"
-            v-hasPermi="['cms:blog:remove']">删除</el-button>
+            v-hasPermi="['cms:blog:remove']">Delete</el-button>
             <el-button size="mini" type="text" icon="el-icon-folder-opened" @click="blogFiles(scope.row)"
-              v-hasPermi="['cms:blog:edit']">附件管理</el-button>
+              v-hasPermi="['cms:blog:edit']">Manage Attachments</el-button>
           <!-- <el-button size="mini" type="text" icon="el-icon-folder-opened" @click="fileList(scope.row)"
             v-hasPermi="['cms:blog:edit']">资源列表</el-button> -->
         </template>
@@ -107,19 +107,19 @@
 
     <!-- 添加或修改文章管理对话框 -->
     <el-dialog :title="title" :visible.sync="open" :before-close="cancel" width="1200px" append-to-body>
-      <el-form ref="form" :model="form" :rules="rules" label-width="80px">
-        <el-form-item label="标题" prop="title">
-          <el-input v-model="form.title" placeholder="请输入标题" />
+      <el-form ref="form" :model="form" :rules="rules" label-width="100px">
+        <el-form-item label="Title" prop="title">
+          <el-input v-model="form.title" placeholder="Enter title" />
         </el-form-item>
         <el-row>
           <el-col :span="8">
-            <el-form-item label="首图">
+            <el-form-item label="Cover Image">
               <el-radio-group v-model="form.blogPicType">
-                <el-radio-button label="0">地址</el-radio-button>
-                <el-radio-button label="1">上传</el-radio-button>
+                <el-radio-button label="0">Url</el-radio-button>
+                <el-radio-button label="1">Upload</el-radio-button>
               </el-radio-group>
               <div v-show="form.blogPicType == '0'" class="tabBlock">
-                <el-input v-model="form.blogPicLink" placeholder="请输入图片地址 https://" style="margin-bottom: 10px;" />
+                <el-input v-model="form.blogPicLink" placeholder="Enter image URL https://" style="margin-bottom: 10px;" />
                 <el-image :src="form.blogPicLink" :preview-src-list="[form.blogPicLink]" fit="cover" class="blogPic" >
                   <div slot="error" class="image-slot">
                     <el-image src="/errorImg.jpg" fit="cover" class="blogPic"></el-image>
@@ -132,21 +132,21 @@
             </el-form-item>
           </el-col>
           <el-col :span="16">
-            <el-form-item label="简介">
-              <el-input type="textarea" v-model="form.blogDesc" :autosize="{ minRows: 7, maxRows: 7}" maxlength="50" show-word-limit placeholder="请输入简介" />
+            <el-form-item label="Description">
+              <el-input type="textarea" v-model="form.blogDesc" :autosize="{ minRows: 7, maxRows: 7}" maxlength="50" show-word-limit placeholder="Enter Description" />
             </el-form-item>
           </el-col>
         </el-row>
-        <el-form-item label="内容">
+        <el-form-item label="Content">
           <!-- 图片用base64存储,url方式移动端会显示异常 -->
           <el-row style="margin-bottom: 20px;">
             <el-col align="right">
-              <span v-show="form.contentType ==='2'" style="color: #E6A23C;margin-right: 20px;">Markdown编辑器保存后会覆盖其他富文本编辑器内容</span>
-              编辑器：
-              <el-select v-model="form.contentType" placeholder="请选择">
-                <el-option key="1" label="Quill富文本编辑器" value="1" />
-                <el-option key="2" label="CherryMarkdown (推荐)" value="2" />
-                <el-option key="3" label="Tinymce富文本编辑器" value="3" />
+              <span v-show="form.contentType ==='2'" style="color: #E6A23C;margin-right: 20px;">Saving with the Markdown editor will overwrite content from other editors</span>
+              Editor:
+              <el-select v-model="form.contentType" placeholder="Select">
+                <el-option key="1" label="Quill Rich Text Editor" value="1" />
+                <el-option key="2" label="CherryMarkdown (Recommend)" value="2" />
+                <el-option key="3" label="Tinymce Rich Text Editor" value="3" />
               </el-select>
             </el-col>
           </el-row>
@@ -158,7 +158,7 @@
             </el-col>
           </el-row>
         </el-form-item>
-        <el-form-item label="标签">
+        <el-form-item label="Tags">
           <el-checkbox-group v-model="form.tagIds">
             <el-checkbox v-for="item in tagOptions" :label="item.tagId" :key="item.tagId" :value="item.tagId">
               {{item.tagName}}
@@ -167,24 +167,24 @@
         </el-form-item>
         <el-row>
           <el-col :span="7">
-            <el-form-item label="分类">
-              <el-select v-model="form.typeIds" multiple placeholder="请选择" filterable clearable>
+            <el-form-item label="Category">
+              <el-select v-model="form.typeIds" multiple placeholder="Select" filterable clearable>
                 <el-option v-for="item in typeOptions" :key="item.typeId" :label="item.typeName" :value="item.typeId">
                 </el-option>
               </el-select>
             </el-form-item>
           </el-col>
           <el-col :span="17">
-            <el-form-item label="置顶">
+            <el-form-item label="Pin">
               <el-checkbox v-model="top"></el-checkbox>
             </el-form-item>
           </el-col>
         </el-row>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="releaseForm">发 布</el-button>
-        <el-button type="info" @click="saveForm">暂 存</el-button>
-        <el-button @click="cancel">取 消</el-button>
+        <el-button type="primary" @click="releaseForm">Publish</el-button>
+        <el-button type="info" @click="saveForm">Save</el-button>
+        <el-button @click="cancel">Cancel</el-button>
       </div>
     </el-dialog>
 
@@ -193,15 +193,15 @@
       <el-table class="file-list" :data="fileInfoList">
         <el-table-column type="selection" width="55" align="center" />
         <!-- <el-table-column label="文件主键id" align="center" prop="fileId" /> -->
-        <el-table-column label="图片预览" align="center" prop="pic">
+        <el-table-column label="Image Preview" align="center" prop="pic">
           <template slot-scope="scope">
             <el-image style="width: 120px;height: 60px;" :src="scope.row.pic" lazy :preview-src-list="[scope.row.pic]">
             </el-image>
           </template>
         </el-table-column>
-        <el-table-column label="文件名称" align="center" prop="fileOriginName" />
-        <el-table-column label="文件类型" align="center" prop="fileSuffix" />
-        <el-table-column label="文件大小" align="center" prop="fileSizeInfo" />
+        <el-table-column label="File Name" align="center" prop="fileOriginName" />
+        <el-table-column label="File Type" align="center" prop="fileSuffix" />
+        <el-table-column label="File Size" align="center" prop="fileSizeInfo" />
         <!-- <el-table-column label="存储文件名称" align="center" prop="fileObjectName" /> -->
         <!-- <el-table-column label="存储路径" align="center" prop="filePath" /> -->
         <!-- <el-table-column label="创建者" align="center" prop="createBy" /> -->
@@ -210,59 +210,59 @@
             <span>{{ parseTime(scope.row.createTime, '{y}-{m}-{d} {h}:{i}:{s}') }}</span>
           </template>
         </el-table-column> -->
-        <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
+        <el-table-column label="Actions" align="center" class-name="small-padding fixed-width">
           <template slot-scope="scope">
-            <el-button size="mini" type="text" icon="el-icon-download" @click="handleDownload(scope.row)">下载</el-button>
+            <el-button size="mini" type="text" icon="el-icon-download" @click="handleDownload(scope.row)">Download</el-button>
           </template>
         </el-table-column>
       </el-table>
     </el-dialog>
 
     <!-- 附件管理对话框 -->
-    <el-dialog title="附件管理" :visible.sync="blogFilesOpen" :before-close="cancel" width="1200px" append-to-body>
+    <el-dialog title="Attachment Manage" :visible.sync="blogFilesOpen" :before-close="cancel" width="1200px" append-to-body>
       <el-form ref="form" :model="form" :rules="rules" label-position="top" label-width="80px">
         <el-form-item>
           <el-row>
-            <el-button size="mini" type="primary" @click="addFiles">添加文件</el-button>
+            <el-button size="mini" type="primary" @click="addFiles">Add File</el-button>
             <el-table :data="form.blogFilesNew" :border="true" style="width: 99.99%;">
-              <el-table-column align="center" min-width="20%" prop="pic" label="附件">
+              <el-table-column align="center" min-width="20%" prop="pic" label="Attachment">
                 <template slot-scope="scope">
                   <filesUpload v-model="scope.row.fileId" @handleFilesSuccess="filesSuccess" :is-show-tip="false" />
                 </template>
               </el-table-column>
-              <el-table-column align="center" min-width="20%" prop="remark" label="文件信息">
+              <el-table-column align="center" min-width="20%" prop="remark" label="Attachment Info">
                 <template slot-scope="scope">
                   <el-row>
-                    <el-col :span="6"><div class="blogFilesInfoName">名称：</div></el-col>
+                    <el-col :span="6"><div class="blogFilesInfoName">Name:</div></el-col>
                     <el-col :span="18"><el-input v-model="scope.row.fileOriginName" disabled/></el-col>
                   </el-row>
                   <el-row style="margin-top: 4px;">
-                    <el-col :span="6"><div class="blogFilesInfoName">大小：</div></el-col>
+                    <el-col :span="6"><div class="blogFilesInfoName">Size:</div></el-col>
                     <el-col :span="18"><el-input v-model="scope.row.fileSize" disabled/></el-col>
                   </el-row>
                   <el-row style="margin-top: 4px;">
-                    <el-col :span="6"><div class="blogFilesInfoName">类型：</div></el-col>
+                    <el-col :span="6"><div class="blogFilesInfoName">Type:</div></el-col>
                     <el-col :span="18"><el-input v-model="scope.row.fileSuffix" disabled/></el-col>
                   </el-row>
                 </template>
               </el-table-column>
-              <el-table-column align="center" min-width="40%" prop="remark" label="备注">
+              <el-table-column align="center" min-width="40%" prop="remark" label="Remark">
                 <template slot-scope="scope">
                   <el-input v-model="scope.row.remark" type="textarea" :rows="6" size="small" />
                 </template>
               </el-table-column>
-              <el-table-column align="center" min-width="20%" label="操作">
+              <el-table-column align="center" min-width="20%" label="Action">
                 <template slot-scope="scope">
-                  <el-button v-show="scope.row.fileId!==''" size="mini" plain @click="handleDownload(scope.row)">下载</el-button>
-                  <el-button size="mini" type="danger" plain @click="delFiles(scope.$index, scope.row)">删除</el-button>
+                  <el-button v-show="scope.row.fileId!==''" size="mini" plain @click="handleDownload(scope.row)">Download</el-button>
+                  <el-button size="mini" type="danger" plain @click="delFiles(scope.$index, scope.row)">Delete</el-button>
                 </template>
               </el-table-column>
             </el-table>
           </el-row></el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="saveBlogFiles">保 存</el-button>
-        <el-button @click="cancel">取 消</el-button>
+        <el-button type="primary" @click="saveBlogFiles">Save</el-button>
+        <el-button @click="cancel">Cancel</el-button>
       </div>
     </el-dialog>
 
@@ -345,12 +345,12 @@
         rules: {
           title: [{
             required: true,
-            message: "标题不能为空",
+            message: "Title cannot be empty",
             trigger: "blur"
           }],
           type: [{
             required: true,
-            message: "类型不能为空",
+            message: "Type cannot be empty",
             trigger: "change"
           }],
         },
@@ -387,9 +387,9 @@
       },
       // 取消按钮
       cancel() {
-        this.$confirm('是否放弃此次编辑？', '系统提示', {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
+        this.$confirm('Do you want to abandon this edit?', 'System Prompt', {
+          confirmButtonText: 'Confirm',
+          cancelButtonText: 'Cancel',
           type: 'warning'
         }).then(() => {
           let fileids = this.fileIds;
@@ -455,7 +455,7 @@
           this.tagOptions = response.tags;
           this.reset();
           this.open = true;
-          this.title = "添加文章";
+          this.title = "Add Blog";
         });
       },
       /** 修改按钮操作 */
@@ -470,14 +470,14 @@
             this.top = true;
           };
           this.open = true;
-          this.title = "修改文章";
+          this.title = "Edit Blog";
         });
       },
       /** 发布按钮 */
       releaseForm() {
         this.$refs["form"].validate(valid => {
           if (valid) {
-            this.$modal.confirm('是否确认发布？').then(()=>{
+            this.$modal.confirm('Are you sure you want to publish?').then(()=>{
               this.form.type = 1;
               this.form.status = 1;
               if (this.top) {
@@ -497,7 +497,7 @@
                     };
                     addFileBlogInfo(fileBlogInfo).then(response => {});
                   }
-                  this.$modal.msgSuccess("发布成功");
+                  this.$modal.msgSuccess("Published successfully");
                   this.fileIds.length = 0;
                   this.open = false;
                   this.getList();
@@ -511,7 +511,7 @@
                     };
                     addFileBlogInfo(fileBlogInfo).then(response => {});
                   }
-                  this.$modal.msgSuccess("发布成功");
+                  this.$modal.msgSuccess("Published successfully");
                   this.fileIds.length = 0;
                   this.open = false;
                   this.getList();
@@ -525,7 +525,7 @@
       saveForm() {
         this.$refs["form"].validate(valid => {
           if (valid) {
-            this.$modal.confirm('是否确认暂存？').then(()=>{
+            this.$modal.confirm('Are you sure you want to save?').then(()=>{
               this.form.type = 1;
               this.form.status = 0;
               if (this.top) {
@@ -545,7 +545,7 @@
                     };
                     addFileBlogInfo(fileBlogInfo).then(response => {});
                   }
-                  this.$modal.msgSuccess("暂存成功");
+                  this.$modal.msgSuccess("Saved successfully");
                   this.fileIds.length = 0;
                   this.open = false;
                   this.getList();
@@ -559,7 +559,7 @@
                     };
                     addFileBlogInfo(fileBlogInfo).then(response => {});
                   }
-                  this.$modal.msgSuccess("暂存成功");
+                  this.$modal.msgSuccess("Saved successfully");
                   this.fileIds.length = 0;
                   this.open = false;
                   this.getList();
@@ -573,12 +573,12 @@
       handleDelete(row) {
         const ids = row.id || this.ids;
         let name = row.title || this.names;
-        this.$modal.confirm('是否确认删除"' + name + '"？').then(function() {
+        this.$modal.confirm('Are you sure you want to delete \"' + name + '\"?').then(function() {
           delFileBlogInfo(ids).then().then(response => {});
           return delBlog(ids);
         }).then(() => {
           this.getList();
-          this.$modal.msgSuccess("删除成功");
+          this.$modal.msgSuccess("Deleted successfully");
         }).catch(() => {});
       },
       /** 导出按钮操作 */
@@ -601,11 +601,7 @@
           for (let i = 0; i < response.data.length; i++) {
             let fileInfo = response.data[i];
             switch (fileInfo.fileSuffix) {
-              case 'png':
-              case 'jpg':
-              case 'jpeg':
-              case 'bmp':
-              case 'gif':
+              case 'png': case 'jpg': case 'jpeg': case 'bmp': case 'gif':
                 response.data[i].pic = process.env.VUE_APP_BASE_API + fileInfo.filePath;
                 break;
               default:
@@ -615,7 +611,7 @@
           };
           this.fileInfoList = response.data;
           this.fileListOpen = true;
-          this.title = "资源列表";
+          this.title = "Resource List";
           setTimeout(() => {
             loadingInstance.close();
           }, 100);
@@ -653,9 +649,9 @@
           })
       },
       delFiles(index, row) {
-        this.$confirm('确认删除吗?', '提示', {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
+        this.$confirm('Confirm deletion?', 'Prompt', {
+          confirmButtonText: 'Confirm',
+          cancelButtonText: 'Cancel',
           type: 'warning'
         }).then(() => {
           // 点击确定的操作(调用接口)
@@ -699,17 +695,17 @@
           for (let i = 0; i < this.form.blogFilesNew.length; i++) {
             const fileInfo = this.form.blogFilesNew[i]
             if (fileInfo.fileId === '') {
-              this.$message.warning('请添加文件或删除空行！')
+              this.$message.warning('Please add a file or delete empty rows!')
               return false
             } else if (fileInfo.remark === '') {
-              this.$message.warning('请添加文件备注！')
+              this.$message.warning('Please add a file description!')
               return false
             }
           }
         }
         this.form.blogFiles = JSON.stringify(this.form.blogFilesNew)
         updateBlog(this.form).then(response => {
-          this.$modal.msgSuccess("保存成功");
+          this.$modal.msgSuccess("Saved successfully");
           this.blogFilesOpen = false;
           this.getList();
         });

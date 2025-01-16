@@ -109,11 +109,11 @@ export default {
           }
         },
         legend: {
-          data: [ '文章','评论','留言']
+          data: [ 'Blog','Comment','Message']
         },
         series: [
         {
-          name: '文章',
+          name: 'Blog',
           smooth: true,
           type: 'line',
           itemStyle: {
@@ -133,7 +133,7 @@ export default {
           animationEasing: 'quadraticOut'
         },
         {
-          name: '评论', itemStyle: {
+          name: 'Comment', itemStyle: {
             normal: {
               color: '#FF005A',
               lineStyle: {
@@ -152,7 +152,7 @@ export default {
           animationEasing: 'cubicInOut'
         },
         {
-          name: '留言', itemStyle: {
+          name: 'Message', itemStyle: {
             normal: {
               color: '#34bfa3',
               lineStyle: {

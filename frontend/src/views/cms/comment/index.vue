@@ -1,21 +1,21 @@
 <template>
   <div class="app-container">
     <el-form :model="queryParams" ref="queryForm" :inline="true" v-show="showSearch" label-width="68px">
-      <el-form-item label="评论者" prop="content" v-if="isAdmin">
-        <el-input v-model="queryParams.createBy" placeholder="请输入评论者" clearable size="small"
+      <el-form-item label="Commenter" prop="content" v-if="isAdmin">
+        <el-input v-model="queryParams.createBy" placeholder="Enter commenter" clearable size="small"
           @keyup.enter.native="handleQuery" />
       </el-form-item>
-      <el-form-item label="评论内容" prop="content">
-        <el-input v-model="queryParams.content" placeholder="请输入评论内容" clearable size="small"
+      <el-form-item label="Comment Content" prop="content">
+        <el-input v-model="queryParams.content" placeholder="Enter comment content" clearable size="small"
           @keyup.enter.native="handleQuery" />
       </el-form-item>
-      <el-form-item label="文章标题" prop="blogTitle">
-        <el-input v-model="queryParams.blogTitle" placeholder="请输入文章标题" clearable size="small"
+      <el-form-item label="Article Title" prop="blogTitle">
+        <el-input v-model="queryParams.blogTitle" placeholder="Enter article title" clearable size="small"
           @keyup.enter.native="handleQuery" />
       </el-form-item>
       <el-form-item>
-        <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
-        <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>
+        <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">Search</el-button>
+        <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">Reset</el-button>
       </el-form-item>
     </el-form>
 
@@ -97,13 +97,13 @@
 
     <el-card>
       <div class="el-card__header" style="text-align: left;padding: 0">
-        <h3 style="float: left;margin: 0;">评论列表</h3>
+        <h3 style="float: left;margin: 0;">Comment List</h3>
         <right-toolbar style="float: right;" :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
       </div>
       <ul style="padding: 0;" class="comment-list">
         <li v-show="commentList.length==0"
           style="text-align: center;border-bottom: 1px dashed #ccc;margin: 10px 0;list-style-type:none;">
-          <span class="el-table__empty-text">暂无数据</span>
+          <span class="el-table__empty-text">No data available</span>
         </li>
         <li class="comment" v-for="mes in commentList" :key="mes.id">
           <el-avatar v-if="mes.avatar!==''&&mes.avatar!=null" :src="mes.avatar"></el-avatar>
@@ -113,21 +113,21 @@
               <div class="nkname">
                 <span class="name">{{mes.createBy}} </span>
                 <span class="date">{{mes.createTime}}</span>
-                <span v-show="mes.type=='0'" class="rp">给你评论</span>
-                <span v-show="mes.type=='1'" class="rp">回复了</span>
+                <span v-show="mes.type=='0'" class="rp">left you a comment</span>
+                <span v-show="mes.type=='1'" class="rp">replied</span>
                 <span v-show="mes.type=='1'" class="pcreateBy">{{mes.pcreateBy}}</span>
-                <span v-show="mes.type=='1'" class="rp">的评论</span>
+                <span v-show="mes.type=='1'" class="rp">'s message</span>
                 <span class="rp">|</span>
-                <span class="rp">查看文章：</span>
+                <span class="rp">View article:</span>
                 <span class="blog" @click="getBlogInfo(mes)">{{mes.blogTitle}}</span>
               </div>
               <div class="op">
-                <span @click="getBlogInfo(mes)" class="blog">查看</span>
+                <span @click="getBlogInfo(mes)" class="blog">View</span>
                 <span> | </span>
-                <el-button type="text" @click="handleAdd(mes)" v-hasPermi="['cms:comment:add']">回复</el-button>
+                <el-button type="text" @click="handleAdd(mes)" v-hasPermi="['cms:comment:add']">Reply</el-button>
                 <span v-show="!isAdmin&&mes.createBy!=name" style="margin-right: 39.43px;"></span>
                 <span v-show="!(!isAdmin&&mes.createBy!=name)"> | </span>
-                <span v-show="!(!isAdmin&&mes.createBy!=name)" class="del" @click="handleDelete(mes)">删除</span>
+                <span v-show="!(!isAdmin&&mes.createBy!=name)" class="del" @click="handleDelete(mes)">Delete</span>
               </div>
             </div>
             <p class="reply">{{mes.content}}</p>
@@ -153,8 +153,8 @@
         <div style="float: left;">
           <Emoji @output="output"></Emoji>
         </div>
-        <el-button type="primary" @click="submitForm">确 定</el-button>
-        <el-button @click="cancel">取 消</el-button>
+        <el-button type="primary" @click="submitForm">Confirm</el-button>
+        <el-button @click="cancel">Cancel</el-button>
       </div>
     </el-dialog>
   </div>
@@ -313,7 +313,7 @@ export default {
       this.form.createBy = this.$store.getters.name
       this.toName = "@" + mes.createBy
       this.open = true;
-      this.title = "回复评论";
+      this.title = "Reply to Comment";
     },
     /** 修改按钮操作 */
     handleUpdate(row) {
@@ -322,7 +322,7 @@ export default {
       getComment(id).then(response => {
         this.form = response.data;
         this.open = true;
-        this.title = "修改评论管理";
+        this.title = "Edit Comment Management";
       });
     },
     /** 提交按钮 */
@@ -331,13 +331,13 @@ export default {
         if (valid) {
           if (this.form.id != null) {
             updateComment(this.form).then(response => {
-              this.$modal.msgSuccess("修改成功");
+              this.$modal.msgSuccess("Successfully updated");
               this.open = false;
               this.getList();
             });
           } else {
             addComment(this.form).then(response => {
-              this.$modal.msgSuccess("回复成功");
+              this.$modal.msgSuccess("Reply successful");
               this.open = false;
               this.getList();
             });
@@ -349,11 +349,11 @@ export default {
     handleDelete(row) {
       const ids = row.id || this.ids;
       let name = row.content || this.names;
-      this.$modal.confirm('是否确认删除 "' + name + '" ？').then(function() {
+      this.$modal.confirm('Are you sure you want to delete "' + name + '" ?').then(function() {
         return delComment(ids);
       }).then(() => {
         this.getList();
-        this.$modal.msgSuccess("删除成功");
+        this.$modal.msgSuccess("Deleted successfully");
       }).catch(() => {});
     },
     /** 导出按钮操作 */

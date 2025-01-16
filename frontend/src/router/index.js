@@ -52,7 +52,7 @@ export const constantRoutes = [{
             component: (resolve) => require(['@/views/cms/components/cmsIndex'], resolve),
             name: 'cmsIndex',
             meta: {
-              title: '首页',
+              title: 'Home',
             }
           },
           {
@@ -60,7 +60,7 @@ export const constantRoutes = [{
             component: (resolve) => require(['@/views/cms/components/cmsEssay'], resolve),
             name: 'essay',
             meta: {
-              title: '随笔',
+              title: 'Notes',
             }
           },
           {
@@ -68,7 +68,7 @@ export const constantRoutes = [{
             component: (resolve) => require(['@/views/cms/components/cmsMessage'], resolve),
             name: 'message',
             meta: {
-              title: '留言',
+              title: 'Message',
             }
           },
           {
@@ -76,7 +76,7 @@ export const constantRoutes = [{
             component: (resolve) => require(['@/views/cms/components/cmsBlog'], resolve),
             name: 'blog',
             meta: {
-              title: '博客详情',
+              title: 'Blog',
             }
           }
         ]
@@ -85,7 +85,7 @@ export const constantRoutes = [{
         path: 'doucument',
         component: (resolve) => require(['@/views/cms/components/cmsDoucument'], resolve),
         hidden: true,
-        name: '文档',
+        name: 'Document',
       }
     ]
   },
@@ -133,7 +133,7 @@ export const constantRoutes = [{
       component: (resolve) => require(['@/views/index_v2'], resolve),
       name: 'Index',
       meta: {
-        title: '首页',
+        title: 'Home',
         icon: 'dashboard',
         affix: true
       }
@@ -149,7 +149,7 @@ export const constantRoutes = [{
       component: (resolve) => require(['@/views/system/user/profile/index'], resolve),
       name: 'Profile',
       meta: {
-        title: '个人中心',
+        title: 'Personal Info',
         icon: 'user'
       }
     }]
@@ -163,7 +163,7 @@ export const constantRoutes = [{
       component: (resolve) => require(['@/views/system/user/authRole'], resolve),
       name: 'AuthRole',
       meta: {
-        title: '分配角色',
+        title: 'Assign Roles',
         activeMenu: '/system/user'
       }
     }]
@@ -177,7 +177,7 @@ export const constantRoutes = [{
       component: (resolve) => require(['@/views/system/role/authUser'], resolve),
       name: 'AuthUser',
       meta: {
-        title: '分配用户',
+        title: 'Assign Users',
         activeMenu: '/system/role'
       }
     }]
@@ -191,7 +191,7 @@ export const constantRoutes = [{
       component: (resolve) => require(['@/views/system/dict/data'], resolve),
       name: 'Data',
       meta: {
-        title: '字典数据',
+        title: 'Dict Data',
         activeMenu: '/system/dict'
       }
     }]
@@ -205,7 +205,7 @@ export const constantRoutes = [{
       component: (resolve) => require(['@/views/monitor/job/log'], resolve),
       name: 'JobLog',
       meta: {
-        title: '调度日志',
+        title: 'Task Log',
         activeMenu: '/monitor/job'
       }
     }]
@@ -219,7 +219,7 @@ export const constantRoutes = [{
       component: (resolve) => require(['@/views/tool/gen/editTable'], resolve),
       name: 'GenEdit',
       meta: {
-        title: '修改生成配置',
+        title: 'Generate Edit',
         activeMenu: '/tool/gen'
       }
     }]

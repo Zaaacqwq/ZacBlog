@@ -1,27 +1,27 @@
 <template>
   <div class="app-container">
-    <el-form :model="queryParams" ref="queryForm" :inline="true" label-width="68px">
-      <el-form-item label="登录地址" prop="ipaddr">
+    <el-form :model="queryParams" ref="queryForm" :inline="true">
+      <el-form-item label="Login Address" prop="ipaddr">
         <el-input
           v-model="queryParams.ipaddr"
-          placeholder="请输入登录地址"
+          placeholder="Enter login address"
           clearable
           size="small"
           @keyup.enter.native="handleQuery"
         />
       </el-form-item>
-      <el-form-item label="用户名称" prop="userName">
+      <el-form-item label="Username" prop="userName">
         <el-input
           v-model="queryParams.userName"
-          placeholder="请输入用户名称"
+          placeholder="Enter username"
           clearable
           size="small"
           @keyup.enter.native="handleQuery"
         />
       </el-form-item>
       <el-form-item>
-        <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
-        <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>
+        <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">Search</el-button>
+        <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">Reset</el-button>
       </el-form-item>
 
     </el-form>
@@ -30,24 +30,24 @@
       :data="list.slice((pageNum-1)*pageSize,pageNum*pageSize)"
       style="width: 100%;"
     >
-      <el-table-column label="序号" type="index" align="center">
+      <el-table-column label="No." type="index" align="center">
         <template slot-scope="scope">
           <span>{{(pageNum - 1) * pageSize + scope.$index + 1}}</span>
         </template>
       </el-table-column>
-      <el-table-column label="会话编号" align="center" prop="tokenId" :show-overflow-tooltip="true" />
-      <el-table-column label="登录名称" align="center" prop="userName" :show-overflow-tooltip="true" />
-      <el-table-column label="部门名称" align="center" prop="deptName" />
-      <el-table-column label="主机" align="center" prop="ipaddr" :show-overflow-tooltip="true" />
-      <el-table-column label="登录地点" align="center" prop="loginLocation" :show-overflow-tooltip="true" />
-      <el-table-column label="浏览器" align="center" prop="browser" />
-      <el-table-column label="操作系统" align="center" prop="os" />
-      <el-table-column label="登录时间" align="center" prop="loginTime" width="180">
+      <el-table-column label="Session ID" align="center" prop="tokenId" :show-overflow-tooltip="true" />
+      <el-table-column label="Username" align="center" prop="userName" :show-overflow-tooltip="true" />
+      <el-table-column label="Department" align="center" prop="deptName" />
+      <el-table-column label="Host" align="center" prop="ipaddr" :show-overflow-tooltip="true" />
+      <el-table-column label="Login" align="center" prop="loginLocation" :show-overflow-tooltip="true" />
+      <el-table-column label="Browser" align="center" prop="browser" />
+      <el-table-column label="Operating System" align="center" prop="os" />
+      <el-table-column label="Login Time" align="center" prop="loginTime" width="180">
         <template slot-scope="scope">
           <span>{{ parseTime(scope.row.loginTime) }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
+      <el-table-column label="Action" align="center" class-name="small-padding fixed-width">
         <template slot-scope="scope">
           <el-button
             size="mini"
@@ -55,7 +55,7 @@
             icon="el-icon-delete"
             @click="handleForceLogout(scope.row)"
             v-hasPermi="['monitor:online:forceLogout']"
-          >强退</el-button>
+          >Force Logout</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -111,11 +111,11 @@ export default {
     },
     /** 强退按钮操作 */
     handleForceLogout(row) {
-      this.$modal.confirm('是否确认强退名称为"' + row.userName + '"的用户？').then(function() {
+      this.$modal.confirm('Are you sure you want to force logout the user "' + row.userName + '"?').then(function() {
         return forceLogout(row.tokenId);
       }).then(() => {
         this.getList();
-        this.$modal.msgSuccess("强退成功");
+        this.$modal.msgSuccess("Successfully forced logout");
       }).catch(() => {});
     }
   }

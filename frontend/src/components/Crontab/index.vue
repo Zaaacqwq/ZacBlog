@@ -1,7 +1,7 @@
 <template>
   <div>
     <el-tabs type="border-card">
-      <el-tab-pane label="秒" v-if="shouldHide('second')">
+      <el-tab-pane label="Second" v-if="shouldHide('second')">
         <CrontabSecond
           @update="updateCrontabValue"
           :check="checkNumber"
@@ -10,7 +10,7 @@
         />
       </el-tab-pane>
 
-      <el-tab-pane label="分钟" v-if="shouldHide('min')">
+      <el-tab-pane label="Minute" v-if="shouldHide('min')">
         <CrontabMin
           @update="updateCrontabValue"
           :check="checkNumber"
@@ -19,7 +19,7 @@
         />
       </el-tab-pane>
 
-      <el-tab-pane label="小时" v-if="shouldHide('hour')">
+      <el-tab-pane label="Hour" v-if="shouldHide('hour')">
         <CrontabHour
           @update="updateCrontabValue"
           :check="checkNumber"
@@ -28,7 +28,7 @@
         />
       </el-tab-pane>
 
-      <el-tab-pane label="日" v-if="shouldHide('day')">
+      <el-tab-pane label="Day" v-if="shouldHide('day')">
         <CrontabDay
           @update="updateCrontabValue"
           :check="checkNumber"
@@ -37,7 +37,7 @@
         />
       </el-tab-pane>
 
-      <el-tab-pane label="月" v-if="shouldHide('month')">
+      <el-tab-pane label="Month" v-if="shouldHide('month')">
         <CrontabMonth
           @update="updateCrontabValue"
           :check="checkNumber"
@@ -46,7 +46,7 @@
         />
       </el-tab-pane>
 
-      <el-tab-pane label="周" v-if="shouldHide('week')">
+      <el-tab-pane label="Week" v-if="shouldHide('week')">
         <CrontabWeek
           @update="updateCrontabValue"
           :check="checkNumber"
@@ -55,7 +55,7 @@
         />
       </el-tab-pane>
 
-      <el-tab-pane label="年" v-if="shouldHide('year')">
+      <el-tab-pane label="Year" v-if="shouldHide('year')">
         <CrontabYear
           @update="updateCrontabValue"
           :check="checkNumber"
@@ -67,11 +67,11 @@
 
     <div class="popup-main">
       <div class="popup-result">
-        <p class="title">时间表达式</p>
+        <p class="title">Cron Expression</p>
         <table>
           <thead>
             <th v-for="item of tabTitles" width="40" :key="item">{{item}}</th>
-            <th>Cron 表达式</th>
+            <th>Cron Expression</th>
           </thead>
           <tbody>
             <td>
@@ -104,9 +104,9 @@
       <CrontabResult :ex="crontabValueString"></CrontabResult>
 
       <div class="pop_btn">
-        <el-button size="small" type="primary" @click="submitFill">确定</el-button>
-        <el-button size="small" type="warning" @click="clearCron">重置</el-button>
-        <el-button size="small" @click="hidePopup">取消</el-button>
+        <el-button size="small" type="primary" @click="submitFill">Confirm</el-button>
+        <el-button size="small" type="warning" @click="clearCron">Reset</el-button>
+        <el-button size="small" @click="hidePopup">Cancel</el-button>
       </div>
     </div>
   </div>
@@ -125,7 +125,7 @@ import CrontabResult from "./result.vue";
 export default {
   data() {
     return {
-      tabTitles: ["秒", "分钟", "小时", "日", "月", "周", "年"],
+      tabTitles: ["Second", "Minute", "Hour", "Day", "Month", "Week", "Year"],
       tabActive: 0,
       myindex: 0,
       crontabValueObj: {
@@ -182,7 +182,7 @@ export default {
       "updateCrontabValue", name, value, from;
       this.crontabValueObj[name] = value;
       if (from && from !== name) {
-        console.log(`来自组件 ${from} 改变了 ${name} ${value}`);
+        console.log(`Changed ${name} to ${value} from component ${from}`);
         this.changeRadio(name, value);
       }
     },
@@ -313,7 +313,7 @@ export default {
     },
     clearCron() {
       // 还原选择项
-      ("准备还原");
+      ("Preparing to reset");
       this.crontabValueObj = {
         second: "*",
         min: "*",

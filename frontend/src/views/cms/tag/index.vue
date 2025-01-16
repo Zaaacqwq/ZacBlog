@@ -1,18 +1,18 @@
 <template>
   <div class="app-container">
-    <el-form :model="queryParams" ref="queryForm" :inline="true" v-show="showSearch" label-width="68px">
-      <el-form-item label="标签名称" prop="tagName">
+    <el-form :model="queryParams" ref="queryForm" :inline="true" v-show="showSearch">
+      <el-form-item label="Tag Name" prop="tagName">
         <el-input
           v-model="queryParams.tagName"
-          placeholder="请输入标签名称"
+          placeholder="Enter tag name"
           clearable
           size="small"
           @keyup.enter.native="handleQuery"
         />
       </el-form-item>
       <el-form-item>
-        <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
-        <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>
+        <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">Search</el-button>
+        <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">Reset</el-button>
       </el-form-item>
     </el-form>
 
@@ -25,7 +25,7 @@
           size="mini"
           @click="handleAdd"
           v-hasPermi="['cms:tag:add']"
-        >新增</el-button>
+        >Add</el-button>
       </el-col>
       <el-col :span="1.5">
         <el-button
@@ -36,7 +36,7 @@
           :disabled="single"
           @click="handleUpdate"
           v-hasPermi="['cms:tag:edit']"
-        >修改</el-button>
+        >Edit</el-button>
       </el-col>
       <el-col :span="1.5">
         <el-button
@@ -47,7 +47,7 @@
           :disabled="multiple"
           @click="handleDelete"
           v-hasPermi="['cms:tag:remove']"
-        >删除</el-button>
+        >Delete</el-button>
       </el-col>
       <el-col :span="1.5">
         <el-button
@@ -57,7 +57,7 @@
           size="mini"
           @click="handleExport"
           v-hasPermi="['cms:tag:export']"
-        >导出</el-button>
+        >Export</el-button>
       </el-col>
       <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
     </el-row>
@@ -65,15 +65,15 @@
     <el-table v-loading="loading" :data="tagList" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" />
       <!-- <el-table-column label="标签ID" align="center" prop="tagId" /> -->
-      <el-table-column label="标签名称" align="center" prop="tagName" />
-      <el-table-column label="博客数量" align="center" prop="blogNum" />
-      <el-table-column label="创建者" align="center" prop="createBy" />
-      <el-table-column label="创建时间" align="center" prop="createTime" width="100">
+      <el-table-column label="Tag Name" align="center" prop="tagName" />
+      <el-table-column label="Blog Count" align="center" prop="blogNum" />
+      <el-table-column label="Creator" align="center" prop="createBy" />
+      <el-table-column label="Creation Time" align="center" prop="createTime" width="120">
         <template slot-scope="scope">
           <span>{{ parseTime(scope.row.createTime, '{y}-{m}-{d} {h}:{i}:{s}') }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
+      <el-table-column label="Actions" align="center" class-name="small-padding fixed-width">
         <template slot-scope="scope">
           <el-button
             size="mini"
@@ -81,14 +81,14 @@
             icon="el-icon-edit"
             @click="handleUpdate(scope.row)"
             v-hasPermi="['cms:tag:edit']"
-          >修改</el-button>
+          >Edit</el-button>
           <el-button
             size="mini"
             type="text"
             icon="el-icon-delete"
             @click="handleDelete(scope.row)"
             v-hasPermi="['cms:tag:remove']"
-          >删除</el-button>
+          >Delete</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -103,14 +103,14 @@
 
     <!-- 添加或修改标签管理对话框 -->
     <el-dialog :title="title" :visible.sync="open" width="500px" append-to-body>
-      <el-form ref="form" :model="form" :rules="rules" label-width="80px">
-        <el-form-item label="标签名称" prop="tagName">
-          <el-input v-model="form.tagName" placeholder="请输入标签名称" />
+      <el-form ref="form" :model="form" :rules="rules" label-width="100px">
+        <el-form-item label="Tag Name" prop="tagName">
+          <el-input v-model="form.tagName" placeholder="Enter tag name" />
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="submitForm">确 定</el-button>
-        <el-button @click="cancel">取 消</el-button>
+        <el-button type="primary" @click="submitForm">Confirm</el-button>
+        <el-button @click="cancel">Cancel</el-button>
       </div>
     </el-dialog>
   </div>
@@ -154,7 +154,7 @@ export default {
       // 表单校验
       rules: {
         tagName: [
-          { required: true, message: "标签名称不能为空", trigger: "blur" }
+          { required: true, message: "Tag name cannot be empty", trigger: "blur" }
         ]
       }
     };
@@ -210,7 +210,7 @@ export default {
     handleAdd() {
       this.reset();
       this.open = true;
-      this.title = "添加标签管理";
+      this.title = "Add Tag Management";
     },
     /** 修改按钮操作 */
     handleUpdate(row) {
@@ -219,7 +219,7 @@ export default {
       getTag(tagId).then(response => {
         this.form = response.data;
         this.open = true;
-        this.title = "修改标签管理";
+        this.title = "Edit Tag Management";
       });
     },
     /** 提交按钮 */
@@ -228,13 +228,13 @@ export default {
         if (valid) {
           if (this.form.tagId != null) {
             updateTag(this.form).then(response => {
-              this.$modal.msgSuccess("修改成功");
+              this.$modal.msgSuccess("Update successful");
               this.open = false;
               this.getList();
             });
           } else {
             addTag(this.form).then(response => {
-              this.$modal.msgSuccess("新增成功");
+              this.$modal.msgSuccess("Addition successful");
               this.open = false;
               this.getList();
             });
@@ -246,11 +246,11 @@ export default {
     handleDelete(row) {
       const tagIds = row.tagId || this.ids;
       let name = row.tagName || this.names;
-      this.$modal.confirm('是否确认删除标签"' + name + '"？').then(function() {
+      this.$modal.confirm('Are you sure you want to delete the tag"' + name + '"?').then(function() {
         return delTag(tagIds);
       }).then(() => {
         this.getList();
-        this.$modal.msgSuccess("删除成功");
+        this.$modal.msgSuccess("Deletion successful");
       }).catch(() => {});
     },
     /** 导出按钮操作 */

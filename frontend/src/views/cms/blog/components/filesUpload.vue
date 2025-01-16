@@ -20,10 +20,9 @@
 
     <!-- 上传提示 -->
     <div class="el-upload__tip" slot="tip" v-if="showTip">
-      请上传
-      <template v-if="fileSize"> 大小不超过 <b style="color: #f56c6c">{{ fileSize }}MB</b> </template>
-      <template v-if="fileType"> 格式为 <b style="color: #f56c6c">{{ fileType.join("/") }}</b> </template>
-      的文件
+      Please upload
+      <template v-if="fileSize"> files with a size of up to <b style="color: #f56c6c">{{ fileSize }}MB</b> </template>
+      <template v-if="fileType"> in formats <b style="color: #f56c6c">{{ fileType.join("/") }}</b> </template>
     </div>
 
   </div>
@@ -142,20 +141,20 @@ export default {
 
       if (!isImg) {
         this.$message.error(
-          `文件格式不正确, 请上传${this.fileType.join("/")}格式文件!`
+          `Invalid file format, please upload files in ${this.fileType.join("/")} formats!`
         );
         return false;
       }
       if (this.fileSize) {
         const isLt = file.size / 1024 / 1024 < this.fileSize;
         if (!isLt) {
-          this.$message.error(`上传文件大小不能超过 ${this.fileSize} MB!`);
+          this.$message.error(`The uploaded file size cannot exceed ${this.fileSize} MB!`);
           return false;
         }
       }
       this.loading = this.$loading({
         lock: true,
-        text: "上传中",
+        text: "Uploading",
         background: "rgba(0, 0, 0, 0.7)",
       });
     },
@@ -163,7 +162,7 @@ export default {
     handleUploadError() {
       this.$message({
         type: "error",
-        message: "上传失败",
+        message: "Upload failed",
       });
       this.loading.close();
     },

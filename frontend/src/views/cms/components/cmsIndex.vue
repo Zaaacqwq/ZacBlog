@@ -1,6 +1,6 @@
 <template>
   <el-row :gutter="20">
-    <el-col :sm="2" class="hidden-xs-only" style="opacity:0;">左侧占位</el-col>
+    <el-col :sm="2" class="hidden-xs-only" style="opacity:0;">Left PlaceHolder</el-col>
     <el-col :xs="24" :sm="15">
       <el-card style="background-color: rgba(255,255,255,0.9)" class="left-item">
         <div slot="header" class="total">
@@ -63,7 +63,7 @@
     <el-col :xs="24" :sm="5">
       <el-card style="background-color: rgba(255,255,255,0.9)" class=" right-item">
         <div slot="header" class="attributes">
-          <b>分类</b>
+          <b>Category</b>
         </div>
         <ul class=" blog-type-ul" style="margin-top: 5px;">
           <li class=" blog-type-li" v-for="cmsType in typeList" :key="cmsType.typeId" @click="selectType(cmsType)"
@@ -93,7 +93,7 @@
       </el-card>
       <el-card style="background-color: rgba(255,255,255,0.9)" class=" right-item">
         <div slot="header" class="attributes">
-          <b>标签</b>
+          <b>Tags</b>
         </div>
         <div class="tags">
           <div class=" tag-item" v-for="tag in tagList" :key="tag.tagId" @click="selectTag(tag)"
@@ -114,14 +114,14 @@
       </el-card>
       <el-card style="background-color: rgba(255,255,255,0.9)" class=" right-item">
         <div slot="header" class="attributes">
-          <b>最新推荐</b>
+          <b>Latest Recommend</b>
         </div>
         <div class=" recommend-blog l-text" v-for="blog in recommendList" :key="blog.id" @click="getBlogInfo(blog.id)">
           <a class="recommend-a">{{blog.title}}</a>
         </div>
       </el-card>
     </el-col>
-    <el-col :sm="2" class="hidden-xs-only" style="opacity:0;">右侧占位</el-col>
+    <el-col :sm="2" class="hidden-xs-only" style="opacity:0;">Right Holder</el-col>
   </el-row>
 </template>
 
@@ -154,7 +154,7 @@
         fullTypeList: [],
         fullTagList: [],
         recommendList: [],
-        selectMethod: '全部博客',
+        selectMethod: 'All Blogs',
         typeId: -1,
         tagId: -1,
         selected: false,
@@ -355,7 +355,7 @@
         this.selected = false
         this.typeId = -1
         this.tagId = -1
-        this.selectMethod = '全部博客'
+        this.selectMethod = 'All Blogs'
         this.getBlogList()
       },
       // 得到所有的标签

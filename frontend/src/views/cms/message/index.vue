@@ -1,18 +1,18 @@
 <template>
   <div class="app-container">
-    <el-form :model="queryParams" ref="queryForm" :inline="true" v-show="showSearch" label-width="68px"
+    <el-form :model="queryParams" ref="queryForm" :inline="true" v-show="showSearch" 
       style="padding-left: 20px;">
-      <el-form-item label="留言者" prop="content" v-if="isAdmin">
-        <el-input v-model="queryParams.createBy" placeholder="请输入留言者" clearable size="small"
+      <el-form-item label="Messager" prop="content" v-if="isAdmin">
+        <el-input v-model="queryParams.createBy" placeholder="Enter messager" clearable size="small"
           @keyup.enter.native="handleQuery" />
       </el-form-item>
-      <el-form-item label="留言内容" prop="content">
-        <el-input v-model="queryParams.content" placeholder="请输入留言内容" clearable size="small"
+      <el-form-item label="Message Content" prop="content">
+        <el-input v-model="queryParams.content" placeholder="Enter message content" clearable size="small"
           @keyup.enter.native="handleQuery" />
       </el-form-item>
       <el-form-item>
-        <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
-        <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>
+        <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">Search</el-button>
+        <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">Reset</el-button>
       </el-form-item>
     </el-form>
 
@@ -92,13 +92,13 @@
     </el-table> -->
     <el-card>
       <div class="el-card__header" style="text-align: left;padding: 0">
-        <h3 style="float: left;margin: 0;">留言列表</h3>
+        <h3 style="float: left;margin: 0;">Message List</h3>
         <right-toolbar style="float: right;" :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
       </div>
       <ul style="padding: 0;" class="comment-list">
         <li v-show="messageList.length==0"
           style="text-align: center;border-bottom: 1px dashed #ccc;margin: 10px 0;list-style-type:none;">
-          <span class="el-table__empty-text">暂无数据</span>
+          <span class="el-table__empty-text">No data available</span>
         </li>
         <li class="comment" v-for="mes in messageList" :key="mes.id">
           <el-avatar v-if="mes.avatar!==''&&mes.avatar!=null" :src="mes.avatar"></el-avatar>
@@ -108,18 +108,18 @@
               <div class="nkname">
                 <span class="name">{{mes.createBy}} </span>
                 <span class="date">{{mes.createTime}}</span>
-                <span v-show="mes.type=='0'" class="rp">给你留言</span>
-                <span v-show="mes.type=='1'" class="rp">回复了</span>
+                <span v-show="mes.type=='0'" class="rp">left you a message</span>
+                <span v-show="mes.type=='1'" class="rp">replied to</span>
                 <span v-show="mes.type=='1'" class="pcreateBy">{{mes.pcreateBy}}</span>
-                <span v-show="mes.type=='1'" class="rp">的留言</span>
+                <span v-show="mes.type=='1'" class="rp">'s message</span>
               </div>
               <div class="op">
-                <span @click="getBlogInfo(mes.id)" class="blog">查看</span>
+                <span @click="getBlogInfo(mes.id)" class="blog">View</span>
                 <span> | </span>
-                <el-button type="text" @click="handleAdd(mes)" v-hasPermi="['cms:message:add']">回复</el-button>
+                <el-button type="text" @click="handleAdd(mes)" v-hasPermi="['cms:message:add']">Reply</el-button>
                 <span v-show="!isAdmin&&mes.createBy!=name" style="margin-right: 39.43px;"></span>
                 <span v-show="!(!isAdmin&&mes.createBy!=name)"> | </span>
-                <span v-show="!(!isAdmin&&mes.createBy!=name)" class="del" @click="handleDelete(mes)">删除</span>
+                <span v-show="!(!isAdmin&&mes.createBy!=name)" class="del" @click="handleDelete(mes)">Delete</span>
               </div>
             </div>
             <p class="reply">{{mes.content}}</p>
@@ -140,8 +140,8 @@
         <div style="float: left;">
           <Emoji @output="output"></Emoji>
         </div>
-        <el-button type="primary" @click="submitForm">确 定</el-button>
-        <el-button @click="cancel">取 消</el-button>
+        <el-button type="primary" @click="submitForm">Confirm</el-button>
+        <el-button @click="cancel">Cancel</el-button>
       </div>
     </el-dialog>
   </div>
@@ -301,7 +301,7 @@
         this.form.createBy = this.$store.getters.name
         this.toName = "@" + mes.createBy
         this.open = true;
-        this.title = "回复留言";
+        this.title = "Reply to Message";
       },
       /** 修改按钮操作 */
       handleUpdate(row) {
@@ -310,7 +310,7 @@
         getMessage(id).then(response => {
           this.form = response.data;
           this.open = true;
-          this.title = "修改留言管理";
+          this.title = "Edit Message Management";
         });
       },
       /** 提交按钮 */
@@ -319,13 +319,13 @@
           if (valid) {
             if (this.form.id != null) {
               updateMessage(this.form).then(response => {
-                this.$modal.msgSuccess("修改成功");
+                this.$modal.msgSuccess("Successfully updated");
                 this.open = false;
                 this.getList();
               });
             } else {
               addMessage(this.form).then(response => {
-                this.$modal.msgSuccess("回复成功");
+                this.$modal.msgSuccess("Reply successful");
                 this.open = false;
                 this.getList();
               });
@@ -337,11 +337,11 @@
       handleDelete(row) {
         const ids = row.id || this.ids;
         let name = row.content || this.names;
-        this.$modal.confirm('是否确认删除 "' + name + '" ？').then(function() {
+        this.$modal.confirm('Are you sure you want to delete "' + name + '" ?').then(function() {
           return delMessage(ids);
         }).then(() => {
           this.getList();
-          this.$modal.msgSuccess("删除成功");
+          this.$modal.msgSuccess("Deleted successfully");
         }).catch(() => {});
       },
       /** 导出按钮操作 */
