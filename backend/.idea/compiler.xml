@@ -6,13 +6,13 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
-        <module name="ruoyi-framework" />
-        <module name="ruoyi-system" />
-        <module name="ruoyi-cms" />
-        <module name="ruoyi-common" />
-        <module name="ruoyi-generator" />
-        <module name="ruoyi-quartz" />
-        <module name="ruoyi-admin" />
+        <module name="zaaac-generator" />
+        <module name="zaaac-cms" />
+        <module name="zaaac-common" />
+        <module name="zaaac-admin" />
+        <module name="zaaac-framework" />
+        <module name="zaaac-system" />
+        <module name="zaaac-quartz" />
       </profile>
     </annotationProcessing>
   </component>
