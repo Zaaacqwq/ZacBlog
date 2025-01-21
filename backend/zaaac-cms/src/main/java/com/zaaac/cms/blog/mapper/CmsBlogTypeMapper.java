@@ -5,7 +5,7 @@ import com.zaaac.cms.blog.domain.CmsBlogType;
 import java.util.List;
 
 /**
- * @program: RuoYi-Vue
+ * @program: Zaaac-Vue
  * @Author: WangNing
  * @Description: 〈blog分类关联 数据层〉
  * @Date: 2022/1/2 23:37

@@ -5,7 +5,7 @@ import com.zaaac.cms.message.domain.CmsMessageLike;
 import java.util.List;
 
 /**
- * @program: RuoYi-Vue
+ * @program: Zaaac-Vue
  * @Author: WangNing
  * @Description: 〈数据层〉
  * @Date: 2022/1/19 8:42

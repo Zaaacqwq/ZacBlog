@@ -1,6 +1,6 @@
 package com.zaaac.cms.comment.domain;
 /**
- * @program: RuoYi-Vue
+ * @program: Zaaac-Vue
  * @Author: WangNing
  * @Description: 〈評論點贊实体类〉
  * @Date: 2022/1/22 17:48

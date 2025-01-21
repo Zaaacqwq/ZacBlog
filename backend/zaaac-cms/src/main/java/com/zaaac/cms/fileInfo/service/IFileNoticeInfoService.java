@@ -5,7 +5,7 @@ import com.zaaac.cms.fileInfo.domain.FileNoticeInfo;
 import java.util.List;
 
 /**
- * @program: RuoYi-Vue
+ * @program: Zaaac-Vue
  * @Author: WangNing
  * @Description: 〈Service接口〉
  * @Date: 2021/12/31 23:24

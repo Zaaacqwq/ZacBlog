@@ -5,7 +5,7 @@ import com.zaaac.cms.fileInfo.domain.FileBlogInfo;
 import java.util.List;
 
 /**
- * @program: RuoYi-Vue
+ * @program: Zaaac-Vue
  * @Author: WangNing
  * @Description: 〈blog文件关联 数据层〉
  * @Date: 2022/1/2 0:48

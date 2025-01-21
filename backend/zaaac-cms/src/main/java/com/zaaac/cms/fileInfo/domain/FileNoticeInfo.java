@@ -1,6 +1,6 @@
 package com.zaaac.cms.fileInfo.domain;
 /**
- * @program: RuoYi-Vue
+ * @program: Zaaac-Vue
  * @Author: WangNing
  * @Description: 〈通知公告和文件关联 sys_notice_file〉
  * @Date: 2021/12/31 21:49

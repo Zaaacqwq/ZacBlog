@@ -5,7 +5,7 @@ import com.zaaac.cms.comment.domain.CmsCommentLike;
 import java.util.List;
 
 /**
- * @program: RuoYi-Vue
+ * @program: Zaaac-Vue
  * @Author: WangNing
  * @Description: 〈${DESCRIPTION}〉
  * @Date: 2022/1/22 20:08

@@ -1,6 +1,6 @@
 package com.zaaac.cms.fileInfo.domain;
 /**
- * @program: RuoYi-Vue
+ * @program: Zaaac-Vue
  * @Author: WangNing
  * @Description: 〈blog文件关联 cms_blog_file〉
  * @Date: 2022/1/2 0:41

@@ -1,6 +1,6 @@
 package com.zaaac.cms.blog.domain;
 /**
- * @program: RuoYi-Vue
+ * @program: Zaaac-Vue
  * @Author: WangNing
  * @Description: 〈blog类型关联表 cms_blog_type〉
  * @Date: 2022/1/2 23:34

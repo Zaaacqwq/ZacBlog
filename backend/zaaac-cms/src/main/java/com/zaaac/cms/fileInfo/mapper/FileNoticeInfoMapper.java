@@ -5,7 +5,7 @@ import com.zaaac.cms.fileInfo.domain.FileNoticeInfo;
 import java.util.List;
 
 /**
- * @program: RuoYi-Vue
+ * @program: Zaaac-Vue
  * @Author: WangNing
  * @Description: 〈通知公告和文件关联 数据层〉
  * @Date: 2021/12/31 22:24

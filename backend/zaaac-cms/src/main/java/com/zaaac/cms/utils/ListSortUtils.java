@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Date;
 
 /**
- * @program: RuoYi-Vue
+ * @program: Zaaac-Vue
  * @Author: WangNing
  * @Description: 〈list多属性排序〉
  * @Date: 2022/1/20 10:25
