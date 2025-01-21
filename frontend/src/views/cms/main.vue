@@ -19,4 +19,8 @@
   .el-main {
     min-height: 650px;
   }
+  .el-main {
+    margin: 0;
+    padding: 0;
+  }
 </style>
