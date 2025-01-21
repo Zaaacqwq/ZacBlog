@@ -3,25 +3,25 @@
     <h2 class="logo"><svg-icon icon-class="bird" />  ZacBlog!</h2>
     <div class="bg-purple-light">
       <el-menu :default-active="activeIndex" router class="el-menu-demo" mode="horizontal" style="border: none;"
-        background-color="rgba(0,0,0,0)" text-color="#fff" active-text-color="#ffd04b">
-        <el-menu-item index="/cms/main/cmsIndex"><i class="el-icon-s-home" style="color: rgba(255, 255, 255);"></i>Home
+        background-color="rgba(0,0,0,0)" text-color="#000" active-text-color="#000000">
+        <el-menu-item index="/cms/main/cmsIndex"><i class="el-icon-s-home" style="color: rgba(0, 0, 0);"></i>Home
         </el-menu-item>
         <el-menu-item :index="item.path" v-for="item in menulist" :key="item.id">
           <!--                图标-->
-          <i :class="item.icon" style="color: rgba(255, 255, 255);"></i>
+          <i :class="item.icon" style="color: rgba(0, 0, 0);"></i>
           <!--                文本-->
           {{item.authName}}
         </el-menu-item>
       </el-menu>
     </div>
     <div class="bg-purple-light el-menu-hidden" v-if="menuHiddenVisiable">
-      <el-menu :default-active="activeIndex" router background-color="rgba(84,92,100,0.5)" text-color="#fff"
-        active-text-color="#ffd04b">
+      <el-menu :default-active="activeIndex" router background-color="rgba(84,92,100,0.5)" text-color="#000"
+        active-text-color="#000000">
         <el-menu-item index="/cms/main/cmsIndex" @click="menuAway"><i class="el-icon-s-home"
-            style="color: rgba(255, 255, 255);"></i>Home</el-menu-item>
+            style="color: rgba(0, 0, 0);"></i>Home</el-menu-item>
         <el-menu-item :index="item.path" v-for="item in menulist" :key="item.id" @click="menuAway">
           <!--                图标-->
-          <i :class="item.icon" style="color: rgba(255, 255, 255);"></i>
+          <i :class="item.icon" style="color: rgba(0, 0, 0);"></i>
           <!--                文本-->
           {{item.authName}}
         </el-menu-item>
@@ -29,7 +29,7 @@
     </div>
 
     <div class="menu-expend" @click="menuExpend">
-      <i class="el-icon-menu" style="color: rgba(255, 255, 255);"></i>
+      <i class="el-icon-menu" style="color: rgba(0, 0, 0);"></i>
     </div>
 
     <div v-if="searchInput" class="search_input">
@@ -131,6 +131,12 @@
         },
       };
     },
+    mounted() {
+    window.addEventListener("resize", this.handleResize);
+    },
+    beforeDestroy() {
+    window.removeEventListener("resize", this.handleResize);
+    },
     computed: {
       ...mapGetters([
         'avatar',
@@ -154,6 +160,11 @@
       // this.ResponsiveLayout();
     },
     methods: {
+      handleResize() {
+      if (window.innerWidth > 1200) {
+        this.menuHiddenVisiable = false;
+      }
+      },
       menulistAdd() {
         //push()方法一般是添加到数组的最后的位置；unshift()方法是往最前面的位置添加。
         // this.menulist.push({id:"",authName:""})
@@ -284,21 +295,23 @@
 
   .el-menu /deep/ .el-menu-item {
     background-color: rgba(0, 0, 0, 0) !important;
-    font-size: 20px; /* Increased font size */
+    font-size: 20px;
   }
-
 
   .el-menu /deep/ .el-menu-item i {
     color: rgba(255, 255, 255);
-    font-size: 24px; /* Increased icon size */
-  }
-
-  .el-menu /deep/ .el-menu-item:hover i {
-    color: white;
+    font-size: 22px;
   }
 
   .el-menu /deep/ .el-menu-item:hover {
+    color: rgba(255, 255, 255, 1) !important;
     background-color: rgba(0, 0, 0, 0.5) !important;
+    transition: color 0.3s ease-in-out;
+  }
+
+  .el-menu /deep/ .el-menu-item:hover i {
+    color: rgba(255, 255, 255, 1) !important;
+    transition: color 0.3s ease-in-out;
   }
 
   .search_input {
@@ -323,7 +336,6 @@
   }
 
   .search_input ul li {
-    /* padding: 0 16px; */
     height: 32px;
     line-height: 32px;
     cursor: pointer;
@@ -333,8 +345,8 @@
     color: #222;
     position: relative;
     transition: .2 ease;
-    padding: 0 20px; /* Increased padding */
-    font-size: 18px; /* Increased font size */
+    padding: 0 20px;
+    font-size: 18px;
   }
 
   .search_input ul li:hover {
@@ -389,7 +401,7 @@
     float: relative;
     color: rgb(0, 0, 0);
     font-weight: bold;
-    font-size: 26px; /* Increased logo size */
+    font-size: 26px;
     margin-left: 200px;
     transition: margin-left 0.5s ease;
   }
@@ -400,14 +412,14 @@
 
   @media screen and (max-width: 1400px) {
   .logo {
-    margin-left: 10px; /* Reduce the gap for smaller screens */
+    margin-left: 10px;
   }
 }
 
   .el-menu-hidden {
     /*display: none;*/
     position: absolute;
-    top: 60px;
+    top: 70px;
     left: 0;
     border-top: 1px solid #ccc;
     border-right: none;
@@ -417,18 +429,18 @@
   .menu-expend {
     display: none !important;
     position: absolute;
-    top: 20px; /* Adjust to align with the header */
-    left: 20px; /* Place it on the left, replacing the logo */
-    font-size: 24px; /* Increase icon size */
-    width: 40px; /* Adjust size for a larger button */
-    height: 40px; /* Adjust size for a larger button */
-    background-color: rgba(0, 0, 0, 0.2); /* Optional: Add background for visibility */
-    border-radius: 50%; /* Make it circular */
+    top: 20px;
+    left: 20px;
+    font-size: 24px;
+    width: 40px;
+    height: 40px;
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    transition: transform 0.3s ease, opacity 0.3s ease; /* Smooth transition */
+    transition: transform 0.3s ease, opacity 0.3s ease;
   }
 
   /* 窗口可视区域小于1000隐藏搜索框 */
@@ -440,7 +452,7 @@
 
   @media screen and (max-width: 1200px) {
     .el-menu /deep/ .el-menu-item {
-      background-color: rgba(0, 0, 0, 0.3) !important;
+      background-color: rgba(255, 255, 255, 0.5) !important;
     }
 
     .el-menu-demo {
@@ -458,7 +470,7 @@
     }
 
     .logo {
-      display: none; /* Hide the logo when menu-expend appears */
+      display: none;
     }
   }
 </style>
