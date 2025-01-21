@@ -7,7 +7,7 @@ import com.zaaac.cms.message.domain.CmsMessage;
 import java.util.List;
 
 /**
- * @program: ruo-yi-vue-blog
+ * @program: zaaac-vue-blog
  * @Author: WangNing
  * @Description: 〈${DESCRIPTION}〉
  * @Date: 2022/4/27 10:17

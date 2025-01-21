@@ -1,0 +1,29 @@
+# Ignore IntelliJ IDEA project files
+/.idea/
+/*.iml
+
+# Ignore Maven build output
+/target/
+
+# Ignore logs
+*.log
+*.log.*
+
+# Ignore temporary files
+*.class
+*.war
+*.jar
+
+# Ignore OS generated files
+.DS_Store
+Thumbs.db
+
+# Ignore IDE settings
+/.project
+/.classpath
+/.settings/
+/bin/
+
+# Ignore configuration files
+application.properties
+application.yml

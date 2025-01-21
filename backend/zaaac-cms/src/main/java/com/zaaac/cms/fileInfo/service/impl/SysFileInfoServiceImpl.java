@@ -2,7 +2,7 @@ package com.zaaac.cms.fileInfo.service.impl;
 
 import java.util.List;
 
-import com.zaaac.common.config.RuoYiConfig;
+import com.zaaac.common.config.ZaaacConfig;
 import com.zaaac.common.constant.Constants;
 import com.zaaac.common.utils.DateUtils;
 import com.zaaac.common.utils.StringUtils;
@@ -92,7 +92,7 @@ public class SysFileInfoServiceImpl implements ISysFileInfoService
         for (int i = 0; i<fileIds.length; i++){
             Long fileId = fileIds[i];
             SysFileInfo sysFileInfo = sysFileInfoMapper.selectSysFileInfoByFileId(fileId);
-            String filePath = RuoYiConfig.getProfile() + StringUtils.substringAfter(sysFileInfo.getFilePath(), Constants.RESOURCE_PREFIX);
+            String filePath = ZaaacConfig.getProfile() + StringUtils.substringAfter(sysFileInfo.getFilePath(), Constants.RESOURCE_PREFIX);
             FileUtils.deleteFile(filePath);
         }
         return sysFileInfoMapper.deleteSysFileInfoByFileIds(fileIds);
@@ -108,7 +108,7 @@ public class SysFileInfoServiceImpl implements ISysFileInfoService
     public int deleteSysFileInfoByFileId(Long fileId)
     {
         SysFileInfo sysFileInfo = sysFileInfoMapper.selectSysFileInfoByFileId(fileId);
-        String filePath = RuoYiConfig.getProfile() + StringUtils.substringAfter(sysFileInfo.getFilePath(), Constants.RESOURCE_PREFIX);
+        String filePath = ZaaacConfig.getProfile() + StringUtils.substringAfter(sysFileInfo.getFilePath(), Constants.RESOURCE_PREFIX);
         FileUtils.deleteFile(filePath);
         return sysFileInfoMapper.deleteSysFileInfoByFileId(fileId);
     }
@@ -116,7 +116,7 @@ public class SysFileInfoServiceImpl implements ISysFileInfoService
     @Override
     public int deleteSysFileInfoByFileObjectName(String fileObjectName) {
         SysFileInfo sysFileInfo = sysFileInfoMapper.selectSysFileInfoByFileObjectName(fileObjectName);
-        String filePath = RuoYiConfig.getProfile() + StringUtils.substringAfter(sysFileInfo.getFilePath(), Constants.RESOURCE_PREFIX);
+        String filePath = ZaaacConfig.getProfile() + StringUtils.substringAfter(sysFileInfo.getFilePath(), Constants.RESOURCE_PREFIX);
         FileUtils.deleteFile(filePath);
         return sysFileInfoMapper.deleteSysFileInfoByFileObjectName(fileObjectName);
     }

@@ -3,7 +3,7 @@ package com.zaaac.common.utils.ip;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.alibaba.fastjson.JSONObject;
-import com.zaaac.common.config.RuoYiConfig;
+import com.zaaac.common.config.ZaaacConfig;
 import com.zaaac.common.constant.Constants;
 import com.zaaac.common.utils.StringUtils;
 import com.zaaac.common.utils.http.HttpUtils;
@@ -31,7 +31,7 @@ public class AddressUtils
         {
             return "Local IP";
         }
-        if (RuoYiConfig.isAddressEnabled())
+        if (ZaaacConfig.isAddressEnabled())
         {
             try
             {

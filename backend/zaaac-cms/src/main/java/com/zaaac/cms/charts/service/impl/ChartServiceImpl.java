@@ -1,6 +1,6 @@
 package com.zaaac.cms.charts.service.impl;
 /**
- * @program: ruo-yi-vue-blog
+ * @program: zaaac-vue-blog
  * @Author: WangNing
  * @Description: 〈〉
  * @Date: 2022/4/27 10:18

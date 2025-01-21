@@ -10,12 +10,12 @@ import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
  * @author zaaac
  */
 @SpringBootApplication(exclude = { DataSourceAutoConfiguration.class })
-public class RuoYiApplication
+public class ZaaacApplication
 {
     public static void main(String[] args)
     {
         // System.setProperty("spring.devtools.restart.enabled", "false");
-        SpringApplication.run(RuoYiApplication.class, args);
+        SpringApplication.run(ZaaacApplication.class, args);
         System.out.println("(♥◠‿◠)ﾉﾞ  Zac Blog Started   ლ(´ڡ`ლ)ﾞ  \n" +
                 " ________  ________  ________     \n" +
                 "|\\_____  \\|\\   __  \\|\\   ____\\    \n" +

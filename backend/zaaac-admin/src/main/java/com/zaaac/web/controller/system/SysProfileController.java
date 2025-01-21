@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import com.zaaac.common.annotation.Log;
-import com.zaaac.common.config.RuoYiConfig;
+import com.zaaac.common.config.ZaaacConfig;
 import com.zaaac.common.constant.UserConstants;
 import com.zaaac.common.core.controller.BaseController;
 import com.zaaac.common.core.domain.AjaxResult;
@@ -129,9 +129,9 @@ public class SysProfileController extends BaseController
         if (!file.isEmpty())
         {
             LoginUser loginUser = getLoginUser();
-            String avatar = FileUploadUtils.upload(RuoYiConfig.getAvatarPath(), file);
+            String avatar = FileUploadUtils.upload(ZaaacConfig.getAvatarPath(), file);
             /*2021-12-29 新增删除原头像*/
-            String filePath = RuoYiConfig.getProfile() + StringUtils.substringAfter(loginUser.getUser().getAvatar(), Constants.RESOURCE_PREFIX);
+            String filePath = ZaaacConfig.getProfile() + StringUtils.substringAfter(loginUser.getUser().getAvatar(), Constants.RESOURCE_PREFIX);
             FileUtils.deleteFile(filePath);
             /*结束*/
             if (userService.updateUserAvatar(loginUser.getUsername(), avatar))

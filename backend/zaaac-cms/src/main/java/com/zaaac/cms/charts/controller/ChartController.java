@@ -1,6 +1,6 @@
 package com.zaaac.cms.charts.controller;
 /**
- * @program: ruo-yi-vue-blog
+ * @program: zaaac-vue-blog
  * @Author: WangNing
  * @Description: 〈图表后台接口〉
  * @Date: 2022/4/25 10:37

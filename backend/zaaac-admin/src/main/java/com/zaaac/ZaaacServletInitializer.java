@@ -8,7 +8,7 @@ import org.springframework.boot.web.servlet.support.SpringBootServletInitializer
  * 
  * @author zaaac
  */
-public class RuoYiServletInitializer extends SpringBootServletInitializer
+public class ZaaacServletInitializer extends SpringBootServletInitializer
 {
     @Override
     protected SpringApplicationBuilder configure(SpringApplicationBuilder application)
