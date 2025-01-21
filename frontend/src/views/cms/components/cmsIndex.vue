@@ -121,7 +121,7 @@
         </div>
       </el-card>
     </el-col>
-    <el-col :sm="2" class="hidden-xs-only" style="opacity:0;">Right Holder</el-col>
+    <el-col :sm="2" class="hidden-xs-only" style="opacity:0;">Right PlaceHolder</el-col>
   </el-row>
 </template>
 

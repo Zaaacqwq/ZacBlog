@@ -1,5 +1,5 @@
 <template>
-  <el-header :style="'margin-bottom:'+ headerBottom +'px'">
+  <el-header :style="'margin-bottom:'+ headerBottom +'px; height: 70px;'">
     <h2 class="logo"><svg-icon icon-class="bird" />  ZacBlog!</h2>
     <div class="bg-purple-light">
       <el-menu :default-active="activeIndex" router class="el-menu-demo" mode="horizontal" style="border: none;"
@@ -34,7 +34,7 @@
 
     <div v-if="searchInput" class="search_input">
       <el-input @focus="checkInput" @blur="notSearching()" class="search" placeholder="Search Blogs"
-        prefix-icon="el-icon-search" v-model="queryInfo.query" size="mini">
+        prefix-icon="el-icon-search" v-model="queryInfo.query" size="large">
       </el-input>
       <ul v-if="searching">
         <li class="animate__animated animate__fadeInDown search-blog" v-for="blog in searchList" :key="blog.id"
@@ -268,7 +268,7 @@
   .el-header {
     display: flex;
     justify-content: space-between;
-    background-color: rgba(0, 0, 0, 0.2);
+    background-color: rgba(255, 255, 255, 0.5);
     align-items: center;
     transition: .2s;
   }
@@ -284,11 +284,13 @@
 
   .el-menu /deep/ .el-menu-item {
     background-color: rgba(0, 0, 0, 0) !important;
+    font-size: 20px; /* Increased font size */
   }
 
 
   .el-menu /deep/ .el-menu-item i {
     color: rgba(255, 255, 255);
+    font-size: 24px; /* Increased icon size */
   }
 
   .el-menu /deep/ .el-menu-item:hover i {
@@ -321,7 +323,7 @@
   }
 
   .search_input ul li {
-    padding: 0 16px;
+    /* padding: 0 16px; */
     height: 32px;
     line-height: 32px;
     cursor: pointer;
@@ -330,7 +332,9 @@
     display: block;
     color: #222;
     position: relative;
-    /*transition: .2 ease;*/
+    transition: .2 ease;
+    padding: 0 20px; /* Increased padding */
+    font-size: 18px; /* Increased font size */
   }
 
   .search_input ul li:hover {
@@ -359,7 +363,7 @@
   .user-avatar {
     float: left;
     cursor: pointer;
-    border: dashed rgba($color: #ffff7f, $alpha: 0.5);
+    border: dashed rgba(255, 255, 127, 0.5);
   }
 
   .avatar-container {
@@ -370,25 +374,35 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 15px;
   }
 
   .avatar-Name {
     margin-left: 10px;
     cursor: pointer;
     float: right;
-    font-size: 16px;
+    font-size: 18px;
     color: #ffffff;
   }
 
   .logo {
-    float: left;
+    float: relative;
     color: rgb(0, 0, 0);
     font-weight: bold;
+    font-size: 26px; /* Increased logo size */
+    margin-left: 200px;
+    transition: margin-left 0.5s ease;
   }
 
   .logo:hover {
     cursor: pointer;
   }
+
+  @media screen and (max-width: 1400px) {
+  .logo {
+    margin-left: 10px; /* Reduce the gap for smaller screens */
+  }
+}
 
   .el-menu-hidden {
     /*display: none;*/
@@ -402,6 +416,19 @@
 
   .menu-expend {
     display: none !important;
+    position: absolute;
+    top: 20px; /* Adjust to align with the header */
+    left: 20px; /* Place it on the left, replacing the logo */
+    font-size: 24px; /* Increase icon size */
+    width: 40px; /* Adjust size for a larger button */
+    height: 40px; /* Adjust size for a larger button */
+    background-color: rgba(0, 0, 0, 0.2); /* Optional: Add background for visibility */
+    border-radius: 50%; /* Make it circular */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: transform 0.3s ease, opacity 0.3s ease; /* Smooth transition */
   }
 
   /* 窗口可视区域小于1000隐藏搜索框 */
@@ -411,7 +438,7 @@
     }
   }
 
-  @media screen and (max-width: 768px) {
+  @media screen and (max-width: 1200px) {
     .el-menu /deep/ .el-menu-item {
       background-color: rgba(0, 0, 0, 0.3) !important;
     }
@@ -421,13 +448,17 @@
     }
 
     .menu-expend {
-      display: block !important;
+      display: flex !important;
       float: right;
     }
 
     .menu-expend:hover {
-      color: #ffd04b;
+      transform: scale(1.1);
       cursor: pointer;
+    }
+
+    .logo {
+      display: none; /* Hide the logo when menu-expend appears */
     }
   }
 </style>
