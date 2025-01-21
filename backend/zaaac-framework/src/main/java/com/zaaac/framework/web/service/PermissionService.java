@@ -9,7 +9,7 @@ import com.zaaac.common.utils.SecurityUtils;
 import com.zaaac.common.utils.StringUtils;
 
 /**
- * RuoYi首创 自定义权限实现，ss取自SpringSecurity首字母
+ * Zaaac首创 自定义权限实现，ss取自SpringSecurity首字母
  * 
  * @author zaaac
  */
