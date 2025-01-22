@@ -1,7 +1,7 @@
 <template>
 
   <el-container>
-    <div class="background" :style="backgroundImage"></div>
+    <!-- <div class="background" :style="backgroundImage"></div> -->
     <cmsNavBar></cmsNavBar>
     <keep-alive>
       <cmsMain></cmsMain>

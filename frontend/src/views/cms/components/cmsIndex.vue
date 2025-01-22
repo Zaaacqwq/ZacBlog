@@ -1,16 +1,14 @@
 <template>
-  <div>
-    <el-row :gutter="0" class="full-page-image"
-      :style="`height: 100vh;  margin: 0; padding: 0;
-      background-image: url(${backgroundImage}); background-size: cover; background-position: center;`">
-      <el-col :xs="24" :sm="24" :lg="24"
-        style="display: flex; justify-content: center; align-items: center; flex-direction: column; color: white;">
-        <h1 style="font-size: 3rem; font-weight: bold; text-shadow: 2px 2px 5px rgba(0,0,0,0.7);">Zac's Blog</h1>
-        <p style="font-size: 1.5rem; text-shadow: 1px 1px 3px rgba(0,0,0,0.7);">A beautiful, customized, personal blog
+  <div style="margin-bottom: 30px;">
+    <el-row :gutter="20" class="full-page-image" :style="`background-image: url(${backgroundImage});`">
+      <el-col :xs="24" :sm="24" :lg="24" class="full-page-content">
+        <h1 class="blog-title">Zac's Blog</h1>
+        <p class="blog-description">A beautiful, customized, personal blog
         </p>
       </el-col>
+      <WaveComponent />
     </el-row>
-    <el-row :gutter="20">
+    <el-row :gutter="20" class="content">
       <el-col :sm="2" :lg="5" class="hidden-xs-only" style="opacity:0;">Left PlaceHolder</el-col>
       <el-col :xs="24" :sm="15" :lg="11">
         <el-card style="background-color: rgba(255,255,255,0.9)" class="left-item">
@@ -72,10 +70,65 @@
             :limit.sync="queryParams.pageSize" background layout="total, sizes, prev, pager, next, jumper"
             @pagination="getBlogList" style="margin-bottom: 30px;float: right;margin-right: 10px;" />
         </el-card>
-
       </el-col>
-      <el-col :xs="24" :sm="5" :lg="3">
-        <el-card style="background-color: rgba(255,255,255,0.9)" class=" right-item">
+      <el-col :xs="24" :sm="5" :lg="3" class="right-sidebar">
+        <el-card style="background-color: rgba(255,255,255,0.9)" class="right-item">
+          <div slot="header" class="attributes">
+            <b>About Zac</b>
+          </div>
+          <div class="profile-card">
+            <img :src="avatar" alt="Zac's Avatar" class="avatar" />
+            <h3>Zac</h3>
+            <p>A CE student @ UW.</p>
+            <div class="stats">
+              <p><strong>{{ totalBlogs }}</strong> Blogs</p>
+              <p><strong>{{ totalViews }}</strong> Views</p>
+            </div>
+            <div class="social-links">
+              <a href="https://github.com/Zaaacqwq" target="_blank">
+                <svg-icon icon-class="github" class="social-icon" />
+              </a>
+              <a href="mailto:zacchenzy@gmail.com" target="_blank">
+                <svg-icon icon-class="email" class="social-icon" />
+              </a>
+              <a href="https://www.instagram.com/zaaacqwq" target="_blank">
+                <svg-icon icon-class="instagram" class="social-icon" />
+              </a>
+              <a href="https://www.linkedin.com/in/zaaac" target="_blank">
+                <svg-icon icon-class="linkedin" class="social-icon" />
+              </a>
+            </div>
+          </div>
+        </el-card>
+        <el-card style="background-color: rgba(255,255,255,0.9)" class="right-item">
+          <div slot="header" class="attributes">
+            <b>Customized</b>
+          </div>
+          <div class="custom-section">
+            <p>Welcome to Zac's Blog<br />Anyone can register and post here</p>
+          </div>
+        </el-card>
+        <el-card style="background-color: rgba(255,255,255,0.9)" class="right-item">
+          <div slot="header" class="attributes">
+            <b>Announcement!</b>
+          </div>
+          <div class="announcement-section">
+            <p v-if="latestAnnouncement">{{ latestAnnouncement }}</p>
+            <p v-else>Loading latest announcement...</p>
+          </div>
+        </el-card>
+        <el-card style="background-color: rgba(255,255,255,0.9)" class="right-item">
+          <div slot="header" class="attributes">
+            <b>SiteInfo</b>
+          </div>
+          <div class="site-info">
+            <p><strong>Blogs Count:</strong> {{ totalBlogs }}</p>
+            <p><strong>Views Count:</strong> {{ totalViews }}</p>
+            <p><strong>Comments Count:</strong> {{ totalComments }}</p>
+            <p><strong>Messages Count:</strong> {{ totalMessages }}</p>
+          </div>
+        </el-card>
+        <el-card style="background-color: rgba(255,255,255,0.9)" class="right-item">
           <div slot="header" class="attributes">
             <b>Category</b>
           </div>
@@ -136,14 +189,16 @@
           </div>
         </el-card>
       </el-col>
-      <el-col :sm="2" :lg="5" class="hidden-xs-only" style="opacity:0;">Right Holder</el-col>
+      <el-col :sm="2" :lg="5" class="hidden-xs-only" style="opacity:0;">Right PlaceHolder</el-col>
     </el-row>
   </div>
 </template>
 
 <script>
 import 'element-ui/lib/theme-chalk/display.css';
+import WaveComponent from '../WaveComponent.vue';
 import backgroundImage from '@/assets/images/background.png';
+import avatar from '@/assets/images/avatar.png';
 import {
   Loading
 } from 'element-ui';
@@ -154,11 +209,19 @@ import {
   cmsListByTagId,
   cmsListRecommend,
 } from "@/api/cms/blog";
+import { listNotice } from "@/api/system/notice";
+import { total } from "@/api/cms/charts";
 export default {
   name: 'cmsIndex',
   data() {
     return {
       backgroundImage,
+      avatar,
+      latestAnnouncement: {},
+      totalViews: 0,
+      totalBlogs: 0,
+      totalComments: 0,
+      totalMessages: 0,
       totalcount: 100,
       queryInfo: {
         query: '',
@@ -198,6 +261,9 @@ export default {
       total: 0,
     }
   },
+  components: {
+    WaveComponent,
+    },
   computed: {
     pagSmall() {
       return this.screenWidth <= 768;
@@ -212,9 +278,11 @@ export default {
     }
   },
   created() {
+    this.fetchStatistics();
     window.addEventListener('resize', this.screenAdapter)
   },
   mounted() {
+    this.fetchLatestAnnouncement();
     this.$nextTick(function () {
       // 仅在整个视图都被渲染之后才会运行的代码
       this.getTypeList()
@@ -240,6 +308,38 @@ export default {
 
   },
   methods: {
+    async fetchLatestAnnouncement() {
+      try {
+        const response = await listNotice({
+          pageSize: 10,
+          pageNum: 1,
+        });
+
+        if (response.code === 200 && response.rows && response.rows.length > 0) {
+          const latestAnnouncement = response.rows.reduce((latest, current) =>
+            current.noticeId > latest.noticeId ? current : latest
+          );
+          this.latestAnnouncement = latestAnnouncement.noticeTitle || 'No title available';
+        } else {
+          this.latestAnnouncement = 'No announcements available.';
+        }
+      } catch (error) {
+        console.error('Error fetching the latest announcement:', error);
+        this.latestAnnouncement = 'Unable to load the latest announcement.';
+      }
+    },
+    async fetchStatistics() {
+      try {
+        const response = await total();
+        console.log("Fetched Statistics:", response); // Debugging log
+        this.totalViews = response.views || 0;
+        this.totalBlogs = response.blog || 0;
+        this.totalComments = response.comment || 0;
+        this.totalMessages = response.message || 0;
+      } catch (error) {
+        console.error("Error fetching statistics:", error);
+      }
+    },
     /** 获取博客列表 */
     getBlogList() {
       let loadingInstance = Loading.service({
@@ -525,6 +625,56 @@ export default {
   border-radius: 5px;
 }
 
+.full-page-image {
+  height: 100vh;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.full-page-image::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(255, 255, 255, 0.2);
+  /* White with 60% transparency */
+  z-index: 1;
+  /* Ensures it is above the background image but below the content */
+}
+
+.full-page-content {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  text-align: center;
+  color: white;
+  z-index: 2;
+}
+
+.blog-title {
+  font-family: Lucida Bright, Georgia, serif;
+  font-size: 6rem;
+  font-weight: bold;
+  text-shadow: 5px 0px 10px rgba(0, 0, 0, 1);
+  margin: 0;
+  padding-bottom: 50px;
+}
+
+.blog-description {
+  font-family: Lucida Bright, Georgia, serif;
+  font-size: 3rem;
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.7);
+  margin: 0;
+  padding-bottom: 100px;
+}
+
 .el-pagination {
   padding-bottom: 20px;
 }
@@ -534,9 +684,69 @@ export default {
   padding: 0;
 }
 
+.right-sidebar {
+  display: flex;
+  flex-direction: column;
+}
 
 .right-item {
   margin-bottom: 20px;
+}
+
+.profile-card {
+  text-align: center;
+}
+
+.avatar {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  margin: 10px 0px;
+}
+
+.stats {
+  display: flex;
+  justify-content: space-around;
+  margin: 10px 0;
+}
+
+.social-links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center; /* Center aligns icons */
+  gap: 10px; /* Adds space between icons */
+  margin-top: 10px; /* Adds spacing above the icons */
+}
+
+.social-links a {
+  margin: 0px 10px;
+  text-decoration: none;
+  color: #007bff;
+}
+
+.social-icon {
+  width: 40px;
+  height: 40px;
+}
+
+.custom-section {
+  padding: 10px;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.announcement-section {
+  padding: 10px;
+  font-size: 14px;
+  line-height: 1.6;
+  border-radius: 5px;
+}
+
+.site-info {
+  padding: 10px;
+  font-size: 14px;
+  line-height: 1.6;
+  border-radius: 5px;
 }
 
 .blog-type-li:first-child {
@@ -701,7 +911,7 @@ export default {
 .blog-content {
   padding: 10px;
   height: auto;
-  border-bottom: 1px solid rgb(199, 163, 92);
+  border-bottom: 1px solid rgb(220, 220, 220);
   /*border-bottom: 1px solid rgba(34, 36, 38, .15);*/
   transition: .3s;
 }

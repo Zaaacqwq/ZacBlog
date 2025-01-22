@@ -1,8 +1,8 @@
 <template>
-  <el-header :style="'margin-bottom:'+ headerBottom +'px; height: 70px;'">
-    <h2 class="logo"><svg-icon icon-class="bird" />  ZacBlog!</h2>
+  <el-header :style="'margin-bottom:' + headerBottom + 'px; height: 70px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);'">
+    <h2 class="logo"><svg-icon icon-class="bird" /> ZacBlog!</h2>
     <div class="bg-purple-light">
-      <el-menu :default-active="activeIndex" router class="el-menu-demo" mode="horizontal" style="border: none;"
+      <el-menu :default-active="activeIndex" router class="el-menu-demo centered-menu" mode="horizontal" style="border: none;"
         background-color="rgba(0,0,0,0)" text-color="#000" active-text-color="#000000">
         <el-menu-item index="/cms/main/cmsIndex"><i class="el-icon-s-home" style="color: rgba(0, 0, 0);"></i>Home
         </el-menu-item>
@@ -10,20 +10,20 @@
           <!--                图标-->
           <i :class="item.icon" style="color: rgba(0, 0, 0);"></i>
           <!--                文本-->
-          {{item.authName}}
+          {{ item.authName }}
         </el-menu-item>
       </el-menu>
     </div>
     <div class="bg-purple-light el-menu-hidden" v-if="menuHiddenVisiable">
-      <el-menu :default-active="activeIndex" router background-color="rgba(84,92,100,0.5)" text-color="#000"
-        active-text-color="#000000">
+      <el-menu :default-active="activeIndex" router 
+        background-color="rgba(84,92,100,0.5)" text-color="#000" active-text-color="#000000">
         <el-menu-item index="/cms/main/cmsIndex" @click="menuAway"><i class="el-icon-s-home"
             style="color: rgba(0, 0, 0);"></i>Home</el-menu-item>
         <el-menu-item :index="item.path" v-for="item in menulist" :key="item.id" @click="menuAway">
           <!--                图标-->
           <i :class="item.icon" style="color: rgba(0, 0, 0);"></i>
           <!--                文本-->
-          {{item.authName}}
+          {{ item.authName }}
         </el-menu-item>
       </el-menu>
     </div>
@@ -50,7 +50,7 @@
           <el-avatar class="user-avatar" :src="avatar" @error="errorHandler">
             <i class="el-icon-s-custom" />
           </el-avatar>
-          <p class="avatar-Name">{{name}}</p>
+          <p class="avatar-Name">{{ name }}</p>
         </div>
         <el-dropdown-menu slot="dropdown">
           <router-link target="_blank" to="/index">
@@ -74,403 +74,448 @@
 </template>
 
 <script>
-  import {
-    mapGetters
-  } from 'vuex'
-  import {
-    getToken
-  } from '@/utils/auth'
-  import 'element-ui/lib/theme-chalk/display.css'
-  import {
-    cmsListBlog,
-  } from "@/api/cms/blog";
-  export default {
-    name: 'cmsNavBar',
-    data() {
-      return {
-        activeIndex: 'this.$router.path',
-        islogin: false,
-        searchInput: true,
-        menuHiddenVisiable: false,
-        headerBottom: 0,
-        queryInfo: {
-          query: '',
-          timer: null
-        },
-        searchList: [],
-        searching: false,
-        menulist: [{
-            id: 1,
-            authName: 'Notes',
-            path: '/cms/main/essay',
-            icon: 'el-icon-edit',
-          },
-          {
-            id: 2,
-            authName: 'Comments',
-            path: '/cms/main/message',
-            icon: 'el-icon-chat-dot-round',
-          },
-          {
-            id: 3,
-            authName: 'About me',
-            path: '/cms/doucument',
-            icon: 'el-icon-document',
-          },
-        ],
-        // 查询参数
-        queryParams: {
-          pageNum: 1,
-          pageSize: 10,
-          title: null,
-          type: 1,
-          content: null,
-          top: null,
-          views: null,
-          status: null,
-        },
-      };
-    },
-    mounted() {
+import {
+  mapGetters
+} from 'vuex'
+import {
+  getToken
+} from '@/utils/auth'
+import 'element-ui/lib/theme-chalk/display.css'
+import {
+  cmsListBlog,
+} from "@/api/cms/blog";
+export default {
+  name: 'cmsNavBar',
+  data() {
+    return {
+      activeIndex: 'this.$router.path',
+      islogin: false,
+      searchInput: true,
+      menuHiddenVisiable: false,
+      headerBottom: 0,
+      queryInfo: {
+        query: '',
+        timer: null
+      },
+      searchList: [],
+      searching: false,
+      menulist: [{
+        id: 1,
+        authName: 'Notes',
+        path: '/cms/main/essay',
+        icon: 'el-icon-edit',
+      },
+      {
+        id: 2,
+        authName: 'Comments',
+        path: '/cms/main/message',
+        icon: 'el-icon-chat-dot-round',
+      },
+      {
+        id: 3,
+        authName: 'About me',
+        path: '/cms/doucument',
+        icon: 'el-icon-document',
+      },
+      ],
+      // 查询参数
+      queryParams: {
+        pageNum: 1,
+        pageSize: 10,
+        title: null,
+        type: 1,
+        content: null,
+        top: null,
+        views: null,
+        status: null,
+      },
+    };
+  },
+  mounted() {
     window.addEventListener("resize", this.handleResize);
-    },
-    beforeDestroy() {
+  },
+  beforeDestroy() {
     window.removeEventListener("resize", this.handleResize);
-    },
-    computed: {
-      ...mapGetters([
-        'avatar',
-        'name'
-      ]),
-    },
-    watch: {
-      'queryInfo.query': {
-        handler(value) {
-          if (this.timer) {
-            clearTimeout(this.timer)
-          }
-          this.timer = setTimeout(() => {
-            this.searchBlog()
-          }, 300)
+  },
+  computed: {
+    ...mapGetters([
+      'avatar',
+      'name'
+    ]),
+  },
+  watch: {
+    'queryInfo.query': {
+      handler(value) {
+        if (this.timer) {
+          clearTimeout(this.timer)
         }
-      }
-    },
-    created() {
-      this.login();
-      // this.ResponsiveLayout();
-    },
-    methods: {
-      handleResize() {
-      if (window.innerWidth > 1200) {
-        this.menuHiddenVisiable = false;
-      }
-      },
-      menulistAdd() {
-        //push()方法一般是添加到数组的最后的位置；unshift()方法是往最前面的位置添加。
-        // this.menulist.push({id:"",authName:""})
-        this.menulist.unshift({
-          id: "",
-          authName: ""
-        })
-      },
-      //响应式布局
-      ResponsiveLayout() {
-        //浏览器窗口的内部高度
-        var w = window.innerWidth ||
-          document.body.clientWidth;
-        //浏览器窗口的内部宽度
-        var h = window.innerHeight ||
-          document.body.clientHeight;
-        console.log(w, h);
-      },
-      // 展开菜单栏
-      menuExpend() {
-        this.menuHiddenVisiable = !this.menuHiddenVisiable
-        if (this.menuHiddenVisiable === true) {
-          this.headerBottom = (this.menulist.length + 1) * 56
-        } else {
-          this.headerBottom = 0
-        }
-      },
-      //收起菜单
-      menuAway() {
-        this.menuHiddenVisiable = false;
-        this.headerBottom = 0;
-      },
-      notSearching() {
-        setTimeout(() => {
-          this.searching = false
-        }, 100)
-      },
-      checkInput() {
-        this.searching = this.queryInfo.query !== '';
-      },
-      tologin() {
-        this.$router.push({
-          path: "/cmsLogin"
-        });
-      },
-      login() {
-        let token = getToken();
-        if (token == null || token == '') {
-          this.islogin = false;
-        } else {
-          this.islogin = true;
-        }
-      },
-      errorHandler() {
-        return true
-      },
-      async searchBlog() {
-        if (this.queryInfo.query === '') {
-          this.searching = false
-          return
-        }
-        this.queryParams.title = this.queryInfo.query;
-        cmsListBlog(this.queryParams).then(response => {
-          let lsitSize = response.rows.length;
-          if(lsitSize>0){
-            for(let i = 0;i<lsitSize;i++){
-              let redTitle = this.brightenKeyword(response.rows[i].title,this.queryInfo.query);
-              response.rows[i].title = redTitle;
-            }
-          };
-          this.searchList = response.rows;
-          if (this.searchList.length !== 0) {
-            this.searching = true
-          }
-        });
-      },
-      //搜索关建字标红
-      brightenKeyword(val, keyword) {
-        const Reg = new RegExp(keyword, 'i');
-        let res = '';
-        if (val) {
-          res = val.replace(Reg, `<span style="color: red;">${keyword}</span>`);
-          return res;
-        }
-      },
-      // 跳转到博客详情页
-      getBlogInfo(blogId) {
-        let routeUrl = this.$router.resolve({
-          path: '/cms/main/blog',
-          query: {
-            id: blogId
-          }
-        });
-        window.open(routeUrl.href, '_blank');
-      },
-      async logout() {
-        this.$confirm('Are you sure you want to log out and exit the system?', 'Notice', {
-          confirmButtonText: 'Confirm',
-          cancelButtonText: 'Cancel',
-          type: 'warning'
-        }).then(() => {
-          this.$store.dispatch('LogOut').then(() => {
-            location.href = '/cms/main/cmsIndex';
-          })
-        }).catch(() => {});
+        this.timer = setTimeout(() => {
+          this.searchBlog()
+        }, 300)
       }
     }
+  },
+  created() {
+    this.login();
+    // this.ResponsiveLayout();
+  },
+  methods: {
+    handleResize() {
+      if (window.innerWidth > 1200) {
+        this.menuHiddenVisiable = false;
+        this.headerBottom = 0;
+      }
+    },
+    menulistAdd() {
+      //push()方法一般是添加到数组的最后的位置；unshift()方法是往最前面的位置添加。
+      // this.menulist.push({id:"",authName:""})
+      this.menulist.unshift({
+        id: "",
+        authName: ""
+      })
+    },
+    //响应式布局
+    ResponsiveLayout() {
+      //浏览器窗口的内部高度
+      var w = window.innerWidth ||
+        document.body.clientWidth;
+      //浏览器窗口的内部宽度
+      var h = window.innerHeight ||
+        document.body.clientHeight;
+      console.log(w, h);
+    },
+    // 展开菜单栏
+    menuExpend() {
+      this.menuHiddenVisiable = !this.menuHiddenVisiable
+      if (this.menuHiddenVisiable === true) {
+        this.headerBottom = (this.menulist.length + 1) * 56
+      } else {
+        this.headerBottom = 0
+      }
+    },
+    //收起菜单
+    menuAway() {
+      this.menuHiddenVisiable = false;
+      this.headerBottom = 0;
+    },
+    notSearching() {
+      setTimeout(() => {
+        this.searching = false
+      }, 100)
+    },
+    checkInput() {
+      this.searching = this.queryInfo.query !== '';
+    },
+    tologin() {
+      this.$router.push({
+        path: "/cmsLogin"
+      });
+    },
+    login() {
+      let token = getToken();
+      if (token == null || token == '') {
+        this.islogin = false;
+      } else {
+        this.islogin = true;
+      }
+    },
+    errorHandler() {
+      return true
+    },
+    async searchBlog() {
+      if (this.queryInfo.query === '') {
+        this.searching = false
+        return
+      }
+      this.queryParams.title = this.queryInfo.query;
+      cmsListBlog(this.queryParams).then(response => {
+        let lsitSize = response.rows.length;
+        if (lsitSize > 0) {
+          for (let i = 0; i < lsitSize; i++) {
+            let redTitle = this.brightenKeyword(response.rows[i].title, this.queryInfo.query);
+            response.rows[i].title = redTitle;
+          }
+        };
+        this.searchList = response.rows;
+        if (this.searchList.length !== 0) {
+          this.searching = true
+        }
+      });
+    },
+    //搜索关建字标红
+    brightenKeyword(val, keyword) {
+      const Reg = new RegExp(keyword, 'i');
+      let res = '';
+      if (val) {
+        res = val.replace(Reg, `<span style="color: red;">${keyword}</span>`);
+        return res;
+      }
+    },
+    // 跳转到博客详情页
+    getBlogInfo(blogId) {
+      let routeUrl = this.$router.resolve({
+        path: '/cms/main/blog',
+        query: {
+          id: blogId
+        }
+      });
+      window.open(routeUrl.href, '_blank');
+    },
+    async logout() {
+      this.$confirm('Are you sure you want to log out and exit the system?', 'Notice', {
+        confirmButtonText: 'Confirm',
+        cancelButtonText: 'Cancel',
+        type: 'warning'
+      }).then(() => {
+        this.$store.dispatch('LogOut').then(() => {
+          location.href = '/cms/main/cmsIndex';
+        })
+      }).catch(() => { });
+    }
   }
+}
 </script>
 
 <style scoped>
-  .el-header {
-    display: flex;
-    justify-content: space-between;
-    background-color: rgba(255, 255, 255, 0.5);
-    align-items: center;
-    transition: .2s;
-  }
+.el-header {
+  display: flex;
+  justify-content: space-between;
+  background-color: rgba(255, 255, 255, 0.5);
+  align-items: center;
+  transition: .2s;
+}
 
-  .el-header:hover {
-    opacity: 1 !important;
-  }
+.el-header:hover {
+  opacity: 1 !important;
+}
 
-  .el-menu {
-    flex-shrink: 0;
-    background-color: rgba(0, 0, 0, 0) !important;
-  }
+.el-menu {
+  flex-shrink: 0;
+  background-color: rgba(0, 0, 0, 0) !important;
+}
 
-  .el-menu /deep/ .el-menu-item {
-    background-color: rgba(0, 0, 0, 0) !important;
-    font-size: 20px;
-  }
+.el-menu /deep/ .el-menu-item {
+  background-color: rgba(0, 0, 0, 0) !important;
+  font-size: 20px;
+  padding: 8px 12px;
+  margin: 10px;
+  border-radius: 50px;
+  border-bottom: none;
+  transition: background-color 0.3s ease, border-radius 0.3s ease, padding 0.3s ease;
+  display: flex;
+  align-items: center;
+}
 
-  .el-menu /deep/ .el-menu-item i {
-    color: rgba(255, 255, 255);
-    font-size: 22px;
-  }
+.el-menu /deep/ .el-menu-item i {
+  color: rgba(255, 255, 255);
+  font-size: 22px;
+}
 
-  .el-menu /deep/ .el-menu-item:hover {
-    color: rgba(255, 255, 255, 1) !important;
-    background-color: rgba(0, 0, 0, 0.5) !important;
-    transition: color 0.3s ease-in-out;
-  }
+.el-menu /deep/ .el-menu-item:hover {
+  color: rgba(255, 255, 255, 1) !important;
+  background-color: rgba(0, 0, 0, 0.7) !important;
+  height: 50%;
+  padding: 4px 20px;
+  border-radius: 50px;
+  transition: color 0.3s ease-in-out, border-radius 0.3s ease, padding 0.3s ease, height 0.3s ease, background-color 0.3s ease;
+}
 
-  .el-menu /deep/ .el-menu-item:hover i {
-    color: rgba(255, 255, 255, 1) !important;
-    transition: color 0.3s ease-in-out;
-  }
+.el-menu /deep/ .el-menu-item:hover i {
+  color: rgba(255, 255, 255, 1) !important;
+  transition: color 0.3s ease-in-out;
+}
 
-  .search_input {
-    position: relative;
-    box-sizing: border-box;
-  }
+.el-menu-hidden /deep/ .el-menu-item {
+  background-color: rgba(84, 92, 100, 0.5) !important;
+  font-size: 18px;
+  padding: 0px 0px;
+  margin: 0px 0;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+}
+
+.el-menu-hidden /deep/ .el-menu-item:hover {
+  background-color: rgba(84, 92, 100, 0.7) !important;
+  border-radius: 8px;
+  height: 25%;
+  transition: background-color 0.3s ease;
+}
+
+.search_input {
+  display: flex;
+  position: relative;
+  box-sizing: border-box;
+  margin-right: 100px;
+}
+
+.search_input ul {
+  position: absolute;
+  top: 30px;
+  width: 100%;
+  border: 1px solid #e5e9ef;
+  margin-top: 1px;
+  background: #fff;
+  z-index: 10000;
+  border-radius: 2px;
+  box-shadow: 0 2px 4px rgba(58, 118, 142, 0.16);
+  padding: 10px 0;
+  font-size: 14px;
+  box-sizing: border-box;
+}
+
+.search_input ul li {
+  height: 32px;
+  line-height: 32px;
+  cursor: pointer;
+  word-wrap: break-word;
+  word-break: break-all;
+  display: block;
+  color: #222;
+  position: relative;
+  transition: .2 ease;
+  padding: 0 20px;
+  font-size: 18px;
+}
+
+.search_input ul li:hover {
+  background-color: #e8f3ff;
+}
 
 
-  .search_input ul {
-    position: absolute;
-    top: 30px;
-    width: 100%;
-    border: 1px solid #e5e9ef;
-    margin-top: 1px;
-    background: #fff;
-    z-index: 10000;
-    border-radius: 2px;
-    box-shadow: 0 2px 4px rgba(58, 118, 142, 0.16);
-    padding: 10px 0;
-    font-size: 14px;
-    box-sizing: border-box;
-  }
+.search-blog {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  padding-left: 20px;
+  padding-right: 20px;
+}
 
-  .search_input ul li {
-    height: 32px;
-    line-height: 32px;
-    cursor: pointer;
-    word-wrap: break-word;
-    word-break: break-all;
-    display: block;
-    color: #222;
-    position: relative;
-    transition: .2 ease;
-    padding: 0 20px;
-    font-size: 18px;
-  }
+.centered-menu {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 0 auto;
+  width: fit-content;
+}
 
-  .search_input ul li:hover {
-    background-color: #e8f3ff;
-  }
+.bg-purple-light {
+  float: right;
+  display: flex;
+  width: 100%;
+}
 
+.bg-purple {
+  float: right;
+}
 
-  .search-blog {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    display: -webkit-box;
-    -webkit-line-clamp: 1;
-    -webkit-box-orient: vertical;
-    padding-left: 20px;
-    padding-right: 20px;
-  }
+.user-avatar {
+  float: left;
+  cursor: pointer;
+  border: dashed rgba(255, 255, 127, 0.5);
+}
 
-  .bg-purple-light {
-    float: right;
-  }
+.avatar-container {
+  margin-right: 30px;
+}
 
-  .bg-purple {
-    float: right;
-  }
+.avatar-wrapper {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
+}
 
-  .user-avatar {
-    float: left;
-    cursor: pointer;
-    border: dashed rgba(255, 255, 127, 0.5);
-  }
+.avatar-Name {
+  margin-left: 10px;
+  cursor: pointer;
+  float: right;
+  font-size: 18px;
+  color: #ffffff;
+}
 
-  .avatar-container {
-    margin-right: 30px;
-  }
+.logo {
+  display: flex;
+  align-items: center;
+  float: relative;
+  color: rgb(0, 0, 0);
+  font-weight: bold;
+  font-size: 26px;
+  margin-left: 200px;
+  transition: margin-left 0.5s ease;
+}
 
-  .avatar-wrapper {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 15px;
-  }
+.logo svg {
+  margin-right: 10px;
+}
 
-  .avatar-Name {
-    margin-left: 10px;
-    cursor: pointer;
-    float: right;
-    font-size: 18px;
-    color: #ffffff;
-  }
+.logo:hover {
+  cursor: pointer;
+}
 
-  .logo {
-    float: relative;
-    color: rgb(0, 0, 0);
-    font-weight: bold;
-    font-size: 26px;
-    margin-left: 200px;
-    transition: margin-left 0.5s ease;
-  }
-
-  .logo:hover {
-    cursor: pointer;
-  }
-
-  @media screen and (max-width: 1400px) {
+@media screen and (max-width: 1400px) {
   .logo {
     margin-left: 10px;
   }
 }
 
-  .el-menu-hidden {
-    /*display: none;*/
-    position: absolute;
-    top: 70px;
-    left: 0;
-    border-top: 1px solid #ccc;
-    border-right: none;
-    width: 100%;
+.el-menu-hidden {
+  /*display: none;*/
+  position: absolute;
+  top: 70px;
+  left: 0;
+  border-top: 1px solid #ccc;
+  border-right: none;
+  width: 100%;
+}
+
+.menu-expend {
+  display: none !important;
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  font-size: 24px;
+  width: 40px;
+  height: 40px;
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+/* 窗口可视区域小于1000隐藏搜索框 */
+@media screen and (max-width: 1000px) {
+  .search_input {
+    display: none;
+  }
+}
+
+@media screen and (max-width: 1200px) {
+  .el-menu /deep/ .el-menu-item {
+    background-color: rgba(255, 255, 255, 0.5) !important;
+  }
+
+  .el-menu-demo {
+    display: none;
   }
 
   .menu-expend {
-    display: none !important;
-    position: absolute;
-    top: 20px;
-    left: 20px;
-    font-size: 24px;
-    width: 40px;
-    height: 40px;
-    background-color: rgba(0, 0, 0, 0.2);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    display: flex !important;
+    float: right;
+  }
+
+  .menu-expend:hover {
+    transform: scale(1.1);
     cursor: pointer;
-    transition: transform 0.3s ease, opacity 0.3s ease;
   }
 
-  /* 窗口可视区域小于1000隐藏搜索框 */
-  @media screen and (max-width: 1000px) {
-    .search_input {
-      display: none;
-    }
+  .logo {
+    display: none;
   }
-
-  @media screen and (max-width: 1200px) {
-    .el-menu /deep/ .el-menu-item {
-      background-color: rgba(255, 255, 255, 0.5) !important;
-    }
-
-    .el-menu-demo {
-      display: none;
-    }
-
-    .menu-expend {
-      display: flex !important;
-      float: right;
-    }
-
-    .menu-expend:hover {
-      transform: scale(1.1);
-      cursor: pointer;
-    }
-
-    .logo {
-      display: none;
-    }
-  }
+}
 </style>
