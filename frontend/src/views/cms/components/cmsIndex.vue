@@ -88,16 +88,16 @@
             </div>
             <div class="social-links">
               <a href="https://github.com/Zaaacqwq" target="_blank">
-                <svg-icon icon-class="github" class="social-icon" />
+                <svg-icon icon-class="github-thin" class="social-icon" />
               </a>
               <a href="mailto:zacchenzy@gmail.com" target="_blank">
-                <svg-icon icon-class="email" class="social-icon" />
+                <svg-icon icon-class="email-thin" class="social-icon" />
               </a>
               <a href="https://www.instagram.com/zaaacqwq" target="_blank">
-                <svg-icon icon-class="instagram" class="social-icon" />
+                <svg-icon icon-class="instagram-thin" class="social-icon" />
               </a>
               <a href="https://www.linkedin.com/in/zaaac" target="_blank">
-                <svg-icon icon-class="linkedin" class="social-icon" />
+                <svg-icon icon-class="linkedin-thin" class="social-icon" />
               </a>
             </div>
           </div>
