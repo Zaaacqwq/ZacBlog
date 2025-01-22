@@ -54,7 +54,17 @@ module.exports = {
   chainWebpack(config) {
     config.plugins.delete('preload') // TODO: need test
     config.plugins.delete('prefetch') // TODO: need test
-
+    config.module
+    .rule('markdown')
+    .test(/\.md$/)
+    .use('vue-loader')
+    .loader('vue-loader')
+    .end()
+    .use('vue-markdown-loader')
+    .loader('vue-markdown-loader/lib/markdown-compiler')
+    .options({
+      raw: true, // If you want raw HTML in Markdown
+    });
     // set svg-sprite-loader
     config.module
       .rule('svg')

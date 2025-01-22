@@ -88,9 +88,8 @@
       <el-col :xs="24" :sm="0"></el-col>
     <el-col :sm="3" class="hidden-xs-only" style="opacity:0;">Right PlaceHolder</el-col>
     <!-- 设置底部距离的 -->
-    <el-backtop :bottom="60">
-          <div
-          style="{
+    <!-- <el-backtop :bottom="60">
+        <div style="
             height: 50px;
             width: 50px;
             background-color: rgba(240,239,241,1);
@@ -98,12 +97,16 @@
             text-align: center;
             line-height: 40px;
             border-radius:2px;
-            color: #1989fa;
-          }"
-        >
+            color: #686868;
+          ">
           <svg-icon icon-class="top" />
         </div>
-    </el-backtop>
+      </el-backtop> -->
+    <el-backtop :bottom="60">
+        <div class="backtop-icon">
+          <svg-icon icon-class="top" style="color: black;"/>
+        </div>
+      </el-backtop>
   </el-row>
 </template>
 

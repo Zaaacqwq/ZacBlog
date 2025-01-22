@@ -1,34 +1,73 @@
 <template>
-  <el-container>
-    <iframe src="/docs/index.html" id="qt" scrolling="no" frameborder="0"
-      style="position:absolute;top:64px;left: 0px;right:0px;bottom:100px;opacity:1;"></iframe>
-  </el-container>
+  <div class="no-caret">
+    <el-row :gutter="20" style="margin: 100px 0px;">
+      <el-col :sm="5" class="hidden-xs-only" style="opacity: 0;">Left PlaceHolder</el-col>
+      <el-col :xs="24" :sm="14">
+        <el-container style="opacity: 0.9" class="document-container">
+          <el-card class="animate__animated animate__fadeInLeft content-card">
+            <div class="markdown-content">
+              <markdown-content />
+            </div>
+          </el-card>
+        </el-container>
+      </el-col>
+      <el-col :sm="5" class="hidden-xs-only" style="opacity: 0;">Right PlaceHolder</el-col>
+      <el-backtop :bottom="60">
+        <div class="backtop-icon">
+          <svg-icon icon-class="top" style="color: black;"/>
+        </div>
+      </el-backtop>
+    </el-row>
+  </div>
 </template>
 
 <script>
-  export default {
-    name: 'cmsDoucument',
-    data() {
-      return {}
-    },
-    mounted() {
-      /**
-       * iframe-宽高自适应显示
-       */
-      function changeqtIframe() {
-        const qt = document.getElementById('qt')
-        const deviceWidth = document.body.clientWidth
-        const deviceHeight = document.body.clientHeight
-        qt.style.width = Number(deviceWidth) + 'px' // 数字是页面布局宽度差值
-        qt.style.height = Number(deviceHeight) + 'px' // 数字是页面布局高度差
-      }
-      changeqtIframe()
-      window.onresize = function() {
-        changeqtIframe()
+import markdownContent from './my/aboutMe.md'; // Import the Markdown file
+
+export default {
+  name: 'cmsDoucument',
+  components: {
+    markdownContent,
+  },
+  mounted() {
+    // Adjust iframe width and height (if applicable)
+    function changeqtIframe() {
+      const qt = document.getElementById('qt');
+      const deviceWidth = document.body.clientWidth;
+      const deviceHeight = document.body.clientHeight;
+      if (qt) {
+        qt.style.width = `${deviceWidth}px`;
+        qt.style.height = `${deviceHeight}px`;
       }
     }
-  }
-   </script scoped>
+    changeqtIframe();
+    window.onresize = function () {
+      changeqtIframe();
+    };
+  },
+};
+</script>
 
-  <style scoped rel = "stylesheet/scss"lang = "scss" >
-  </style>
+<style scoped lang="scss">
+
+.content-container {
+  // Central container with shadow and transparency
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.9); // Semi-transparent white background
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); // Drop shadow
+  border-radius: 12px; // Rounded corners
+  backdrop-filter: blur(10px); // Optional: Adds a glass effect
+  transition: transform 0.2s ease-in-out;
+}
+
+.content-container:hover {
+  transform: scale(1.02); // Slight zoom effect on hover
+}
+
+.markdown-content {
+  // Style for the markdown content
+  font-size: 16px;
+  line-height: 1.6;
+  color: #333;
+}
+</style>
