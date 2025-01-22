@@ -49,6 +49,12 @@
 </script>
 
 <style scoped>
+  .el-container {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+  
   .el-footer {
     background-color: rgba(84, 92, 100, 0.5);
   }

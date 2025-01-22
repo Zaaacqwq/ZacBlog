@@ -1,14 +1,13 @@
 <template>
-  <el-row :gutter="20">
-    <el-col :sm="3" class="hidden-xs-only" style="opacity:0;">Left PlaceHolder</el-col>
-    <el-col :xs="24" :sm="18">
+  <el-row :gutter="20" style="margin-top: 50px;">
+    <el-col :sm="2" :lg="6" class="hidden-xs-only" style="opacity:0;">Left PlaceHolder</el-col>
+    <el-col :xs="24" :sm="15" :lg="12">
       <el-container>
         <el-timeline class="animate__animated animate__fadeInLeft">
-          <el-timeline-item :color="color" v-for="essay in essayList" :key="essay.id" :timestamp="essay.createTime"
-            placement="top">
+          <el-timeline-item :color="color" v-for="essay in essayList" :key="essay.id" :timestamp="essay.createTime" placement="top">
             <el-card
-              style="letter-spacing: 1px;border: 1px solid rgba(255,190,23,0.9); background-color: rgba(255,255,255,0.9);box-shadow: 0 0 30px -10px ">
-              <h2 v-if="essay.title" style="color: rgba(255,190,23,0.9);">{{essay.title}}</h2>
+              style="letter-spacing: 1px;border: 1px solid rgba(220, 220, 220,0.9); background-color: rgba(255,255,255,0.9);box-shadow: 0 0 30px -10px ">
+              <h2 v-if="essay.title" style="color: rgba(0,0,0,1);">{{essay.title}}</h2>
               <div v-if="essay.contentType ==='1'" class="typo ql-editor" v-html="essay.content"></div>
               <div v-else v-html="essay.content"></div>
             </el-card>
@@ -16,7 +15,7 @@
         </el-timeline>
       </el-container>
     </el-col>
-    <el-col :sm="3" class="hidden-xs-only" style="opacity:0;">Right PlaceHolder</el-col>
+    <el-col :sm="2" :lg="6" class="hidden-xs-only" style="opacity:0;">Right PlaceHolder</el-col>
     <!-- 设置底部距离的 -->
     <el-backtop :bottom="60">
           <div
@@ -61,7 +60,7 @@ import '@/views/cms/plugins/prism.css'
           views: null,
           status: null,
         },
-        color: "#ffd04b",
+        color: "#787878",
       }
     },
     created() {
