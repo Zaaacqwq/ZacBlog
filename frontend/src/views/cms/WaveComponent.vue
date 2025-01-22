@@ -56,6 +56,7 @@ export default {
   height: 120px; /* Increased the height to make it longer */
   background-color: white; /* The color of the rectangle */
   margin-top: -10px; /* Further reduce the gap */
+  /* background: linear-gradient(to bottom, rgba(255,255,255,1) 0%,rgba(255,255,255,0) 100%); */
 }
 
 .parallax > use {

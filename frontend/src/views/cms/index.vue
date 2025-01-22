@@ -1,6 +1,7 @@
 <template>
 
   <el-container>
+    <ParticlesBackground />
     <!-- <div class="background" :style="backgroundImage"></div> -->
     <cmsNavBar></cmsNavBar>
     <keep-alive>
@@ -16,13 +17,13 @@
   import cmsMain from './main.vue'
   import cmsNavBar from './NavBar.vue'
   import cmsFooter from './Footer.vue'
-  // 引入背景图
-  import backgroundImages from './backgroundImages.js'
+  import ParticlesBackground from './ParticlesBackground.vue'
+  // import backgroundImages from './backgroundImages.js'
 
   export default {
     data() {
       return {
-        backgroundImages,
+        // backgroundImages,
       };
     },
     methods: {
@@ -33,17 +34,18 @@
     components: {
       cmsMain,
       cmsNavBar,
-      cmsFooter
+      cmsFooter,
+      ParticlesBackground
     },
     computed: {
-      backgroundImage() {
-        // 根据背景图数组的长度随机选择索引
-        const randIndex = Math.floor(Math.random() * this.backgroundImages.length)
-        return {
-          // 获取对应的图片资源并将其设置到`background-image`属性上
-          backgroundImage: `url(${this.backgroundImages[randIndex]})`
-        }
-      }
+      // backgroundImage() {
+      //   // 根据背景图数组的长度随机选择索引
+      //   const randIndex = Math.floor(Math.random() * this.backgroundImages.length)
+      //   return {
+      //     // 获取对应的图片资源并将其设置到`background-image`属性上
+      //     backgroundImage: `url(${this.backgroundImages[randIndex]})`
+      //   }
+      // }
     },
   }
 </script>
