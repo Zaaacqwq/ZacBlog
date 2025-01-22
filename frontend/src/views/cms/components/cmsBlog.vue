@@ -1,5 +1,5 @@
 <template>
-  <el-row :gutter="20">
+  <el-row :gutter="20" style="margin: 50px 0px;">
     <el-col :sm="3" class="hidden-xs-only" style="opacity:0;">Left PlaceHolder</el-col>
     <el-col :xs="24" :sm="18">
       <el-card style="background-color: rgba(255, 255, 255,1)" class="first-card">
@@ -225,8 +225,8 @@ export default {
     padding-right: 10px;
     border-radius: 5px;
     background-color: #ecf5ff;
-    border: 1px solid #409eff;
-    color: #409eff;
+    border: 1px solid #686868;
+    color: #686868;
     display: flex;
   }
 
@@ -235,7 +235,7 @@ export default {
     height: 0;
     border-top: 7px solid transparent;
     border-bottom: 7px solid transparent;
-    border-right: 7px solid #409eff;
+    border-right: 7px solid #686868;
     position: relative;
   }
 
@@ -266,7 +266,7 @@ export default {
     margin-top: 150px;
     box-shadow: 0 1px 2px 0 rgb(34 36 38 / 15%);
     border: 1px solid rgba(34, 36, 38, .15);
-    border-top: 2px solid #409EFF;
+    border-top: 2px solid #686868;
     text-align: left;
   }
   .blog-title {
@@ -298,7 +298,7 @@ export default {
 
   .header {
     text-decoration: none;
-    color: #3a8ee6;
+    color: #686868;
     font-weight: bold;
   }
 

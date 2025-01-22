@@ -1,0 +1,12 @@
+#nprogress .bar {
+    background: rgb(104, 104, 104) !important; /* Change the bar color */
+}
+
+#nprogress .peg {
+    box-shadow: 0 0 10px rgb(104, 104, 104), 0 0 5px rgb(0, 0, 0) !important; /* Change the glow effect */
+}
+
+#nprogress .spinner-icon {
+    border-top-color: rgb(104, 104, 104) !important; /* Change spinner top color */
+    border-left-color: rgb(104, 104, 104) !important; /* Change spinner left color */
+}

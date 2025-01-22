@@ -14,7 +14,7 @@
       <div class="control">
         <span class="like" :class="{active: item.isLike}" @click="likeClick(item)">
           <svg-icon icon-class="like" />
-          <span class="like-num" style="margin-left: 5px;">{{item.likeNum > 0 ? item.likeNum + ' Person Liked' : 'Like'}}</span>
+          <span class="like-num" style="margin-left: 5px;">{{item.likeNum > 0 ? item.likeNum + ' People Liked' : 'Like'}}</span>
         </span>
         <span class="comment-reply" @click="showCommentInput(item)">
           <svg-icon icon-class="comment" />
@@ -257,7 +257,7 @@
           margin-right: 20px;
           cursor: pointer;
           &.active, &:hover {
-            color: #409EFF;
+            color: #686868;
           }
           .iconfont {
             font-size: 14px;
@@ -291,10 +291,10 @@
             font-size: 14px;
             color: #303133;
             .from-name {
-              color: #409EFF;
+              color: #686868;
             }
             .to-name {
-              color: #409EFF;
+              color: #686868;
               margin-left: 5px;
               margin-right: 5px;
             }

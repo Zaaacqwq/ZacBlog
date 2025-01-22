@@ -33,7 +33,7 @@
               <el-col :xs="24" :sm="18"
                 style="padding-left: 10px;padding-right: 10px;margin-bottom: 5px;margin-top: -5px;">
                 <div>
-                  <h3><svg-icon icon-class="Topping" v-show="blog.top == 1" /> {{ blog.title }}</h3>
+                  <h3><svg-icon icon-class="top" v-show="blog.top == 1" /> {{ blog.title }}</h3>
                   <div style="margin-bottom: 10px;">
                     <span style="color: rgba(0, 0, 0, .4);"> {{ blog.blogDesc }}</span>
                   </div>
@@ -446,7 +446,7 @@ export default {
         this.blogList = this.picSrc(response.rows);
         this.total = response.total;
         // this.totalcount = res.data.totalElements
-        this.selectMethod = '分类: ' + cmsType.typeName
+        this.selectMethod = 'Category: ' + cmsType.typeName
         this.selected = true
       }).finally(() => {
         loadingInstance.close();
@@ -462,7 +462,7 @@ export default {
         this.blogList = this.picSrc(response.rows);
         this.total = response.total;
         // this.totalcount = res.data.totalElements
-        this.selectMethod = '标签: ' + tag.tagName
+        this.selectMethod = 'Tag: ' + tag.tagName
         this.selected = true
       }).finally(() => {
         loadingInstance.close();
@@ -750,22 +750,22 @@ export default {
 }
 
 .blog-type-li:first-child {
-  border-top: 1px solid rgba(179, 216, 255, 0.5);
+  border-top: 1px solid rgba(200, 200, 200, 0.5);
 }
 
 .blog-type-li {
-  border-bottom: 1px solid rgba(179, 216, 255, 0.5);
+  border-bottom: 1px solid rgba(200, 200, 200, 0.5);
 }
 
 .more {
   text-align: center;
-  color: #3a8ee6;
+  color: #686868;
   padding: 8px;
 }
 
 .more:hover {
   cursor: pointer;
-  color: #3a8ee6;
+  color: #111111;
 }
 
 .blog-type-li:hover {
@@ -774,7 +774,7 @@ export default {
 }
 
 .activeType {
-  background-color: rgba(58, 142, 230, 0.3);
+  background-color: rgba(200, 200, 200, 0.3);
   cursor: pointer;
 }
 
@@ -783,7 +783,7 @@ export default {
   flex-wrap: wrap;
   align-items: center;
   margin: 15px 13px 0;
-  border-bottom: 1px solid rgba(179, 216, 255, 0.5);
+  border-bottom: 1px solid rgba(104, 104, 104, 0.5);
 
 }
 
@@ -805,10 +805,10 @@ export default {
   padding: 0 10px;
   line-height: 22px;
   font-size: 10px;
-  color: #409eff;
+  color: #686868;
   border-radius: 4px;
   white-space: nowrap;
-  border: 1px solid #409eff;
+  border: 1px solid #686868;
   transition: .2s;
 }
 
@@ -817,7 +817,7 @@ export default {
   height: 0;
   border-top: 6px solid transparent;
   border-bottom: 6px solid transparent;
-  border-right: 6px solid #409eff;
+  border-right: 6px solid #686868;
   position: relative;
   transition: .2s;
 }
@@ -839,12 +839,12 @@ export default {
 
 .tag {
   color: white;
-  background-color: #409eff;
+  background-color: #686868;
   cursor: pointer;
 }
 
 .sjx-inner {
-  border-right: 6px solid #409eff;
+  border-right: 6px solid #686868;
 }
 
 .blog-type-li {
@@ -875,7 +875,7 @@ export default {
 }
 
 .recommend-a:hover {
-  color: #3a8ee6;
+  color: #686868;
 }
 
 .total {
@@ -893,7 +893,7 @@ export default {
 
 .el-icon-back {
   font-weight: bolder;
-  color: #3a8ee6;
+  color: #686868;
   margin-right: 10px;
 }
 
@@ -902,9 +902,9 @@ export default {
 }
 
 .blog-content:hover {
-  border-left: 5px solid #3a8ee6;
-  border-right: 5px solid #3a8ee6;
-  background-color: rgba(58, 142, 230, 0.3);
+  border-left: 5px solid #dadada;
+  border-right: 5px solid #dadada;
+  background-color: rgba(230, 235, 245, 0.3);
   cursor: pointer;
 }
 
@@ -939,7 +939,7 @@ export default {
 
 .header {
   text-decoration: none;
-  color: #3a8ee6;
+  color: #686868;
   font-weight: bold;
 }
 
