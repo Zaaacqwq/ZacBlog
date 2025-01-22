@@ -257,7 +257,7 @@
           margin-right: 20px;
           cursor: pointer;
           &.active, &:hover {
-            color: #686868;
+            color: #5a5abc;
           }
           .iconfont {
             font-size: 14px;
