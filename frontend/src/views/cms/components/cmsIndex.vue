@@ -7,6 +7,8 @@
         </p>
       </el-col>
       <WaveComponent />
+      <div style=" position: absolute; bottom: -100px;  width: 100%; height: 100px;
+      background: linear-gradient(to bottom, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0) 100%);"></div>
     </el-row>
     <el-row :gutter="20" class="content">
       <el-col :sm="2" :lg="5" class="hidden-xs-only" style="opacity:0;">Left PlaceHolder</el-col>
@@ -263,7 +265,7 @@ export default {
   },
   components: {
     WaveComponent,
-    },
+  },
   computed: {
     pagSmall() {
       return this.screenWidth <= 768;
@@ -713,8 +715,10 @@ export default {
 .social-links {
   display: flex;
   flex-wrap: wrap;
-  justify-content: center; /* Center aligns icons */
-  gap: 10px; /* Adds space between icons */
+  justify-content: center;
+  /* Center aligns icons */
+  gap: 10px;
+  /* Adds space between icons */
   margin: 10px 0;
 }
 
