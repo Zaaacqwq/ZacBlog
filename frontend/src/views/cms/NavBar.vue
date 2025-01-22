@@ -50,7 +50,7 @@
           <el-avatar class="user-avatar" :src="avatar" @error="errorHandler">
             <i class="el-icon-s-custom" />
           </el-avatar>
-          <p class="avatar-Name">{{ name }}</p>
+          <p class="avatar-Name" style="color: black;">{{ name }}</p>
         </div>
         <el-dropdown-menu slot="dropdown">
           <router-link target="_blank" to="/index">
@@ -67,7 +67,7 @@
         <!-- <el-avatar class="avatar" src="avatar" @error="errorHandler">
             <i class="el-icon-s-custom" @click="tologin"/>
           </el-avatar> -->
-        <p class="avatar-Name" @click="tologin">Login|Register</p>
+        <p class="avatar-Name" @click="tologin" style="color: black;">Login/Register</p>
       </div>
     </div>
   </el-header>
@@ -414,7 +414,7 @@ export default {
 .user-avatar {
   float: left;
   cursor: pointer;
-  border: dashed rgba(255, 255, 127, 0.5);
+  border: dashed rgba(0, 0, 0, 0.5);
 }
 
 .avatar-container {
