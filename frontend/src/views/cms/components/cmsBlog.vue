@@ -1,5 +1,5 @@
 <template>
-  <el-row :gutter="20" style="margin: 50px 0px;">
+  <el-row :gutter="20" style="margin: 100px 0px;">
     <el-col :sm="3" class="hidden-xs-only" style="opacity:0;">Left PlaceHolder</el-col>
     <el-col :xs="24" :sm="18">
       <el-card style="background-color: rgba(255, 255, 255,1)" class="first-card">

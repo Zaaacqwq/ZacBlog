@@ -105,7 +105,7 @@
             <b>Customized</b>
           </div>
           <div class="custom-section">
-            <p>Welcome to Zac's Blog<br />Anyone can register and post here</p>
+            <p>Welcome to Zac's Blog!</p>
           </div>
         </el-card>
         <el-card style="background-color: rgba(255,255,255,0.9)" class="right-item">
@@ -715,7 +715,7 @@ export default {
   flex-wrap: wrap;
   justify-content: center; /* Center aligns icons */
   gap: 10px; /* Adds space between icons */
-  margin-top: 10px; /* Adds spacing above the icons */
+  margin: 10px 0;
 }
 
 .social-links a {
@@ -730,14 +730,16 @@ export default {
 }
 
 .custom-section {
+  text-align: center;
   padding: 10px;
-  font-size: 14px;
+  font-size: 24px;
   line-height: 1.6;
 }
 
 .announcement-section {
+  text-align: center;
   padding: 10px;
-  font-size: 14px;
+  font-size: 24px;
   line-height: 1.6;
   border-radius: 5px;
 }
@@ -769,7 +771,7 @@ export default {
 }
 
 .blog-type-li:hover {
-  background-color: rgba(213, 255, 255, 0.3);
+  background-color: rgba(230, 235, 245, 0.3);
   cursor: pointer;
 }
 

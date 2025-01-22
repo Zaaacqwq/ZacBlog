@@ -278,11 +278,16 @@ export default {
 
 <style scoped>
 .el-header {
+  position: fixed;
+  top: 0;
+  width: 100%;
+  z-index: 1000;
   display: flex;
   justify-content: space-between;
-  background-color: rgba(255, 255, 255, 0.5);
+  background-color: rgba(255, 255, 255, 0.8);
   align-items: center;
   transition: .2s;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
 }
 
 .el-header:hover {
@@ -347,6 +352,8 @@ export default {
   position: relative;
   box-sizing: border-box;
   margin-right: 100px;
+  width: 350px;
+  max-width: 100%;
 }
 
 .search_input ul {
@@ -394,6 +401,7 @@ export default {
 }
 
 .centered-menu {
+  flex-grow: 1;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -443,7 +451,7 @@ export default {
   color: rgb(0, 0, 0);
   font-weight: bold;
   font-size: 26px;
-  margin-left: 200px;
+  margin-left: 350px;
   transition: margin-left 0.5s ease;
 }
 

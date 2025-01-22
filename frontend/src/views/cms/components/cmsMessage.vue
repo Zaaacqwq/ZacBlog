@@ -1,5 +1,5 @@
 <template>
-  <el-row :gutter="20" style="margin: 50px 0px;">
+  <el-row :gutter="20" style="margin: 100px 0px;">
     <el-col :sm="5" class="hidden-xs-only" style="opacity:0;">Left PlaceHolder</el-col>
     <el-col :xs="24" :sm="14">
       <el-container style="opacity: 0.9" class="message">
