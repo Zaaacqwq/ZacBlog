@@ -1,8 +1,8 @@
 <template>
   <div class="no-caret">
     <el-row :gutter="20" style="margin: 100px 0px;">
-      <el-col :sm="5" class="hidden-xs-only" style="opacity:0;">Left PlaceHolder</el-col>
-      <el-col :xs="24" :sm="14">
+      <el-col :sm="2" :lg="5" class="hidden-xs-only" style="opacity:0;">Left PlaceHolder</el-col>
+      <el-col :xs="24" :sm="15" :lg="11">
         <el-container style="opacity: 0.9" class="message">
           <el-card class="animate__animated animate__fadeInLeft publish">
             <div class="author">
@@ -42,7 +42,10 @@
           </el-card>
         </el-container>
       </el-col>
-      <el-col :sm="5" class="hidden-xs-only" style="opacity:0;">Right PlaceHolder</el-col>
+      <el-col :xs="24" :sm="5" :lg="3" class="right-sidebar">
+        <RightSidebar />
+      </el-col>
+      <el-col :sm="2" :lg="5" class="hidden-xs-only" style="opacity:0;">Right PlaceHolder</el-col>
       <!-- 设置底部距离的 -->
       <el-backtop :bottom="60">
         <div class="backtop-icon">
@@ -66,6 +69,7 @@ import {
 } from "@/api/cms/message"
 import comment from './messages/messages.vue'
 import Emoji from '@/components/Emoji'
+import RightSidebar from "./rightSidebar/rightSidebar.vue";
 export default {
   name: 'message',
   data() {
@@ -125,7 +129,8 @@ export default {
   },
   components: {
     comment,
-    Emoji
+    Emoji,
+    RightSidebar
   },
   methods: {
     // 表单重置

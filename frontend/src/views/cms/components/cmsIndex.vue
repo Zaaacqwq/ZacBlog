@@ -74,62 +74,7 @@
         </el-card>
       </el-col>
       <el-col :xs="24" :sm="5" :lg="3" class="right-sidebar">
-        <el-card style="background-color: rgba(255,255,255,0.9)" class="right-item">
-          <div slot="header" class="attributes">
-            <b>About Zac</b>
-          </div>
-          <div class="profile-card">
-            <img :src="avatar" alt="Zac's Avatar" class="avatar" />
-            <h3>Zac</h3>
-            <p>A CE student @ UW.</p>
-            <div class="stats">
-              <p><strong>{{ totalBlogs }}</strong> Blogs</p>
-              <p><strong>{{ totalViews }}</strong> Views</p>
-            </div>
-            <div class="social-links">
-              <a href="https://github.com/Zaaacqwq" target="_blank">
-                <svg-icon icon-class="github-thin" class="social-icon" />
-              </a>
-              <a href="mailto:zacchenzy@gmail.com" target="_blank">
-                <svg-icon icon-class="email-thin" class="social-icon" />
-              </a>
-              <a href="https://www.instagram.com/zaaacqwq" target="_blank">
-                <svg-icon icon-class="instagram-thin" class="social-icon" />
-              </a>
-              <a href="https://www.linkedin.com/in/zaaac" target="_blank">
-                <svg-icon icon-class="linkedin-thin" class="social-icon" />
-              </a>
-            </div>
-          </div>
-        </el-card>
-        <el-card style="background-color: rgba(255,255,255,0.9)" class="right-item">
-          <div slot="header" class="attributes">
-            <b>Customized</b>
-          </div>
-          <div class="custom-section">
-            <p>Welcome to Zac's Blog!</p>
-          </div>
-        </el-card>
-        <el-card style="background-color: rgba(255,255,255,0.9)" class="right-item">
-          <div slot="header" class="attributes">
-            <b>Announcement!</b>
-          </div>
-          <div class="announcement-section">
-            <p v-if="latestAnnouncement">{{ latestAnnouncement }}</p>
-            <p v-else>Loading latest announcement...</p>
-          </div>
-        </el-card>
-        <el-card style="background-color: rgba(255,255,255,0.9)" class="right-item">
-          <div slot="header" class="attributes">
-            <b>SiteInfo</b>
-          </div>
-          <div class="site-info">
-            <p><strong>Blogs Count:</strong> {{ totalBlogs }}</p>
-            <p><strong>Views Count:</strong> {{ totalViews }}</p>
-            <p><strong>Comments Count:</strong> {{ totalComments }}</p>
-            <p><strong>Messages Count:</strong> {{ totalMessages }}</p>
-          </div>
-        </el-card>
+        <RightSidebar />
         <el-card style="background-color: rgba(255,255,255,0.9)" class="right-item">
           <div slot="header" class="attributes">
             <b>Category</b>
@@ -201,6 +146,7 @@ import 'element-ui/lib/theme-chalk/display.css';
 import WaveComponent from '../WaveComponent.vue';
 import backgroundImage from '@/assets/images/background.png';
 import avatar from '@/assets/images/avatar.png';
+import RightSidebar from "./rightSidebar/rightSidebar.vue";
 import {
   Loading
 } from 'element-ui';
@@ -224,7 +170,7 @@ export default {
       totalBlogs: 0,
       totalComments: 0,
       totalMessages: 0,
-      totalcount: 100,
+      // totalcount: 0,
       queryInfo: {
         query: '',
         pagenum: 1,
@@ -265,6 +211,7 @@ export default {
   },
   components: {
     WaveComponent,
+    RightSidebar
   },
   computed: {
     pagSmall() {
@@ -291,7 +238,7 @@ export default {
       this.getBlogList();
       this.getTagList()
       this.getRecommendList()
-      let str = '这是我的个人博客、会分享关于编程，开发以及其他方面的一些内容，希望可以对您有所帮助...';
+      let str = 'This is my personal blog. I will share some content about programming, development and other aspects. I hope it can be helpful to you...';
       let idx = 0;
       let that = this
       let timer = setTimeout(function fn() {
@@ -645,9 +592,7 @@ export default {
   width: 100%;
   height: 100%;
   background-color: rgba(255, 255, 255, 0.2);
-  /* White with 60% transparency */
   z-index: 1;
-  /* Ensures it is above the background image but below the content */
 }
 
 .full-page-content {
@@ -716,9 +661,7 @@ export default {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  /* Center aligns icons */
   gap: 10px;
-  /* Adds space between icons */
   margin: 10px 0;
 }
 

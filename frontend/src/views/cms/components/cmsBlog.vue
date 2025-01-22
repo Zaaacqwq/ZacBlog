@@ -1,7 +1,7 @@
 <template>
   <el-row :gutter="20" style="margin: 100px 0px;">
-    <el-col :sm="3" class="hidden-xs-only" style="opacity:0;">Left PlaceHolder</el-col>
-    <el-col :xs="24" :sm="18">
+    <el-col :sm="2" :lg="5" class="hidden-xs-only" style="opacity:0;">Left PlaceHolder</el-col>
+    <el-col :xs="24" :sm="15" :lg="11">
       <el-card style="background-color: rgba(255, 255, 255,1)" class="first-card">
         <div slot="header" class="total blog-info">
           <div class="user-info">
@@ -84,9 +84,11 @@
           <comment></comment>
         </el-card>
       </el-card>
-      </el-col>
-      <el-col :xs="24" :sm="0"></el-col>
-    <el-col :sm="3" class="hidden-xs-only" style="opacity:0;">Right PlaceHolder</el-col>
+    </el-col>
+    <el-col :xs="24" :sm="5" :lg="3" class="right-sidebar">
+      <RightSidebar />
+    </el-col>
+    <el-col :sm="2" :lg="5" class="hidden-xs-only" style="opacity:0;">Right PlaceHolder</el-col>
     <!-- 设置底部距离的 -->
     <!-- <el-backtop :bottom="60">
         <div style="
@@ -122,11 +124,12 @@ import {
   } from "@/api/cms/blog";
 import {mapState} from 'vuex'
 import CherryMarkdown from '@/components/CherryMarkdown'
-
+import RightSidebar from "./rightSidebar/rightSidebar.vue";
 export default {
   components: {
     comment,
     CherryMarkdown,
+    RightSidebar,
   },
   data() {
     return {
