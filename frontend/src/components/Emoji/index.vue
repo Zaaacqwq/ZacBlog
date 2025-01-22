@@ -8,7 +8,7 @@
         </li>
       </ul>
     </div>
-    <el-link :underline="false" title="添加表情"
+    <el-link :underline="false" title="Add Emoji"
       slot="reference">
       😀
     </el-link>

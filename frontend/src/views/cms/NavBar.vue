@@ -1,76 +1,78 @@
 <template>
-  <el-header :style="'margin-bottom:' + headerBottom + 'px; height: 70px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);'">
-    <h2 class="logo"><svg-icon icon-class="bird" /> ZacBlog!</h2>
-    <div class="bg-purple-light">
-      <el-menu :default-active="activeIndex" router class="el-menu-demo centered-menu" mode="horizontal" style="border: none;"
-        background-color="rgba(0,0,0,0)" text-color="#000" active-text-color="#000000">
-        <el-menu-item index="/cms/main/cmsIndex"><i class="el-icon-s-home" style="color: rgba(0, 0, 0);"></i>Home
-        </el-menu-item>
-        <el-menu-item :index="item.path" v-for="item in menulist" :key="item.id">
-          <!--                图标-->
-          <i :class="item.icon" style="color: rgba(0, 0, 0);"></i>
-          <!--                文本-->
-          {{ item.authName }}
-        </el-menu-item>
-      </el-menu>
-    </div>
-    <div class="bg-purple-light el-menu-hidden" v-if="menuHiddenVisiable">
-      <el-menu :default-active="activeIndex" router 
-        background-color="rgba(84,92,100,0.5)" text-color="#000" active-text-color="#000000">
-        <el-menu-item index="/cms/main/cmsIndex" @click="menuAway"><i class="el-icon-s-home"
-            style="color: rgba(0, 0, 0);"></i>Home</el-menu-item>
-        <el-menu-item :index="item.path" v-for="item in menulist" :key="item.id" @click="menuAway">
-          <!--                图标-->
-          <i :class="item.icon" style="color: rgba(0, 0, 0);"></i>
-          <!--                文本-->
-          {{ item.authName }}
-        </el-menu-item>
-      </el-menu>
-    </div>
+  <div class="no-caret">
+    <el-header :style="'margin-bottom:' + headerBottom + 'px; height: 70px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);'">
+      <h2 class="logo"><svg-icon icon-class="bird" /> ZacBlog!</h2>
+      <div class="bg-purple-light">
+        <el-menu :default-active="activeIndex" router class="el-menu-demo centered-menu" mode="horizontal"
+          style="border: none;" background-color="rgba(0,0,0,0)" text-color="#000" active-text-color="#000000">
+          <el-menu-item index="/cms/main/cmsIndex"><i class="el-icon-s-home" style="color: rgba(0, 0, 0);"></i>Home
+          </el-menu-item>
+          <el-menu-item :index="item.path" v-for="item in menulist" :key="item.id">
+            <!--                图标-->
+            <i :class="item.icon" style="color: rgba(0, 0, 0);"></i>
+            <!--                文本-->
+            {{ item.authName }}
+          </el-menu-item>
+        </el-menu>
+      </div>
+      <div class="bg-purple-light el-menu-hidden" v-if="menuHiddenVisiable">
+        <el-menu :default-active="activeIndex" router background-color="rgba(84,92,100,0.5)" text-color="#000"
+          active-text-color="#000000">
+          <el-menu-item index="/cms/main/cmsIndex" @click="menuAway"><i class="el-icon-s-home"
+              style="color: rgba(0, 0, 0);"></i>Home</el-menu-item>
+          <el-menu-item :index="item.path" v-for="item in menulist" :key="item.id" @click="menuAway">
+            <!--                图标-->
+            <i :class="item.icon" style="color: rgba(0, 0, 0);"></i>
+            <!--                文本-->
+            {{ item.authName }}
+          </el-menu-item>
+        </el-menu>
+      </div>
 
-    <div class="menu-expend" @click="menuExpend">
-      <i class="el-icon-menu" style="color: rgba(0, 0, 0);"></i>
-    </div>
+      <div class="menu-expend" @click="menuExpend">
+        <i class="el-icon-menu" style="color: rgba(0, 0, 0);"></i>
+      </div>
 
-    <div v-if="searchInput" class="search_input">
-      <el-input @focus="checkInput" @blur="notSearching()" class="search" placeholder="Search Blogs"
-        prefix-icon="el-icon-search" v-model="queryInfo.query" size="large">
-      </el-input>
-      <ul v-if="searching">
-        <li class="animate__animated animate__fadeInDown search-blog" v-for="blog in searchList" :key="blog.id"
-          @click="getBlogInfo(blog.id)">
-          <a><span v-html="blog.title"></span></a>
-        </li>
-      </ul>
-    </div>
+      <div v-if="searchInput" class="search_input">
+        <el-input @focus="checkInput" @blur="notSearching()" class="search" placeholder="Search Blogs"
+          prefix-icon="el-icon-search" v-model="queryInfo.query" size="large">
+        </el-input>
+        <ul v-if="searching">
+          <li class="animate__animated animate__fadeInDown search-blog" v-for="blog in searchList" :key="blog.id"
+            @click="getBlogInfo(blog.id)">
+            <a><span v-html="blog.title"></span></a>
+          </li>
+        </ul>
+      </div>
 
-    <div v-if="islogin" class="bg-purple">
-      <el-dropdown class="avatar-container right-menu-item hover-effect" trigger="click">
+      <div v-if="islogin" class="bg-purple">
+        <el-dropdown class="avatar-container right-menu-item hover-effect" trigger="click">
+          <div class="avatar-wrapper">
+            <el-avatar class="user-avatar" :src="avatar" @error="errorHandler">
+              <i class="el-icon-s-custom" />
+            </el-avatar>
+            <p class="avatar-Name" style="color: black;">{{ name }}</p>
+          </div>
+          <el-dropdown-menu slot="dropdown">
+            <router-link target="_blank" to="/index">
+              <el-dropdown-item>Manage Blogs</el-dropdown-item>
+            </router-link>
+            <el-dropdown-item divided @click.native="logout">
+              <span>Logout</span>
+            </el-dropdown-item>
+          </el-dropdown-menu>
+        </el-dropdown>
+      </div>
+      <div v-else class="bg-purple">
         <div class="avatar-wrapper">
-          <el-avatar class="user-avatar" :src="avatar" @error="errorHandler">
-            <i class="el-icon-s-custom" />
-          </el-avatar>
-          <p class="avatar-Name" style="color: black;">{{ name }}</p>
-        </div>
-        <el-dropdown-menu slot="dropdown">
-          <router-link target="_blank" to="/index">
-            <el-dropdown-item>Manage Blogs</el-dropdown-item>
-          </router-link>
-          <el-dropdown-item divided @click.native="logout">
-            <span>Logout</span>
-          </el-dropdown-item>
-        </el-dropdown-menu>
-      </el-dropdown>
-    </div>
-    <div v-else class="bg-purple">
-      <div class="avatar-wrapper">
-        <!-- <el-avatar class="avatar" src="avatar" @error="errorHandler">
+          <!-- <el-avatar class="avatar" src="avatar" @error="errorHandler">
             <i class="el-icon-s-custom" @click="tologin"/>
           </el-avatar> -->
-        <p class="avatar-Name" @click="tologin" style="color: black;">Login/Register</p>
+          <p class="avatar-Name" @click="tologin" style="color: black;">Login/Register</p>
+        </div>
       </div>
-    </div>
-  </el-header>
+    </el-header>
+  </div>
 </template>
 
 <script>

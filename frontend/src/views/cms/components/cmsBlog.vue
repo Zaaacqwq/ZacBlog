@@ -71,13 +71,13 @@
             </template>
           </el-table-column>
         </el-table>
-        <div class="author">
+        <div class="author no-caret">
           <ul>
             <li>Author: {{blog.createBy}}</li>
             <li>Time Published: {{blog.createTime}}</li>
           </ul>
         </div>
-        <el-card shadow="never" class="comments">
+        <el-card shadow="never" class="comments no-caret">
           <div class="header" style="padding-bottom: 10px;">
             Comments
           </div>

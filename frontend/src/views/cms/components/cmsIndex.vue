@@ -1,5 +1,5 @@
 <template>
-  <div style="margin-bottom: 50px;">
+  <div class="no-caret" style="margin-bottom: 50px;">
     <el-row :gutter="20" class="full-page-image" :style="`background-image: url(${backgroundImage});`">
       <el-col :xs="24" :sm="24" :lg="24" class="full-page-content">
         <h1 class="blog-title">Zac's Blog</h1>
