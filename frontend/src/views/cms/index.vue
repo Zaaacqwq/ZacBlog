@@ -1,7 +1,7 @@
 <template>
 
   <el-container>
-    <ParticlesBackground />
+    <!-- <ParticlesBackground /> -->
     <!-- <div class="background" :style="backgroundImage"></div> -->
     <cmsNavBar></cmsNavBar>
     <keep-alive>

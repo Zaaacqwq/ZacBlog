@@ -1,5 +1,5 @@
 <template>
-    <div style="background-color: rgba(255,255,255,0.9)" class="right-item" >
+    <div class="right-sidebar" >
         <el-card style="background-color: rgba(255,255,255,0.9)" class="right-item">
             <div slot="header" class="attributes">
                 <b>About Zac</b>
@@ -7,7 +7,7 @@
             <div class="profile-card">
                 <img :src="avatar" alt="Zac's Avatar" class="avatar" />
                 <h3>Zac</h3>
-                <p>A CE student @ UW.</p>
+                <p>CE student @ UW</p>
                 <div class="stats">
                     <p><strong>{{ totalBlogs }}</strong> Blogs</p>
                     <p><strong>{{ totalViews }}</strong> Views</p>
@@ -110,7 +110,6 @@ export default {
         async fetchStatistics() {
             try {
                 const response = await total();
-                console.log("Fetched Statistics:", response); // Debugging log
                 this.totalViews = response.views || 0;
                 this.totalBlogs = response.blog || 0;
                 this.totalComments = response.comment || 0;

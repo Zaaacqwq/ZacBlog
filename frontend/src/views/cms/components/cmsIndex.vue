@@ -280,7 +280,6 @@ export default {
     async fetchStatistics() {
       try {
         const response = await total();
-        console.log("Fetched Statistics:", response); // Debugging log
         this.totalViews = response.views || 0;
         this.totalBlogs = response.blog || 0;
         this.totalComments = response.comment || 0;
@@ -591,7 +590,7 @@ export default {
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(255, 255, 255, 0.2);
+  background-color: rgba(255, 255, 255, 0.15);
   z-index: 1;
 }
 

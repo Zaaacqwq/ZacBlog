@@ -38,6 +38,7 @@ service.interceptors.request.use(config => {
 })
 
 // 响应拦截器
+let isSessionExpiredDialogShown = false;
 service.interceptors.response.use(res => {
     // 未设置状态码则默认成功状态
     const code = res.data.code || 200;
@@ -48,6 +49,8 @@ service.interceptors.response.use(res => {
       return res.data
     }
     if (code === 401) {
+      if (!isSessionExpiredDialogShown) {
+        isSessionExpiredDialogShown = true;
       MessageBox.confirm('Login session has expired. You can stay on this page or log in again.', 'System Notification', {
           confirmButtonText: 'Login Again',
           cancelButtonText: 'Cancel',
@@ -57,7 +60,11 @@ service.interceptors.response.use(res => {
         store.dispatch('LogOut').then(() => {
           location.href = '/index';
         })
-      }).catch(() => {});
+      }).catch(() => {})
+      .finally(() => {
+        isSessionExpiredDialogShown = false;
+      });
+    }
       return Promise.reject('Invalid session or session has expired. Please log in again.')
     } else if (code === 500) {
       Message({
