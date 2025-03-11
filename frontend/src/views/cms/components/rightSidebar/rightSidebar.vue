@@ -61,9 +61,6 @@
 
 <script>
 import avatar from '@/assets/images/avatar.png';
-import {
-    cmsListRecommend
-} from "@/api/cms/blog";
 import { listNotice } from "@/api/system/notice";
 import { total } from "@/api/cms/charts";
 export default {
@@ -75,7 +72,6 @@ export default {
             totalViews: 0,
             totalComments: 0,
             totalMessages: 0,
-            recommendList: [],
             latestAnnouncement: '',
         };
     },
@@ -84,7 +80,6 @@ export default {
     },
     mounted() {
         this.fetchLatestAnnouncement();
-        this.getRecommendList();
     },
     methods: {
         async fetchLatestAnnouncement() {
@@ -116,14 +111,6 @@ export default {
                 this.totalMessages = response.message || 0;
             } catch (error) {
                 console.error("Error fetching statistics:", error);
-            }
-        },
-        async getRecommendList() {
-            try {
-                const response = await cmsListRecommend();
-                this.recommendList = response.rows.slice(0, 4);
-            } catch (error) {
-                console.error("Error fetching recommend list:", error);
             }
         },
         getBlogInfo(blogId) {

@@ -157,8 +157,6 @@ import {
   cmsListByTagId,
   cmsListRecommend,
 } from "@/api/cms/blog";
-import { listNotice } from "@/api/system/notice";
-import { total } from "@/api/cms/charts";
 export default {
   name: 'cmsIndex',
   data() {
@@ -227,11 +225,9 @@ export default {
     }
   },
   created() {
-    this.fetchStatistics();
     window.addEventListener('resize', this.screenAdapter)
   },
   mounted() {
-    this.fetchLatestAnnouncement();
     this.$nextTick(function () {
       // 仅在整个视图都被渲染之后才会运行的代码
       this.getTypeList()
@@ -257,37 +253,6 @@ export default {
 
   },
   methods: {
-    async fetchLatestAnnouncement() {
-      try {
-        const response = await listNotice({
-          pageSize: 10,
-          pageNum: 1,
-        });
-
-        if (response.code === 200 && response.rows && response.rows.length > 0) {
-          const latestAnnouncement = response.rows.reduce((latest, current) =>
-            current.noticeId > latest.noticeId ? current : latest
-          );
-          this.latestAnnouncement = latestAnnouncement.noticeTitle || 'No title available';
-        } else {
-          this.latestAnnouncement = 'No announcements available.';
-        }
-      } catch (error) {
-        console.error('Error fetching the latest announcement:', error);
-        this.latestAnnouncement = 'Unable to load the latest announcement.';
-      }
-    },
-    async fetchStatistics() {
-      try {
-        const response = await total();
-        this.totalViews = response.views || 0;
-        this.totalBlogs = response.blog || 0;
-        this.totalComments = response.comment || 0;
-        this.totalMessages = response.message || 0;
-      } catch (error) {
-        console.error("Error fetching statistics:", error);
-      }
-    },
     /** 获取博客列表 */
     getBlogList() {
       let loadingInstance = Loading.service({

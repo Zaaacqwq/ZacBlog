@@ -1,0 +1,13 @@
+G:\Coding\Blog\backend\zaaac-generator\src\main\java\com\zaaac\generator\controller\GenController.java
+G:\Coding\Blog\backend\zaaac-generator\src\main\java\com\zaaac\generator\util\VelocityInitializer.java
+G:\Coding\Blog\backend\zaaac-generator\src\main\java\com\zaaac\generator\config\GenConfig.java
+G:\Coding\Blog\backend\zaaac-generator\src\main\java\com\zaaac\generator\mapper\GenTableColumnMapper.java
+G:\Coding\Blog\backend\zaaac-generator\src\main\java\com\zaaac\generator\service\IGenTableColumnService.java
+G:\Coding\Blog\backend\zaaac-generator\src\main\java\com\zaaac\generator\util\GenUtils.java
+G:\Coding\Blog\backend\zaaac-generator\src\main\java\com\zaaac\generator\util\VelocityUtils.java
+G:\Coding\Blog\backend\zaaac-generator\src\main\java\com\zaaac\generator\domain\GenTable.java
+G:\Coding\Blog\backend\zaaac-generator\src\main\java\com\zaaac\generator\service\GenTableColumnServiceImpl.java
+G:\Coding\Blog\backend\zaaac-generator\src\main\java\com\zaaac\generator\service\GenTableServiceImpl.java
+G:\Coding\Blog\backend\zaaac-generator\src\main\java\com\zaaac\generator\domain\GenTableColumn.java
+G:\Coding\Blog\backend\zaaac-generator\src\main\java\com\zaaac\generator\mapper\GenTableMapper.java
+G:\Coding\Blog\backend\zaaac-generator\src\main\java\com\zaaac\generator\service\IGenTableService.java

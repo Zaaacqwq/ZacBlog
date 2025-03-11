@@ -1,0 +1,13 @@
+com\zaaac\generator\util\VelocityInitializer.class
+com\zaaac\generator\util\VelocityUtils.class
+com\zaaac\generator\config\GenConfig.class
+com\zaaac\generator\service\IGenTableService.class
+com\zaaac\generator\service\GenTableServiceImpl.class
+com\zaaac\generator\mapper\GenTableColumnMapper.class
+com\zaaac\generator\controller\GenController.class
+com\zaaac\generator\service\GenTableColumnServiceImpl.class
+com\zaaac\generator\service\IGenTableColumnService.class
+com\zaaac\generator\domain\GenTableColumn.class
+com\zaaac\generator\domain\GenTable.class
+com\zaaac\generator\util\GenUtils.class
+com\zaaac\generator\mapper\GenTableMapper.class
