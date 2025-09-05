@@ -1,7 +1,7 @@
 package com.zaaac.cms.fileInfo.service.impl;
 /**
  * @program: Zaaac-Vue
- * @Author: WangNing
+ * @Author: Zaaac
  * @Description: 〈〉
  * @Date: 2022/1/2 1:00
  */
@@ -15,7 +15,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 /**
- * @Author: WangNing
+ * @Author: Zaaac
  * @Description:〈〉
  * @Date: 2022/1/2 1:00
  **/

@@ -1,7 +1,7 @@
 package com.zaaac.cms.message.domain;
 /**
  * @program: Zaaac-Vue
- * @Author: WangNing
+ * @Author: Zaaac
  * @Description: 〈留言点赞实体类〉
  * @Date: 2022/1/19 8:38
  */
@@ -11,7 +11,7 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
 /**
- * @Author: WangNing
+ * @Author: Zaaac
  * @Description:〈留言点赞实体类〉
  * @Date: 2022/1/19 8:38
  **/

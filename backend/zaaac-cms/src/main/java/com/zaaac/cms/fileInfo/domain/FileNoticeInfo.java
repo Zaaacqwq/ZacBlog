@@ -1,7 +1,7 @@
 package com.zaaac.cms.fileInfo.domain;
 /**
  * @program: Zaaac-Vue
- * @Author: WangNing
+ * @Author: Zaaac
  * @Description: 〈通知公告和文件关联 sys_notice_file〉
  * @Date: 2021/12/31 21:49
  */
@@ -10,7 +10,7 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
 /**
- * @Author: WangNing
+ * @Author: Zaaac
  * @Description:〈通知公告和文件关联 sys_notice_file〉
  * @Date: 2021/12/31 21:49
  **/

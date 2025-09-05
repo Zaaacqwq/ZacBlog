@@ -1,6 +1,13 @@
 import request from '@/utils/request'
 import { praseStrEmpty } from "@/utils/ruoyi";
 
+export function info() {
+  return request({
+    url: '/cms/chart/info',
+    method: 'get',
+  })
+}
+
 // 查询总阅读量/文章总数/评论总数/留言总数
 export function total() {
   return request({

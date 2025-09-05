@@ -21,19 +21,19 @@ export default {
   },
   // 弹出提示
   alert(content) {
-    MessageBox.alert(content, "系统提示")
+    MessageBox.alert(content, "System Prompt")
   },
   // 错误提示
   alertError(content) {
-    MessageBox.alert(content, "系统提示", { type: 'error' })
+    MessageBox.alert(content, "System Prompt", { type: 'error' })
   },
   // 成功提示
   alertSuccess(content) {
-    MessageBox.alert(content, "系统提示", { type: 'success' })
+    MessageBox.alert(content, "System Prompt", { type: 'success' })
   },
   // 警告提示
   alertWarning(content) {
-    MessageBox.alert(content, "系统提示", { type: 'warning' })
+    MessageBox.alert(content, "System Prompt", { type: 'warning' })
   },
   // 通知提示
   notify(content) {
@@ -53,17 +53,17 @@ export default {
   },
   // 确认窗体
   confirm(content) {
-    return MessageBox.confirm(content, "系统提示", {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
+    return MessageBox.confirm(content, "System Prompt", {
+      confirmButtonText: 'Confirm',
+      cancelButtonText: 'Cancel',
       type: "warning",
     })
   },
   // 提交内容
   prompt(content) {
-    return MessageBox.prompt(content, "系统提示", {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
+    return MessageBox.prompt(content, "System Prompt", {
+      confirmButtonText: 'Confirm',
+      cancelButtonText: 'Cancel',
       type: "warning",
     })
   },

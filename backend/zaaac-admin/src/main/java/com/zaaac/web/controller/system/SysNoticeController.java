@@ -32,6 +32,15 @@ public class SysNoticeController extends BaseController
     @Autowired
     private ISysNoticeService noticeService;
 
+    @PreAuthorize("permitAll()")
+    @GetMapping("/latest")
+    public TableDataInfo latest(SysNotice notice)
+    {
+        startPage();
+        List<SysNotice> list = noticeService.selectNoticeList(notice);
+        return getDataTable(list);
+    }
+
     /**
      * 获取通知公告列表
      */

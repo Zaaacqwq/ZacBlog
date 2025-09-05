@@ -76,4 +76,11 @@ public interface CmsBlogMapper
      * @return 结果
      */
     public int deleteCmsBlogByIds(Long[] ids);
+
+    int batchDeleteCommentLikesByBlogIds(@Param("ids") Long[] ids);
+    int batchDeleteCommentsByBlogIds(@Param("ids") Long[] ids);
+
+    int deleteCommentLikesByBlogId(@Param("blogId") Long blogId);
+    int deleteCommentsByBlogId(@Param("blogId") Long blogId);
+
 }

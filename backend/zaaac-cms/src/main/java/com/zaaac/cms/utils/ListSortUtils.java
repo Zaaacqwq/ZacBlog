@@ -9,7 +9,7 @@ import java.util.Date;
 
 /**
  * @program: Zaaac-Vue
- * @Author: WangNing
+ * @Author: Zaaac
  * @Description: 〈list多属性排序〉
  * @Date: 2022/1/20 10:25
  */

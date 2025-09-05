@@ -1,7 +1,7 @@
 package com.zaaac.cms.charts.controller;
 /**
  * @program: zaaac-vue-blog
- * @Author: WangNing
+ * @Author: Zaaac
  * @Description: 〈图表后台接口〉
  * @Date: 2022/4/25 10:37
  */
@@ -20,6 +20,7 @@ import com.zaaac.common.core.controller.BaseController;
 import com.zaaac.common.utils.SecurityUtils;
 import com.zaaac.framework.web.service.SysPermissionService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -28,7 +29,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
- * @Author: WangNing
+ * @Author: Zaaac
  * @Description:〈图表后台接口〉
  * @Date: 2022/4/25 10:37
  **/
@@ -52,6 +53,32 @@ public class ChartController extends BaseController {
 
     @Autowired
     private SysPermissionService permissionService;
+
+    @PreAuthorize("permitAll()")
+    @GetMapping("/info")
+    public Map info() {
+        Map total = new HashMap();
+        CmsBlog cmsBlog = new CmsBlog();
+        CmsComment cmsComment = new CmsComment();
+        CmsMessage cmsMessage = new CmsMessage();
+        int views = 0;
+        int message = 0;
+
+        cmsBlog.setType("1");
+        List<CmsBlog> blogList = chartService.selectList(cmsBlog);
+        for (CmsBlog blog : blogList) {
+            views += blog.getViews();
+        }
+        cmsComment.setDelFlag("0");
+        List<CmsComment> commentList = cmsCommentService.selectCmsCommentList(cmsComment);
+        cmsMessage.setDelFlag("0");
+        List<CmsMessage> messageList = cmsMessageService.selectCmsMessageList(cmsMessage);
+        total.put("views", views);
+        total.put("blog", blogList.size());
+        total.put("comment", commentList.size());
+        total.put("message", messageList.size());
+        return total;
+    }
 
     /**
      * 查询总阅读量/文章总数/评论总数/留言总数

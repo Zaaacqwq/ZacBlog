@@ -8,8 +8,8 @@ zaaac:
   copyrightYear: 2025
   # 实例演示开关
   demoEnabled: true
-  # 文件路径 示例（ Windows配置D:/zaaac/uploadPath，Linux配置 /home/zaaac/uploadPath）
-  profile: G:\Coding\Blog\zaaac\uploadPath
+  # 文件路径 示例（ Windows配置G:\Coding\Blog\zaaac\uploadPath，Linux配置 /home/ZacBlog/zaaac/uploadPath/）
+  profile: /home/ZacBlog/zaaac/uploadPath/
   # 获取ip地址开关
   addressEnabled: false
   # 验证码类型 math 数组计算 char 字符验证

@@ -1,7 +1,7 @@
 package com.zaaac.cms.fileInfo.domain;
 /**
  * @program: Zaaac-Vue
- * @Author: WangNing
+ * @Author: Zaaac
  * @Description: 〈blog文件关联 cms_blog_file〉
  * @Date: 2022/1/2 0:41
  */
@@ -10,7 +10,7 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
 /**
- * @Author: WangNing
+ * @Author: Zaaac
  * @Description:〈blog文件关联 cms_blog_file〉
  * @Date: 2022/1/2 0:41
  **/

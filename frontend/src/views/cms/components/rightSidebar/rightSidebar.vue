@@ -61,8 +61,8 @@
 
 <script>
 import avatar from '@/assets/images/avatar.png';
-import { listNotice } from "@/api/system/notice";
-import { total } from "@/api/cms/charts";
+import { latestNotice } from "@/api/system/notice";
+import { info } from "@/api/cms/charts";
 export default {
     name: "RightSidebar",
     data() {
@@ -84,7 +84,7 @@ export default {
     methods: {
         async fetchLatestAnnouncement() {
             try {
-                const response = await listNotice({
+                const response = await latestNotice({
                     pageSize: 10,
                     pageNum: 1,
                 });
@@ -104,7 +104,7 @@ export default {
         },
         async fetchStatistics() {
             try {
-                const response = await total();
+                const response = await info();
                 this.totalViews = response.views || 0;
                 this.totalBlogs = response.blog || 0;
                 this.totalComments = response.comment || 0;

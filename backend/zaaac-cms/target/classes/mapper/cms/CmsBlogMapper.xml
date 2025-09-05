@@ -162,4 +162,33 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             #{id}
         </foreach>
     </delete>
+
+    <delete id="batchDeleteCommentLikesByBlogIds">
+        DELETE l FROM cms_comment_like l
+        JOIN cms_comment c ON c.id = l.comment_id
+        WHERE c.blog_id IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <delete id="batchDeleteCommentsByBlogIds">
+        DELETE FROM cms_comment
+        WHERE blog_id IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <delete id="deleteCommentLikesByBlogId">
+        DELETE l FROM cms_comment_like l
+  JOIN cms_comment c ON c.id = l.comment_id
+  WHERE c.blog_id = #{blogId}
+    </delete>
+
+    <delete id="deleteCommentsByBlogId">
+        DELETE FROM cms_comment WHERE blog_id = #{blogId}
+    </delete>
+
+
 </mapper>

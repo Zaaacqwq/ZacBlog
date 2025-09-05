@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import com.zaaac.cms.blog.mapper.CmsBlogMapper;
 import com.zaaac.cms.blog.domain.CmsBlog;
 import com.zaaac.cms.blog.service.ICmsBlogService;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * 文章管理Service业务层处理
@@ -213,8 +214,11 @@ public class CmsBlogServiceImpl implements ICmsBlogService
      * @return 结果
      */
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public int deleteCmsBlogByIds(Long[] ids)
     {
+        cmsBlogMapper.batchDeleteCommentLikesByBlogIds(ids);
+        cmsBlogMapper.batchDeleteCommentsByBlogIds(ids);
         for (Long id : ids) {
             //清空文章分类关联
             cmsBlogTypeMapper.deleteBlogTypeByBlogId(id);
@@ -233,6 +237,8 @@ public class CmsBlogServiceImpl implements ICmsBlogService
     @Override
     public int deleteCmsBlogById(Long id)
     {
+        cmsBlogMapper.deleteCommentLikesByBlogId(id);
+        cmsBlogMapper.deleteCommentsByBlogId(id);
         //清空文章分类关联
         cmsBlogTypeMapper.deleteBlogTypeByBlogId(id);
         //清空文章标签关联

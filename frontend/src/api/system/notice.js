@@ -1,5 +1,13 @@
 import request from '@/utils/request'
 
+export function latestNotice(query) {
+  return request({
+    url: '/system/notice/latest',
+    method: 'get',
+    params: query
+  })
+}
+
 // 查询公告列表
 export function listNotice(query) {
   return request({
