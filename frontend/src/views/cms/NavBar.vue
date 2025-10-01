@@ -135,9 +135,13 @@ export default {
   },
   mounted() {
     window.addEventListener("resize", this.handleResize);
+    document.addEventListener("click", this.handleClickOutside);
+    document.addEventListener("touchstart", this.handleClickOutside); // 手机触屏也要
   },
   beforeDestroy() {
     window.removeEventListener("resize", this.handleResize);
+    document.removeEventListener("click", this.handleClickOutside);
+    document.removeEventListener("touchstart", this.handleClickOutside);
   },
   computed: {
     ...mapGetters([
@@ -162,6 +166,17 @@ export default {
     // this.ResponsiveLayout();
   },
   methods: {
+    handleClickOutside(e) {
+      // 如果菜单显示，并且点击不在菜单区域和按钮区域，就关闭
+      if (this.menuHiddenVisiable) {
+        const menu = this.$el.querySelector(".el-menu-hidden");
+        const toggleBtn = this.$el.querySelector(".menu-expend");
+
+        if (menu && !menu.contains(e.target) && toggleBtn && !toggleBtn.contains(e.target)) {
+          this.menuAway();
+        }
+      }
+    },
     handleResize() {
       if (window.innerWidth > 1200) {
         this.menuHiddenVisiable = false;
@@ -332,21 +347,37 @@ export default {
   transition: color 0.3s ease-in-out;
 }
 
-.el-menu-hidden /deep/ .el-menu-item {
-  background-color: rgba(84, 92, 100, 0.5) !important;
-  font-size: 18px;
-  padding: 0px 0px;
-  margin: 0px 0;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
+.el-menu-hidden /deep/ .el-menu-item{
+  height: 40px;
+  line-height: 40px;
+  margin: 4px 0;
+  padding: 0 12px !important;
+  border-radius: 12px;
+  font-size: 15px;
+  color: #111 !important;
+  background: rgba(255,255,255,.55);
+  transition: background .15s ease, transform .15s ease;
 }
 
-.el-menu-hidden /deep/ .el-menu-item:hover {
-  background-color: rgba(84, 92, 100, 0.7) !important;
-  border-radius: 8px;
-  height: 25%;
-  transition: background-color 0.3s ease;
+.el-menu-hidden /deep/ .el-menu-item i{
+  font-size: 18px; color: #111 !important;
+}
+
+.el-menu-hidden /deep/ .el-menu-item:hover{
+  background: rgba(0,0,0,.06) !important;
+  transform: translateY(-1px);
+}
+
+.no-caret ::v-deep .popper__arrow,
+.no-caret ::v-deep .el-popper__arrow {
+  display: none !important;
+  border: 0 !important;
+}
+
+/* 适配更小屏（让卡片更窄、更贴边） */
+@media (max-width: 380px){
+  .el-menu-hidden{ max-width: 260px; padding: 6px; }
+  .el-menu-hidden /deep/ .el-menu-item{ height: 38px; font-size: 14px; }
 }
 
 .search_input {
@@ -471,14 +502,30 @@ export default {
   }
 }
 
-.el-menu-hidden {
-  /*display: none;*/
-  position: absolute;
+.el-menu-hidden{
+  position: fixed;
   top: 70px;
-  left: 0;
-  border-top: 1px solid #ccc;
-  border-right: none;
-  width: 100%;
+  left: 12px;
+  width: auto;               /* 关键：不要 100%/78vw */
+  max-width: 300px;          /* 260~300 自行调 */
+  padding: 8px;
+  border: 0 !important;
+  background: rgba(255,255,255,.68);
+  backdrop-filter: saturate(160%) blur(10px);
+  -webkit-backdrop-filter: saturate(160%) blur(10px);
+  border-radius: 14px;
+  box-shadow: 0 10px 24px rgba(0,0,0,.10);
+  z-index: 1001;
+  overflow: hidden;
+}
+
+.el-menu-hidden /deep/ .el-menu,
+.el-menu-hidden /deep/ .el-menu-item,
+.el-menu-hidden /deep/ .el-submenu__title {
+  width: auto;               /* 关键：覆盖默认宽度 */
+  background: transparent !important;
+  border: 0 !important;
+  padding: 0;
 }
 
 .menu-expend {
