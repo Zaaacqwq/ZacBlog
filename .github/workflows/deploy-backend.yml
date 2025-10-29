@@ -24,8 +24,8 @@ jobs:
           cache: 'maven'
 
       - name: Build with Maven
-        working-directory: backend/zaaac-admin
-        run: mvn -B -DskipTests clean package
+        working-directory: backend
+        run: mvn -B -DskipTests clean install
 
       - name: Prepare artifact
         run: cp backend/zaaac-admin/target/zaaac-admin.jar ./zaaac-admin.jar
