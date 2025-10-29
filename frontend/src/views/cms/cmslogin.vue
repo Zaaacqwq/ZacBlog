@@ -1,5 +1,12 @@
 <template>
   <div class="login">
+    <el-button 
+      icon="el-icon-back" 
+      circle 
+      class="back-to-home-btn"
+      @click="backToHome"
+      title="Back to Home"
+    ></el-button>
     <el-form ref="loginForm" :model="loginForm" :rules="loginRules" class="login-form">
       <h3 class="title">Login</h3>
       <el-form-item prop="username">
@@ -108,6 +115,9 @@ export default {
     this.getCookie();
   },
   methods: {
+    backToHome() {
+      this.$router.push({ path: "/cms/main/cmsIndex" });
+    },
     getCode() {
       getCodeImg().then(res => {
         this.captchaOnOff = res.captchaOnOff === undefined ? true : res.captchaOnOff;
@@ -215,5 +225,25 @@ export default {
 }
 .login-code-img {
   height: 38px;
+}
+.back-to-home-btn {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  width: 44px;
+  height: 44px;
+  background: rgba(255, 255, 255, 0.9);
+  border: none;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+  transition: all 0.3s ease;
+  z-index: 100;
+}
+.back-to-home-btn:hover {
+  background: rgba(255, 255, 255, 1);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  transform: translateY(-2px);
+}
+.back-to-home-btn:active {
+  transform: translateY(0);
 }
 </style>
