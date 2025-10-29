@@ -1,74 +1,79 @@
 <template>
   <div class="no-caret">
     <el-header :style="'margin-bottom:' + headerBottom + 'px; height: 70px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);'">
-      <h2 class="logo"><svg-icon icon-class="bird" /> ZacBlog!</h2>
-      <div class="bg-purple-light">
-        <el-menu :default-active="activeIndex" router class="el-menu-demo centered-menu" mode="horizontal"
+      <!-- Left: logo and optional menu button -->
+      <div class="nav-left">
+        <h2 class="logo"><svg-icon icon-class="bird" /> ZacBlog!</h2>
+        <div class="menu-expend" @click="menuExpend">
+          <svg-icon icon-class="list" class="menu-icon" />
+        </div>
+      </div>
+
+      <!-- Center: main menu (centered) -->
+      <div class="nav-center">
+        <el-menu :default-active="activeIndex" router :class="['el-menu-demo', 'centered-menu', menuStyleClass]" mode="horizontal"
           style="border: none;" background-color="rgba(0,0,0,0)" text-color="#000" active-text-color="#000000">
-          <el-menu-item index="/cms/main/cmsIndex"><i class="el-icon-s-home" style="color: rgba(0, 0, 0);"></i>Home
+          <el-menu-item index="/cms/main/cmsIndex">
+            <svg-icon icon-class="home-line" class="menu-icon" />
+            Home
           </el-menu-item>
           <el-menu-item :index="item.path" v-for="item in menulist" :key="item.id">
-            <!--                图标-->
-            <i :class="item.icon" style="color: rgba(0, 0, 0);"></i>
-            <!--                文本-->
+            <svg-icon :icon-class="item.icon" class="menu-icon" />
             {{ item.authName }}
           </el-menu-item>
         </el-menu>
-      </div>
-      <div class="bg-purple-light el-menu-hidden" v-if="menuHiddenVisiable">
-        <el-menu :default-active="activeIndex" router background-color="rgba(84,92,100,0.5)" text-color="#000"
-          active-text-color="#000000">
-          <el-menu-item index="/cms/main/cmsIndex" @click="menuAway"><i class="el-icon-s-home"
-              style="color: rgba(0, 0, 0);"></i>Home</el-menu-item>
-          <el-menu-item :index="item.path" v-for="item in menulist" :key="item.id" @click="menuAway">
-            <!--                图标-->
-            <i :class="item.icon" style="color: rgba(0, 0, 0);"></i>
-            <!--                文本-->
-            {{ item.authName }}
-          </el-menu-item>
-        </el-menu>
+
+        <div class="el-menu-hidden" v-if="menuHiddenVisiable">
+          <el-menu :default-active="activeIndex" router background-color="rgba(84,92,100,0.5)" text-color="#000"
+            active-text-color="#000000">
+            <el-menu-item index="/cms/main/cmsIndex" @click="menuAway">
+              <svg-icon icon-class="home-line" class="menu-icon" />
+              Home
+            </el-menu-item>
+            <el-menu-item :index="item.path" v-for="item in menulist" :key="item.id" @click="menuAway">
+              <svg-icon :icon-class="item.icon" class="menu-icon" />
+              {{ item.authName }}
+            </el-menu-item>
+          </el-menu>
+        </div>
       </div>
 
-      <div class="menu-expend" @click="menuExpend">
-        <i class="el-icon-menu" style="color: rgba(0, 0, 0);"></i>
-      </div>
+      <!-- Right: search and auth -->
+      <div class="nav-right">
+        <div v-if="searchInput" class="search_input">
+          <el-input @focus="checkInput" @blur="notSearching()" class="search" placeholder="Search Blogs"
+            prefix-icon="el-icon-search" v-model="queryInfo.query" size="large">
+          </el-input>
+          <ul v-if="searching">
+            <li class="animate__animated animate__fadeInDown search-blog" v-for="blog in searchList" :key="blog.id"
+              @click="getBlogInfo(blog.id)">
+              <a><span v-html="blog.title"></span></a>
+            </li>
+          </ul>
+        </div>
 
-      <div v-if="searchInput" class="search_input">
-        <el-input @focus="checkInput" @blur="notSearching()" class="search" placeholder="Search Blogs"
-          prefix-icon="el-icon-search" v-model="queryInfo.query" size="large">
-        </el-input>
-        <ul v-if="searching">
-          <li class="animate__animated animate__fadeInDown search-blog" v-for="blog in searchList" :key="blog.id"
-            @click="getBlogInfo(blog.id)">
-            <a><span v-html="blog.title"></span></a>
-          </li>
-        </ul>
-      </div>
-
-      <div v-if="islogin" class="bg-purple">
-        <el-dropdown class="avatar-container right-menu-item hover-effect" trigger="click">
-          <div class="avatar-wrapper">
-            <el-avatar class="user-avatar" :src="avatar" @error="errorHandler">
-              <i class="el-icon-s-custom" />
-            </el-avatar>
-            <p class="avatar-Name" style="color: black;">{{ name }}</p>
-          </div>
-          <el-dropdown-menu slot="dropdown">
-            <router-link target="_blank" to="/index">
-              <el-dropdown-item>Manage Blogs</el-dropdown-item>
-            </router-link>
-            <el-dropdown-item divided @click.native="logout">
-              <span>Logout</span>
-            </el-dropdown-item>
-          </el-dropdown-menu>
-        </el-dropdown>
-      </div>
-      <div v-else class="bg-purple">
-        <div class="avatar-wrapper">
-          <!-- <el-avatar class="avatar" src="avatar" @error="errorHandler">
-            <i class="el-icon-s-custom" @click="tologin"/>
-          </el-avatar> -->
-          <p class="avatar-Name" @click="tologin" style="color: black;">Login/Register</p>
+        <div v-if="islogin" class="bg-purple">
+          <el-dropdown class="avatar-container right-menu-item hover-effect" trigger="click">
+            <div class="avatar-wrapper">
+              <el-avatar class="user-avatar" :src="avatar" @error="errorHandler">
+                <i class="el-icon-s-custom" />
+              </el-avatar>
+              <p class="avatar-Name" style="color: black;">{{ name }}</p>
+            </div>
+            <el-dropdown-menu slot="dropdown">
+              <router-link target="_blank" to="/index">
+                <el-dropdown-item>Manage Blogs</el-dropdown-item>
+              </router-link>
+              <el-dropdown-item divided @click.native="logout">
+                <span>Logout</span>
+              </el-dropdown-item>
+            </el-dropdown-menu>
+          </el-dropdown>
+        </div>
+        <div v-else class="bg-purple">
+          <el-button @click="tologin" type="primary" size="medium" round class="login-btn">
+            Login
+          </el-button>
         </div>
       </div>
     </el-header>
@@ -90,7 +95,9 @@ export default {
   name: 'cmsNavBar',
   data() {
     return {
-      activeIndex: 'this.$router.path',
+      // menu style: 'underline' (default) or 'pill'
+      menuStyle: 'underline',
+      // default-active is driven by route path (see computed)
       islogin: false,
       searchInput: true,
       menuHiddenVisiable: false,
@@ -101,24 +108,25 @@ export default {
       },
       searchList: [],
       searching: false,
-      menulist: [{
-        id: 1,
-        authName: 'Notes',
-        path: '/cms/main/essay',
-        icon: 'el-icon-edit',
-      },
-      {
-        id: 2,
-        authName: 'Comments',
-        path: '/cms/main/message',
-        icon: 'el-icon-chat-dot-round',
-      },
-      {
-        id: 3,
-        authName: 'About me',
-        path: '/cms/doucument',
-        icon: 'el-icon-document',
-      },
+      menulist: [
+        {
+          id: 1,
+          authName: 'Notes',
+          path: '/cms/main/essay',
+          icon: 'edit-line',
+        },
+        {
+          id: 2,
+          authName: 'Comments',
+          path: '/cms/main/message',
+          icon: 'chat-line',
+        },
+        {
+          id: 3,
+          authName: 'About me',
+          path: '/cms/doucument',
+          icon: 'user-line',
+        },
       ],
       // 查询参数
       queryParams: {
@@ -148,6 +156,13 @@ export default {
       'avatar',
       'name'
     ]),
+    // keep el-menu active in sync with vue-router
+    activeIndex() {
+      return this.$route.path
+    },
+    menuStyleClass() {
+      return this.menuStyle === 'pill' ? 'menu-style--pill' : 'menu-style--underline'
+    }
   },
   watch: {
     'queryInfo.query': {
@@ -303,6 +318,7 @@ export default {
   justify-content: space-between;
   background-color: rgba(255, 255, 255, 0.8);
   align-items: center;
+  padding: 0 20px;
   transition: .2s;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
 }
@@ -316,36 +332,85 @@ export default {
   background-color: rgba(0, 0, 0, 0) !important;
 }
 
+/* base menu item styles */
 .el-menu /deep/ .el-menu-item {
-  background-color: rgba(0, 0, 0, 0) !important;
+  background-color: transparent;
+  color: #111 !important; /* 默认黑色文字 */
   font-size: 20px;
-  padding: 8px 12px;
-  margin: 10px;
-  border-radius: 50px;
+  padding: 8px 14px;
+  margin: 0 8px;
+  border-radius: 12px; /* for pill style */
   border-bottom: none;
-  transition: background-color 0.3s ease, border-radius 0.3s ease, padding 0.3s ease;
+  transition: background-color 180ms ease, color 180ms ease, box-shadow 180ms ease;
   display: flex;
   align-items: center;
+  position: relative;
 }
 
-.el-menu /deep/ .el-menu-item i {
-  color: rgba(255, 255, 255);
-  font-size: 22px;
+.menu-icon { font-size: 20px; margin-right: 6px; line-height: 1; }
+.el-menu /deep/ .el-menu-item i { color: currentColor; font-size: 20px; margin-right: 6px; transition: color 160ms ease, transform 160ms ease; }
+
+/* Style A: Pill hover/active */
+.menu-style--pill /deep/ .el-menu-item:hover,
+.menu-style--pill /deep/ .el-menu-item:focus {
+  background: #111;
+  color: #fff !important;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.08);
 }
 
-.el-menu /deep/ .el-menu-item:hover {
-  color: rgba(255, 255, 255, 1) !important;
-  background-color: rgba(0, 0, 0, 0.7) !important;
-  height: 50%;
-  padding: 4px 20px;
-  border-radius: 50px;
-  transition: color 0.3s ease-in-out, border-radius 0.3s ease, padding 0.3s ease, height 0.3s ease, background-color 0.3s ease;
+.menu-style--pill /deep/ .el-menu-item:hover i,
+.menu-style--pill /deep/ .el-menu-item:focus i {
+  color: #fff;
+  transform: translateY(-1px) scale(1.02);
 }
 
-.el-menu /deep/ .el-menu-item:hover i {
-  color: rgba(255, 255, 255, 1) !important;
-  transition: color 0.3s ease-in-out;
+.menu-style--pill /deep/ .el-menu-item.is-active {
+  background: #111 !important;
+  color: #fff !important;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+  font-weight: 600;
+  transform: translateY(-1px);
 }
+
+.menu-style--pill /deep/ .el-menu-item.is-active i {
+  color: #fff;
+  transform: translateY(-1px) scale(1.02);
+}
+
+/* Style B: Underline slide */
+.menu-style--underline /deep/ .el-menu-item {
+  background: transparent !important;
+}
+.menu-style--underline /deep/ .el-menu-item::after {
+  content: "";
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: 6px;
+  height: 2px;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: 50% 50%;
+  transition: transform 200ms ease;
+  opacity: .9;
+}
+.menu-style--underline /deep/ .el-menu-item:hover,
+.menu-style--underline /deep/ .el-menu-item:focus {
+  color: #000 !important;
+}
+.menu-style--underline /deep/ .el-menu-item:hover::after,
+.menu-style--underline /deep/ .el-menu-item:focus::after {
+  transform: scaleX(1);
+}
+.menu-style--underline /deep/ .el-menu-item.is-active {
+  font-weight: 600;
+}
+.menu-style--underline /deep/ .el-menu-item.is-active::after {
+  transform: scaleX(1);
+}
+
+/* keyboard focus */
+.el-menu /deep/ .el-menu-item:focus { outline: none; }
 
 .el-menu-hidden /deep/ .el-menu-item{
   height: 40px;
@@ -381,12 +446,13 @@ export default {
 }
 
 .search_input {
-  display: flex;
+  display: inline-flex;
   position: relative;
   box-sizing: border-box;
-  margin-right: 100px;
-  width: 350px;
-  max-width: 100%;
+  margin-right: 20px;
+  width: auto;           /* allow it to size to content */
+  min-width: 120px;     /* small minimum so placeholder fits */
+  max-width: 260px;     /* reasonable cap for larger queries */
 }
 
 .search_input ul {
@@ -401,6 +467,17 @@ export default {
   box-shadow: 0 2px 4px rgba(58, 118, 142, 0.16);
   padding: 10px 0;
   font-size: 14px;
+  box-sizing: border-box;
+}
+
+.search_input .el-input {
+  width: auto !important;       /* don't force full width */
+  display: inline-block;
+  min-width: 120px;
+}
+
+.search_input .el-input .el-input__inner {
+  width: 100%;
   box-sizing: border-box;
 }
 
@@ -428,6 +505,7 @@ export default {
   text-overflow: ellipsis;
   display: -webkit-box;
   -webkit-line-clamp: 1;
+  line-clamp: 1;
   -webkit-box-orient: vertical;
   padding-left: 20px;
   padding-right: 20px;
@@ -443,13 +521,13 @@ export default {
 }
 
 .bg-purple-light {
-  float: right;
   display: flex;
-  width: 100%;
+  align-items: center;
 }
 
 .bg-purple {
-  float: right;
+  display: flex;
+  align-items: center;
 }
 
 .user-avatar {
@@ -480,11 +558,10 @@ export default {
 .logo {
   display: flex;
   align-items: center;
-  float: relative;
   color: rgb(0, 0, 0);
   font-weight: bold;
   font-size: 26px;
-  margin-left: 350px;
+  margin: 0;
   transition: margin-left 0.5s ease;
 }
 
@@ -545,6 +622,43 @@ export default {
   transition: transform 0.3s ease, opacity 0.3s ease;
 }
 
+/* Three-column layout containers */
+.nav-left, .nav-center, .nav-right {
+  display: flex;
+  align-items: center;
+  flex: 1 1 0;
+}
+
+.nav-left {
+  justify-content: flex-start;
+  gap: 12px;
+}
+
+.nav-center {
+  justify-content: center;
+}
+
+.nav-right {
+  justify-content: flex-end;
+  gap: 16px;
+}
+
+.login-btn {
+  font-weight: 500;
+  padding: 10px 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease;
+}
+
+.login-btn:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transform: translateY(-1px);
+}
+
+.login-btn:active {
+  transform: translateY(0);
+}
+
 /* 窗口可视区域小于1000隐藏搜索框 */
 @media screen and (max-width: 1000px) {
   .search_input {
@@ -553,7 +667,8 @@ export default {
 }
 
 @media screen and (max-width: 1200px) {
-  .el-menu /deep/ .el-menu-item {
+  /* Only apply semi-transparent background to the mobile dropdown menu items */
+  .el-menu-hidden /deep/ .el-menu-item {
     background-color: rgba(255, 255, 255, 0.5) !important;
   }
 
