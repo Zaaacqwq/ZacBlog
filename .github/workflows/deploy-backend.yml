@@ -4,7 +4,7 @@ on:
   push:
     branches: [ "main" ]
     paths:
-      - "backend/zaaac-admin/**"
+      - "backend/**"
       - ".github/workflows/deploy-backend.yml"
   workflow_dispatch: {}
 
@@ -16,46 +16,46 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up JDK 17
+      - name: Setup Java
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
           cache: 'maven'
 
-      - name: Build with Maven
+      - name: Build backend (all modules)
         working-directory: backend
         run: mvn -B -DskipTests clean install
 
-      - name: Prepare artifact
+      - name: Copy final JAR
         run: cp backend/zaaac-admin/target/zaaac-admin.jar ./zaaac-admin.jar
 
-      - name: Upload JAR to server
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_KEY }}
-          port: ${{ secrets.SSH_PORT }}
-          source: "zaaac-admin.jar"
-          target: "${{ secrets.BACKEND_DIR }}"
-          overwrite: true
+      # === SSH & Deploy ===
+      - name: Decode SSH key
+        run: |
+          echo "${{ secrets.SSH_KEY_B64 }}" | base64 -d > /tmp/gha_id
+          chmod 600 /tmp/gha_id
 
-      - name: Restart backend via screen
-        uses: appleboy/ssh-action@v1.1.0
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_KEY }}
-          port: ${{ secrets.SSH_PORT }}
-          script: |
-            bash /home/ZacBlog/scripts/restart_backend.sh \
-              "${{ secrets.BACKEND_DIR }}" \
-              "${{ secrets.BACKEND_SCREEN }}" \
-              "${{ secrets.JAVA_BIN || 'java' }}" \
-              "${{ secrets.BACKEND_JAR_NAME }}"
+      - name: SSH sanity check
+        run: |
+          ssh -i /tmp/gha_id -o StrictHostKeyChecking=no -p ${{ secrets.SSH_PORT }} \
+            ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} \
+            'echo "✅ SSH connected as $(whoami)" && ls -lah /home/ZacBlog | head'
 
-            echo "=== screen sessions ==="
-            screen -list || true
-            echo "=== last 60 lines of app.log ==="
-            tail -n 60 "${{ secrets.BACKEND_DIR }}/app.log" || true
+      - name: Upload JAR
+        run: |
+          scp -i /tmp/gha_id -o StrictHostKeyChecking=no -P ${{ secrets.SSH_PORT }} \
+            zaaac-admin.jar ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ secrets.BACKEND_DIR }}/
+
+      - name: Restart backend on server
+        run: |
+          ssh -i /tmp/gha_id -o StrictHostKeyChecking=no -p ${{ secrets.SSH_PORT }} \
+            ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "
+              bash /home/ZacBlog/scripts/restart_backend.sh \
+                '${{ secrets.BACKEND_DIR }}' \
+                '${{ secrets.BACKEND_SCREEN }}' \
+                '${{ secrets.JAVA_BIN || 'java' }}' \
+                '${{ secrets.BACKEND_JAR_NAME }}'
+              echo '✅ Backend restarted'
+              tail -n 60 '${{ secrets.BACKEND_DIR }}/app.log' || true
+            "
