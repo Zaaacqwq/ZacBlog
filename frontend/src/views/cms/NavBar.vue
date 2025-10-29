@@ -5,7 +5,7 @@
       <div class="nav-left">
         <h2 class="logo"><svg-icon icon-class="bird" /> ZacBlog!</h2>
         <div class="menu-expend" @click="menuExpend">
-          <svg-icon icon-class="list" class="menu-icon" />
+          <svg-icon icon-class="list" class="menu-expend-icon" />
         </div>
       </div>
 
@@ -421,16 +421,50 @@ export default {
   font-size: 15px;
   color: #111 !important;
   background: rgba(255,255,255,.55);
-  transition: background .15s ease, transform .15s ease;
+  transition: background .2s ease, transform .2s ease, box-shadow .2s ease;
+  position: relative;
+  display: flex;
+  align-items: center;
 }
 
 .el-menu-hidden /deep/ .el-menu-item i{
-  font-size: 18px; color: #111 !important;
+  font-size: 18px; 
+  color: #111 !important;
+  margin-right: 8px;
+  transition: transform .2s ease;
 }
 
 .el-menu-hidden /deep/ .el-menu-item:hover{
+  background: rgba(0,0,0,.08) !important;
+  transform: translateX(4px);
+  box-shadow: 0 2px 8px rgba(0,0,0,.08);
+}
+
+.el-menu-hidden /deep/ .el-menu-item:hover i {
+  transform: scale(1.1);
+}
+
+.el-menu-hidden /deep/ .el-menu-item:active{
+  transform: translateX(2px);
+  background: rgba(0,0,0,.12) !important;
+}
+
+.el-menu-hidden /deep/ .el-menu-item.is-active {
   background: rgba(0,0,0,.06) !important;
-  transform: translateY(-1px);
+  font-weight: 600;
+  box-shadow: 0 2px 6px rgba(0,0,0,.06);
+}
+
+.el-menu-hidden /deep/ .el-menu-item.is-active::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 60%;
+  background: #111;
+  border-radius: 0 2px 2px 0;
 }
 
 .no-caret ::v-deep .popper__arrow,
@@ -581,7 +615,7 @@ export default {
 
 .el-menu-hidden{
   position: fixed;
-  top: 70px;
+  top: 82px;                 /* 从70px改为82px，增加12px间距 */
   left: 12px;
   width: auto;               /* 关键：不要 100%/78vw */
   max-width: 300px;          /* 260~300 自行调 */
@@ -608,9 +642,9 @@ export default {
 .menu-expend {
   display: none !important;
   position: absolute;
-  top: 20px;
+  top: 15px;                 /* 从20px调整为15px，更好地垂直居中 */
   left: 20px;
-  font-size: 24px;
+  font-size: 22px;           /* 从24px调整为22px */
   width: 40px;
   height: 40px;
   background-color: rgba(0, 0, 0, 0.2);
@@ -619,7 +653,16 @@ export default {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: transform 0.3s ease, opacity 0.3s ease;
+  transition: transform 0.3s ease, opacity 0.3s ease, background-color 0.3s ease;
+}
+
+.menu-expend:hover {
+  background-color: rgba(0, 0, 0, 0.3);
+  transform: scale(1.05);
+}
+
+.menu-expend .svg-icon {
+  font-size: 20px !important;  /* 确保图标大小统一 */
 }
 
 /* Three-column layout containers */
