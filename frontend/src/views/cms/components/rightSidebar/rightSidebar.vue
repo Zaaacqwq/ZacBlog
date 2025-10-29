@@ -47,7 +47,7 @@
         </el-card>
         <el-card style="background-color: rgba(255,255,255,0.9)" class="right-item">
             <div slot="header" class="attributes">
-                <b>SiteInfo</b>
+                <b>Site Info</b>
             </div>
             <div class="site-info">
                 <p><strong>Blogs Count:</strong> {{ totalBlogs }}</p>

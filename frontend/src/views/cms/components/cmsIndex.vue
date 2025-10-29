@@ -316,8 +316,10 @@ export default {
         const {
           data: res
         } = response;
-        this.fullTypeList = response.types
-        this.typeList = response.types.slice(0, 4);
+        // Sort by blogNum desc, then typeName asc (case-insensitive)
+        const sortedTypes = this.sortByCountThenAlpha(response.types, 'blogNum', 'typeName')
+        this.fullTypeList = sortedTypes
+        this.typeList = sortedTypes.slice(0, 4);
       });
     },
     // 获取博客标签列表
@@ -326,8 +328,10 @@ export default {
         const {
           data: res
         } = response;
-        this.fullTagList = response.tags
-        this.tagList = response.tags.slice(0, 6);
+        // Sort by blogNum desc, then tagName asc (case-insensitive)
+        const sortedTags = this.sortByCountThenAlpha(response.tags, 'blogNum', 'tagName')
+        this.fullTagList = sortedTags
+        this.tagList = sortedTags.slice(0, 6);
       });
     },
     // 跳转到博客详情页
@@ -412,6 +416,19 @@ export default {
     // 屏幕尺寸变化的监听函数
     screenAdapter() {
       this.screenWidth = document.documentElement.clientWidth;
+    },
+    // Generic sort: by count desc, then name asc (case-insensitive)
+    sortByCountThenAlpha(list, countKey, nameKey) {
+      if (!Array.isArray(list)) return []
+      // Create a shallow copy to avoid mutating the original
+      return list.slice().sort((a, b) => {
+        const ca = Number(a && a[countKey]) || 0
+        const cb = Number(b && b[countKey]) || 0
+        if (cb !== ca) return cb - ca
+        const na = (a && a[nameKey] ? String(a[nameKey]) : '').toLowerCase()
+        const nb = (b && b[nameKey] ? String(b[nameKey]) : '').toLowerCase()
+        return na.localeCompare(nb)
+      })
     }
 
   },
