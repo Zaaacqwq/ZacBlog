@@ -1,7 +1,7 @@
 <template>
   <el-row :gutter="20" style="margin: 100px 0px;">
-    <el-col :sm="2" :lg="5" class="hidden-xs-only" style="opacity:0;">Left PlaceHolder</el-col>
-    <el-col :xs="24" :sm="15" :lg="11">
+    <el-col :sm="1" :lg="3" class="hidden-xs-only" style="opacity:0;">Left PlaceHolder</el-col>
+    <el-col :xs="24" :sm="16" :lg="13">
       <el-card style="background-color: rgba(255, 255, 255,1)" class="first-card">
         <div slot="header" class="total blog-info">
           <div class="user-info">
@@ -85,10 +85,10 @@
         </el-card>
       </el-card>
     </el-col>
-    <el-col :xs="24" :sm="5" :lg="3" class="right-sidebar">
+    <el-col :xs="24" :sm="6" :lg="5" class="right-sidebar">
       <RightSidebar />
     </el-col>
-    <el-col :sm="2" :lg="5" class="hidden-xs-only" style="opacity:0;">Right PlaceHolder</el-col>
+    <el-col :sm="1" :lg="3" class="hidden-xs-only" style="opacity:0;">Right PlaceHolder</el-col>
     <!-- 设置底部距离的 -->
     <!-- <el-backtop :bottom="60">
         <div style="

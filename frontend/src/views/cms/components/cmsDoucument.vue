@@ -1,8 +1,8 @@
 <template>
   <div class="no-caret">
     <el-row :gutter="20" style="margin: 100px 0px;">
-      <el-col :sm="2" :lg="5" class="hidden-xs-only" style="opacity: 0;">Left PlaceHolder</el-col>
-      <el-col :xs="24" :sm="15" :lg="11">
+      <el-col :sm="1" :lg="3" class="hidden-xs-only" style="opacity: 0;">Left PlaceHolder</el-col>
+      <el-col :xs="24" :sm="16" :lg="13">
         <el-container style="opacity: 0.9" class="document-container">
           <el-card class="animate__animated animate__fadeInLeft content-card">
             <div class="markdown-content">
@@ -11,10 +11,10 @@
           </el-card>
         </el-container>
       </el-col>
-      <el-col :xs="24" :sm="5" :lg="3" class="right-sidebar">
+      <el-col :xs="24" :sm="6" :lg="5" class="right-sidebar">
         <RightSidebar />
       </el-col>
-      <el-col :sm="2" :lg="5" class="hidden-xs-only" style="opacity: 0;">Right PlaceHolder</el-col>
+      <el-col :sm="1" :lg="3" class="hidden-xs-only" style="opacity: 0;">Right PlaceHolder</el-col>
       <el-backtop :bottom="60">
         <div class="backtop-icon">
           <svg-icon icon-class="top" style="color: black;"/>

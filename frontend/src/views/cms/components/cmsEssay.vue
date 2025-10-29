@@ -1,8 +1,8 @@
 <template>
   <div class="no-caret">
     <el-row :gutter="20" style="margin: 100px 0px;">
-      <el-col :sm="2" :lg="5" class="hidden-xs-only" style="opacity:0;">Left PlaceHolder</el-col>
-      <el-col :xs="24" :sm="15" :lg="11">
+      <el-col :sm="1" :lg="3" class="hidden-xs-only" style="opacity:0;">Left PlaceHolder</el-col>
+      <el-col :xs="24" :sm="16" :lg="13">
         <el-container>
           <el-timeline class="animate__animated animate__fadeInLeft">
             <el-timeline-item :color="color" v-for="essay in essayList" :key="essay.id" :timestamp="essay.createTime"
@@ -17,10 +17,10 @@
           </el-timeline>
         </el-container>
       </el-col>
-      <el-col :xs="24" :sm="5" :lg="3" class="right-sidebar">
+      <el-col :xs="24" :sm="6" :lg="5" class="right-sidebar">
         <RightSidebar />
       </el-col>
-      <el-col :sm="2" :lg="5" class="hidden-xs-only" style="opacity:0;">Right PlaceHolder</el-col>
+      <el-col :sm="1" :lg="3" class="hidden-xs-only" style="opacity:0;">Right PlaceHolder</el-col>
       <!-- 设置底部距离的 -->
       <el-backtop :bottom="60">
         <div class="backtop-icon">

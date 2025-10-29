@@ -11,8 +11,8 @@
       background: linear-gradient(to bottom, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0) 100%);"></div>
     </el-row>
     <el-row :gutter="20" class="content">
-      <el-col :sm="2" :lg="5" class="hidden-xs-only" style="opacity:0;">Left PlaceHolder</el-col>
-      <el-col :xs="24" :sm="15" :lg="11">
+      <el-col :sm="1" :lg="3" class="hidden-xs-only" style="opacity:0;">Left PlaceHolder</el-col>
+      <el-col :xs="24" :sm="16" :lg="13">
         <el-card style="background-color: rgba(255,255,255,0.9)" class="left-item">
           <div slot="header" class="total">
             <div class="titleIndex">
@@ -73,7 +73,7 @@
             @pagination="getBlogList" style="margin-bottom: 30px;float: right;margin-right: 10px;" />
         </el-card>
       </el-col>
-      <el-col :xs="24" :sm="5" :lg="3" class="right-sidebar">
+      <el-col :xs="24" :sm="6" :lg="5" class="right-sidebar">
         <RightSidebar />
         <el-card style="background-color: rgba(255,255,255,0.9)" class="right-item">
           <div slot="header" class="attributes">
