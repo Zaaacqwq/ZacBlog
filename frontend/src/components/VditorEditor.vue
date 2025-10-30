@@ -25,7 +25,9 @@ export default {
       vditor: null,
       // hide custom preview controls by default since user requested no preview actions
       previewMode: 'desktop',
-      showControls: false
+      showControls: false,
+      // prevent cursor jump by distinguishing internal edits from external value changes
+      _internalEdit: false
     }
   },
   mounted() {
@@ -85,8 +87,12 @@ export default {
           actions: []
         },
         input: (value) => {
+          // mark this change as internal to avoid resetting content in the watcher
+          this._internalEdit = true
           // emit markdown value for v-model
           this.$emit('input', value)
+          // clear the flag on next microtask
+          this.$nextTick(() => { this._internalEdit = false })
         }
       }
 
@@ -131,10 +137,15 @@ export default {
   },
   watch: {
     value(newVal) {
-      // update editor when v-model changes from outside
-      if (this.vditor) {
-        try { this.vditor.setValue(newVal || '') } catch (e) {}
-      }
+      // Only update when value actually changed from the outside
+      if (!this.vditor) return
+      try {
+        if (this._internalEdit) return
+        const current = this.vditor.getValue ? this.vditor.getValue() : ''
+        const nextVal = newVal || ''
+        if (current === nextVal) return
+        this.vditor.setValue(nextVal)
+      } catch (e) {}
     }
   }
 }
