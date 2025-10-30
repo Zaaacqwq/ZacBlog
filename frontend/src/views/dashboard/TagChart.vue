@@ -1,3 +1,4 @@
+<!-- admin tag chart -->
 <template>
     <div class="com-container">
         <h3 class="title">Tags</h3>

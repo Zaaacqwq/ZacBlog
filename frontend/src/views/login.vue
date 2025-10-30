@@ -1,3 +1,4 @@
+<!-- not used login page -->
 <template>
   <div class="login">
     <el-form ref="loginForm" :model="loginForm" :rules="loginRules" class="login-form">

@@ -1,3 +1,4 @@
+<!-- admin bar chart -->
 <template>
   <div :class="className" :style="{height:height,width:width}" >
     <h3 class="title">Notes Total: {{total}}</h3>

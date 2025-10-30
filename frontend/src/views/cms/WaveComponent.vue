@@ -1,3 +1,4 @@
+<!-- wave component -->
 <template>
   <div class="wave-wrapper">
     <svg

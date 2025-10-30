@@ -1,3 +1,4 @@
+<!-- index page for admin -->
 <template>
   <div class="dashboard-editor-container">
 

@@ -1,3 +1,4 @@
+<!-- not used index page for admin marketing -->
 <template>
   <div class="dashboard-editor-container">
 

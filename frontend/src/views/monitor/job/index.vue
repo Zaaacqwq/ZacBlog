@@ -182,7 +182,7 @@
                 <el-tooltip placement="top">
                   <div slot="content">
                     Bean Example: ryTask.ryParams('ry')
-                    <br />Class Example: com.ruoyi.quartz.task.RyTask.ryParams('ry')
+                    <br />Class Example: com.zaaac.quartz.task.RyTask.ryParams('ry')
                     <br />Parameters: Supports String, Boolean, Long, Float, Integer
                   </div>
                   <i class="el-icon-question"></i>

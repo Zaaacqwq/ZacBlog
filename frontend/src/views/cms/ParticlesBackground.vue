@@ -1,3 +1,4 @@
+<!-- particles background hidden -->
 <template>
     <div id="particles-js"></div>
 </template>

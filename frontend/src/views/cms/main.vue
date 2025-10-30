@@ -1,3 +1,4 @@
+<!-- main page -->
 <template>
     <el-main>
       <router-view :key="key" />

@@ -1,3 +1,4 @@
+<!-- main content area -->
 <template>
 
   <el-container>

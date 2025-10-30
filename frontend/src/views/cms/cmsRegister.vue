@@ -1,3 +1,4 @@
+<!-- register page -->
 <template>
   <div class="register">
     <el-form ref="registerForm" :model="registerForm" :rules="registerRules" class="register-form">

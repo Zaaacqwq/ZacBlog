@@ -1,3 +1,4 @@
+<!-- admin radar chart -->
 <template>
   <div :class="className" :style="{height:height,width:width}" />
 </template>
