@@ -181,14 +181,20 @@
 <script>
 import { listTable, previewTable, delTable, genCode, synchDb } from "@/api/tool/gen";
 import importTable from "./importTable";
-import hljs from "highlight.js/lib/highlight";
-import "highlight.js/styles/github-gist.css";
-hljs.registerLanguage("java", require("highlight.js/lib/languages/java"));
-hljs.registerLanguage("xml", require("highlight.js/lib/languages/xml"));
-hljs.registerLanguage("html", require("highlight.js/lib/languages/xml"));
-hljs.registerLanguage("vue", require("highlight.js/lib/languages/xml"));
-hljs.registerLanguage("javascript", require("highlight.js/lib/languages/javascript"));
-hljs.registerLanguage("sql", require("highlight.js/lib/languages/sql"));
+import hljs from "highlight.js/lib/core";
+import java from "highlight.js/lib/languages/java";
+import xml from "highlight.js/lib/languages/xml";
+import javascript from "highlight.js/lib/languages/javascript";
+import sql from "highlight.js/lib/languages/sql";
+import "highlight.js/styles/github.css";
+
+hljs.registerLanguage("java", java);
+hljs.registerLanguage("xml", xml);
+// Map HTML and Vue to XML highlighter for templates
+hljs.registerLanguage("html", xml);
+hljs.registerLanguage("vue", xml);
+hljs.registerLanguage("javascript", javascript);
+hljs.registerLanguage("sql", sql);
 
 export default {
   name: "Gen",
@@ -303,9 +309,18 @@ export default {
     /** 高亮显示 */
     highlightedCode(code, key) {
       const vmName = key.substring(key.lastIndexOf("/") + 1, key.indexOf(".vm"));
-      var language = vmName.substring(vmName.indexOf(".") + 1, vmName.length);
-      const result = hljs.highlight(language, code || "", true);
-      return result.value || '&nbsp;';
+      const language = vmName.substring(vmName.indexOf(".") + 1);
+      try {
+        const result = hljs.highlight(code || "", { language, ignoreIllegals: true });
+        return result.value || '&nbsp;';
+      } catch (e) {
+        try {
+          const auto = hljs.highlightAuto(code || "");
+          return auto.value || '&nbsp;';
+        } catch (_) {
+          return code || '&nbsp;';
+        }
+      }
     },
     /** 复制代码成功 */
     clipboardSuccess(){

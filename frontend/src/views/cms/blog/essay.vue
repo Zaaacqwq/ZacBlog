@@ -77,23 +77,10 @@
           <el-input v-model="form.title" placeholder="Enter title" />
         </el-form-item>
         <el-form-item label="Content">
-          <!-- 图片用base64存储,url方式移动端会显示异常 -->
-          <el-row style="margin-bottom: 20px;">
-            <el-col align="right">
-              <span v-show="form.contentType ==='2'" style="color: #E6A23C;margin-right: 20px;">Saving with the Markdown editor will overwrite content from other editors</span>
-              Editor:
-              <el-select v-model="form.contentType" placeholder="Select">
-                <el-option key="1" label="Quill Rich Text Editor" value="1" />
-                <el-option key="2" label="CherryMarkdown (Recommend)" value="2" />
-                <el-option key="3" label="Tinymce Rich Text Editor" value="3" />
-              </el-select>
-            </el-col>
-          </el-row>
+          <!-- Only Vditor Markdown editor is supported -->
           <el-row>
             <el-col>
-              <cmsEditor v-if="form.contentType ==='1'" v-model="form.content" @getFileId="getFileId" type="base64" :min-height="192" />
-              <CherryMarkdown ref="CherryMarkdown" v-if="form.contentType ==='2'" :height='400' v-model='form.contentMarkdown' ></CherryMarkdown>
-              <Tinymce v-if="form.contentType ==='3'" :height='400' v-model='form.content'></Tinymce>
+              <VditorEditor ref="VditorEditor" v-model="form.contentMarkdown" :height='400' />
             </el-col>
           </el-row>
         </el-form-item>
@@ -169,15 +156,13 @@
   import {
     Loading
   } from 'element-ui';
-  import CherryMarkdown from '@/components/CherryMarkdown'
-  import Tinymce from '@/components/Tinymce'
+  import VditorEditor from '@/components/VditorEditor'
 
   export default {
     name: "Blog",
     dicts: ['cms_blog_status'],
     components: {
-      CherryMarkdown,
-      Tinymce
+      VditorEditor
     },
     data() {
       return {
@@ -277,7 +262,7 @@
           top: "0",
           views: null,
           status: "0",
-          contentType: "1",
+          contentType: "4",
           contentMarkdown: null
         };
         this.resetForm("form");
@@ -310,6 +295,12 @@
         const id = row.id || this.ids
         getBlog(id).then(response => {
           this.form = response.data;
+          // Force Vditor as the only editor
+          this.form.contentType = '4'
+          if (!this.form.contentMarkdown && this.form.content) {
+            // Fallback: if only HTML/content exists, seed markdown field with it
+            this.form.contentMarkdown = this.form.content
+          }
           if (this.form.top == 1) {
             this.top = true;
           };
@@ -329,9 +320,8 @@
               } else {
                 this.form.top = 0;
               }
-              if (this.form.contentType === '2'){
-                this.setFormContent()
-              }
+              // Always sync content from the active editor (Vditor)
+              this.setFormContent()
               if (this.form.id != null) {
                 updateBlog(this.form).then(response => {
                   if(this.fileIds.length>0){
@@ -377,9 +367,8 @@
               } else {
                 this.form.top = 0;
               }
-              if (this.form.contentType === '2'){
-                this.setFormContent()
-              }
+              // Always sync content from the active editor (Vditor)
+              this.setFormContent()
               if (this.form.id != null) {
                 updateBlog(this.form).then(response => {
                   if(this.fileIds.length>0){
@@ -472,7 +461,16 @@
         a.click()
       },
       setFormContent(){
-        this.form.content = this.$refs.CherryMarkdown.getCherryHtml()
+        // Only Vditor: try to get HTML first, fall back to markdown
+        if (this.$refs.VditorEditor) {
+          try {
+            this.form.content = this.$refs.VditorEditor.getHtml() || this.$refs.VditorEditor.getMarkdown()
+          } catch (e) {
+            this.form.content = this.form.contentMarkdown
+          }
+        } else {
+          this.form.content = this.form.contentMarkdown
+        }
       },
     }
   };

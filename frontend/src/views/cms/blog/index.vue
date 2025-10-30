@@ -138,23 +138,10 @@
           </el-col>
         </el-row>
         <el-form-item label="Content">
-          <!-- 图片用base64存储,url方式移动端会显示异常 -->
-          <el-row style="margin-bottom: 20px;">
-            <el-col align="right">
-              <span v-show="form.contentType ==='2'" style="color: #E6A23C;margin-right: 20px;">Saving with the Markdown editor will overwrite content from other editors</span>
-              Editor:
-              <el-select v-model="form.contentType" placeholder="Select">
-                <el-option key="1" label="Quill Rich Text Editor" value="1" />
-                <el-option key="2" label="CherryMarkdown (Recommend)" value="2" />
-                <el-option key="3" label="Tinymce Rich Text Editor" value="3" />
-              </el-select>
-            </el-col>
-          </el-row>
+          <!-- Only Vditor Markdown editor is supported -->
           <el-row>
             <el-col>
-              <cmsEditor v-if="form.contentType ==='1'" v-model="form.content" @getFileId="getFileId" type="base64" :min-height="192" />
-              <CherryMarkdown ref="CherryMarkdown" v-if="form.contentType ==='2'" :height='400' v-model='form.contentMarkdown' ></CherryMarkdown>
-              <Tinymce v-if="form.contentType ==='3'" :height='400' v-model='form.content'></Tinymce>
+              <VditorEditor ref="VditorEditor" v-model="form.contentMarkdown" :height='400' />
             </el-col>
           </el-row>
         </el-form-item>
@@ -271,8 +258,7 @@
 
 <script>
   import filesUpload from './components/filesUpload'
-  import CherryMarkdown from '@/components/CherryMarkdown'
-  import Tinymce from '@/components/Tinymce'
+  import VditorEditor from '@/components/VditorEditor'
   import {
     listBlog,
     getBlog,
@@ -298,8 +284,7 @@
     dicts: ['cms_blog_status'],
     components: {
       filesUpload,
-      CherryMarkdown,
-      Tinymce
+      VditorEditor
     },
     data() {
       return {
@@ -426,7 +411,7 @@
           tagIds: [],
           typeIds: [],
           blogFilesNew: [],
-          contentType: "1",
+          contentType: "4",
           contentMarkdown: null
         };
         this.resetForm("form");
@@ -466,6 +451,12 @@
           this.typeOptions = response.types;
           this.tagOptions = response.tags;
           this.form = response.data;
+          // Force Vditor as the only editor
+          this.form.contentType = '4'
+          if (!this.form.contentMarkdown && this.form.content) {
+            // Fallback: seed markdown field with existing content
+            this.form.contentMarkdown = this.form.content
+          }
           if (this.form.top == 1) {
             this.top = true;
           };
@@ -485,9 +476,8 @@
               } else {
                 this.form.top = 0;
               }
-              if (this.form.contentType === '2'){
-                this.setFormContent()
-              }
+              // Always sync content from the active editor (Vditor)
+              this.setFormContent()
               if (this.form.id != null) {
                 updateBlog(this.form).then(response => {
                   if (this.fileIds.length > 0) {
@@ -533,9 +523,8 @@
               } else {
                 this.form.top = 0;
               }
-              if (this.form.contentType === '2'){
-                this.setFormContent()
-              }
+              // Always sync content from the active editor (Vditor)
+              this.setFormContent()
               if (this.form.id != null) {
                 updateBlog(this.form).then(response => {
                   if (this.fileIds.length > 0) {
@@ -731,7 +720,16 @@
         return '';
       },
       setFormContent(){
-        this.form.content = this.$refs.CherryMarkdown.getCherryHtml()
+        // Only Vditor: try to get HTML first, fall back to markdown
+        if (this.$refs.VditorEditor) {
+          try {
+            this.form.content = this.$refs.VditorEditor.getHtml() || this.$refs.VditorEditor.getMarkdown()
+          } catch (e) {
+            this.form.content = this.form.contentMarkdown
+          }
+        } else {
+          this.form.content = this.form.contentMarkdown
+        }
       },
     }
   };
