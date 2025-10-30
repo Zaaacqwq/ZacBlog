@@ -6,7 +6,7 @@
         <el-container style="opacity: 0.9" class="document-container">
           <el-card class="animate__animated animate__fadeInLeft content-card">
             <div class="markdown-content">
-              <markdown-content />
+              <div v-html="html"></div>
             </div>
           </el-card>
         </el-container>
@@ -25,15 +25,38 @@
 </template>
 
 <script>
-import markdownContent from './my/aboutMe.md';
+// Render markdown file content with markdown-it to avoid HMR issues from vue-markdown-loader
+import MarkdownIt from 'markdown-it';
+// Force using file-loader to emit the md file and give us a URL (bypasses custom .md rule)
+import mdUrl from '!!file-loader!./my/aboutMe.md';
 import RightSidebar from "./rightSidebar/rightSidebar.vue";
 export default {
   name: 'cmsDoucument',
   components: {
-    markdownContent,
     RightSidebar,
   },
+  data() {
+    return {
+      html: ''
+    }
+  },
   mounted() {
+    // Load and render markdown at runtime
+    const md = new MarkdownIt({
+      html: true,
+      linkify: true,
+      // Do not automatically convert single newlines to <br/>,
+      // so badges/images on separate lines stay inline within a paragraph.
+      breaks: false
+    });
+    fetch(mdUrl)
+      .then(r => r.text())
+      .then(text => {
+        this.html = md.render(text || '');
+      })
+      .catch(() => {
+        this.html = '<p>Failed to load content.</p>';
+      });
     // Adjust iframe width and height (if applicable)
     function changeqtIframe() {
       const qt = document.getElementById('qt');

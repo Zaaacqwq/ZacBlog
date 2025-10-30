@@ -83,8 +83,8 @@
           <el-input v-model="form.title" placeholder="Enter title" />
         </el-form-item>
         <el-form-item label="Content">
-          <!-- 图片用base64存储,url方式移动端会显示异常 -->
-          <cmsEditor v-model="form.content" @getFileId="getFileId" type="base64" :min-height="192" />
+          <!-- Only Vditor Markdown editor is supported -->
+          <VditorEditor ref="VditorEditor" v-model="form.contentMarkdown" :height='400' />
         </el-form-item>
         <!-- <el-form-item>
           <el-checkbox v-model="top">置顶</el-checkbox>
@@ -157,10 +157,12 @@
   import {
     Loading
   } from 'element-ui';
+  import VditorEditor from '@/components/VditorEditor'
 
   export default {
     name: "Blog",
     dicts: ['cms_blog_status'],
+    components: { VditorEditor },
     data() {
       return {
         // 遮罩层
@@ -258,7 +260,9 @@
           content: null,
           top: "0",
           views: null,
-          status: "0"
+          status: "0",
+          contentType: '4',
+          contentMarkdown: null
         };
         this.resetForm("form");
       },
@@ -290,6 +294,11 @@
         const id = row.id || this.ids
         getBlog(id).then(response => {
           this.form = response.data;
+          // Force Vditor as the only editor
+          this.form.contentType = '4'
+          if (!this.form.contentMarkdown && this.form.content) {
+            this.form.contentMarkdown = this.form.content
+          }
           if (this.form.top == 1) {
             this.top = true;
           };
@@ -308,6 +317,8 @@
             } else {
               this.form.top = 0;
             }
+            // Sync content from Vditor before submit
+            this.setFormContent()
             if (this.form.id != null) {
               updateBlog(this.form).then(response => {
                 if(this.fileIds.length>0){
@@ -351,6 +362,8 @@
             } else {
               this.form.top = 0;
             }
+            // Sync content from Vditor before submit
+            this.setFormContent()
             if (this.form.id != null) {
               updateBlog(this.form).then(response => {
                 if(this.fileIds.length>0){
@@ -382,6 +395,18 @@
             }
           }
         });
+      },
+      setFormContent(){
+        // Only Vditor: try to get HTML first, fall back to markdown
+        if (this.$refs.VditorEditor) {
+          try {
+            this.form.content = this.$refs.VditorEditor.getHtml() || this.$refs.VditorEditor.getMarkdown()
+          } catch (e) {
+            this.form.content = this.form.contentMarkdown
+          }
+        } else {
+          this.form.content = this.form.contentMarkdown
+        }
       },
       /** 删除按钮操作 */
       handleDelete(row) {

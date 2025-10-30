@@ -123,7 +123,7 @@ export default {
         },
         {
           id: 3,
-          authName: 'About me',
+          authName: 'About',
           path: '/cms/doucument',
           icon: 'user-line',
         },
