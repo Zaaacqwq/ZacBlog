@@ -10,7 +10,7 @@
           <div class="card-panel-text">
             Total Views
           </div>
-          <count-to :start-val="0" :end-val="views" :duration="2600" class="card-panel-num" />
+          <count-to :key="'views-'+Number(views)" :start-val="0" :end-val="Number(views)" :duration="2600" class="card-panel-num" />
         </div>
       </div>
     </el-col>
@@ -23,7 +23,7 @@
           <div class="card-panel-text">
             Total Blogs
           </div>
-          <count-to :start-val="0" :end-val="blog" :duration="3000" class="card-panel-num" />
+          <count-to :key="'blog-'+Number(blog)" :start-val="0" :end-val="Number(blog)" :duration="3000" class="card-panel-num" />
         </div>
       </div>
     </el-col>
@@ -36,7 +36,7 @@
           <div class="card-panel-text">
             Total Comments
           </div>
-          <count-to :start-val="0" :end-val="comment" :duration="3200" class="card-panel-num" />
+          <count-to :key="'comment-'+Number(comment)" :start-val="0" :end-val="Number(comment)" :duration="3200" class="card-panel-num" />
         </div>
       </div>
     </el-col>
@@ -49,7 +49,7 @@
           <div class="card-panel-text">
             Total Messages
           </div>
-          <count-to :start-val="0" :end-val="message" :duration="3600" class="card-panel-num" />
+          <count-to :key="'message-'+Number(message)" :start-val="0" :end-val="Number(message)" :duration="3600" class="card-panel-num" />
         </div>
       </div>
     </el-col>
@@ -73,8 +73,9 @@ export default {
       message: 0,
     }
   },
-  created() {
-    this.getTotal();
+  mounted() {
+    // Ensure DOM is ready so CountTo paints reliably
+    this.$nextTick(() => this.getTotal())
   },
   methods: {
     getTotal(){

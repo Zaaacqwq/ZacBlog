@@ -1,46 +1,115 @@
----
-title: 项目部署与运行文档
----
+# 🚀 ZacBlog 全自动部署文档
 
-# 1. 项目目录
+------
 
-项目部署在服务器目录：  
-`/home/ZacBlog/`
+## 1️⃣ 服务器环境准备
 
-- 前端：纯静态页面（Vue/React build 输出）。
-- 后端：Node.js / FastAPI / 其他服务，需要长期运行，建议通过 **screen** 维护进程。
+### 🖥 系统环境
 
----
+- Ubuntu 20.04+ / Debian 系列均可
 
-# 2. 前端部署步骤
+- 已安装：
 
-### 2.1 本地构建
-```bash
-cd frontend   # 本地前端源码目录
-npm install   # 第一次需要安装依赖
-npm run build:prod   # 构建生产环境版本
+  ```
+  sudo apt update
+  sudo apt install -y openjdk-17-jdk nodejs npm git nginx rsync
+  ```
+
+- **Java 版本**：
+
+  ```
+  java -version  # 应为 17.x
+  ```
+
+### 🧑 用户与目录
+
+项目统一运行在普通用户 `zacblog` 下：
+
 ```
-> 构建完成后会生成一个 `dist/` 文件夹。
-
----
-
-### 2.2 上传到服务器
-> 为避免出现旧文件和新文件混合，建议先清空部署目录，再上传。
-
-```bash
-# 清空旧文件（谨慎操作，确认路径！）
-ssh root@198.98.53.225 "rm -rf /home/ZacBlog/frontend/*"
-
-# 上传新的构建产物
-scp -r dist/* root@198.98.53.225:/home/ZacBlog/frontend/
+sudo adduser --home /home/ZacBlog --shell /bin/bash zacblog
+sudo usermod -aG sudo zacblog
 ```
 
----
+创建部署目录：
 
-### 2.3 Nginx 配置
-编辑 `/etc/nginx/sites-enabled/default`：
+```
+sudo mkdir -p /home/ZacBlog/{frontend,backend,scripts}
+sudo chown -R zacblog:zacblog /home/ZacBlog
+```
 
-```nginx
+------
+
+## 2️⃣ SSH 无密码登录配置（GitHub Actions）
+
+### 🪪 在本地生成密钥
+
+```
+ssh-keygen -t ed25519 -C "github-actions" -f github_actions_deploy_key
+```
+
+得到：
+
+- 私钥：`github_actions_deploy_key`
+- 公钥：`github_actions_deploy_key.pub`
+
+### 📋 把公钥加到服务器
+
+以 root 或 sudo 身份执行：
+
+```
+sudo mkdir -p /home/ZacBlog/.ssh
+sudo cat github_actions_deploy_key.pub | sudo tee /home/ZacBlog/.ssh/authorized_keys
+sudo chown -R zacblog:zacblog /home/ZacBlog/.ssh
+sudo chmod 700 /home/ZacBlog/.ssh
+sudo chmod 600 /home/ZacBlog/.ssh/authorized_keys
+```
+
+### 🧩 测试密钥登录
+
+```
+ssh -i github_actions_deploy_key zacblog@198.98.53.225 'echo OK'
+# 返回 OK 即成功
+```
+
+### 🔒 把私钥转为 Base64（Mac）
+
+```
+base64 -b 0 < github_actions_deploy_key > github_actions_deploy_key.b64
+```
+
+### 🔑 添加到 GitHub Secrets
+
+在仓库中进入：
+
+> Settings → Secrets and variables → Actions → New repository secret
+
+逐个添加：
+
+| 名称               | 示例值                           |
+| ------------------ | -------------------------------- |
+| `SSH_HOST`         | `198.98.53.225`                  |
+| `SSH_PORT`         | `22`                             |
+| `SSH_USER`         | `zacblog`                        |
+| `SSH_KEY_B64`      | *(粘贴 `.b64` 文件的一整行内容)* |
+| `BACKEND_DIR`      | `/home/ZacBlog/backend`          |
+| `FRONTEND_DIR`     | `/home/ZacBlog/frontend`         |
+| `BACKEND_SCREEN`   | `ZacBlog-Backend`                |
+| `BACKEND_JAR_NAME` | `zaaac-admin.jar`                |
+| `JAVA_BIN`         | `/usr/bin/java`                  |
+
+------
+
+## 3️⃣ Nginx 配置
+
+编辑：
+
+```
+sudo nano /etc/nginx/sites-available/zacblog.conf
+```
+
+内容：
+
+```
 server {
     listen 80;
     server_name zaaac.vip;
@@ -51,108 +120,243 @@ server {
     location / {
         try_files $uri $uri/ /index.html;
     }
+
+    location /api/ {
+        proxy_pass http://127.0.0.1:8080/;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    }
 }
 ```
 
-> ⚠️ 如果启用 HTTPS，请在 `listen 443 ssl;` 中加上证书路径：  
-> `/etc/letsencrypt/live/zaaac.vip/fullchain.pem`  
-> `/etc/letsencrypt/live/zaaac.vip/privkey.pem`
+启用并检查：
 
----
-
-### 2.4 重启 Nginx
-```bash
-sudo nginx -t         # 检查配置是否正确
+```
+sudo ln -sf /etc/nginx/sites-available/zacblog.conf /etc/nginx/sites-enabled/
+sudo nginx -t
 sudo systemctl reload nginx
 ```
 
----
+------
 
-### 2.5 回滚方案（推荐）
-如果担心新版本有问题，可以采用版本目录策略：
+## 4️⃣ 后端运行脚本
 
-```bash
-# 上传到 releases 下
-scp -r dist/* root@198.98.53.225:/home/ZacBlog/releases/20251001/
+文件：`/home/ZacBlog/scripts/restart_backend.sh`
 
-# 切换软链接
-ssh root@198.98.53.225 "ln -sfn /home/ZacBlog/releases/20251001 /home/ZacBlog/frontend && sudo systemctl reload nginx"
+```
+#!/usr/bin/env bash
+set -e
+
+BACKEND_DIR="${1:-/home/ZacBlog/backend}"
+SCREEN_NAME="${2:-ZacBlog-Backend}"
+JAVA_BIN="${3:-java}"
+JAR_NAME="${4:-zaaac-admin.jar}"
+JAVA_OPTS="-Xms256m -Xmx1024m -Dfile.encoding=UTF-8"
+
+cd "$BACKEND_DIR"
+
+if screen -list | grep -q "$SCREEN_NAME"; then
+  screen -S "$SCREEN_NAME" -X quit || true
+  sleep 1
+fi
+
+pids=$(pgrep -f "$JAR_NAME" || true)
+if [ -n "$pids" ]; then
+  kill $pids || true
+  sleep 1
+fi
+
+screen -dmS "$SCREEN_NAME" bash -lc "$JAVA_BIN $JAVA_OPTS -jar \"$BACKEND_DIR/$JAR_NAME\" >> \"$BACKEND_DIR/app.log\" 2>&1"
+echo "✅ Started $JAR_NAME in screen: $SCREEN_NAME"
 ```
 
-回滚时只需切回之前的 releases 目录。
+执行权限：
 
----
-
-# 3. 后端部署步骤
-
-### 3.1 进入后端目录
-```bash
-cd /home/ZacBlog/backend
+```
+chmod +x /home/ZacBlog/scripts/restart_backend.sh
 ```
 
-### 3.2 安装依赖
-```bash
-npm install
-# 或 pip install -r requirements.txt
+------
+
+## 5️⃣ GitHub Actions 自动部署
+
+### 📁 文件位置
+
+放在仓库：
+
+```
+.github/workflows/
+├── deploy-frontend.yml
+└── deploy-backend.yml
 ```
 
-### 3.3 启动后端（使用 screen 保持运行）
-```bash
-screen -S ZacBlog-Backend
-npm start
-# 或 python main.py
+------
+
+### 🟩 deploy-frontend.yml
+
+```
+name: Deploy Frontend
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - "frontend/**"
+      - ".github/workflows/deploy-frontend.yml"
+  workflow_dispatch: {}
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Build frontend
+        working-directory: frontend
+        run: |
+          npm ci
+          npm run build
+
+      - name: Decode SSH key
+        run: |
+          echo "${{ secrets.SSH_KEY_B64 }}" | base64 -d > /tmp/gha_id
+          chmod 600 /tmp/gha_id
+
+      - name: SSH check
+        run: |
+          ssh -i /tmp/gha_id -o StrictHostKeyChecking=no -p ${{ secrets.SSH_PORT }} \
+            ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} \
+            'echo ✅ SSH Connected && whoami'
+
+      - name: Tar dist
+        run: tar -czf dist.tgz -C frontend dist
+
+      - name: Upload & deploy
+        run: |
+          scp -i /tmp/gha_id -o StrictHostKeyChecking=no -P ${{ secrets.SSH_PORT }} dist.tgz \
+            ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/home/ZacBlog/
+          ssh -i /tmp/gha_id -o StrictHostKeyChecking=no -p ${{ secrets.SSH_PORT }} \
+            ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} '
+              set -e
+              mkdir -p /home/ZacBlog/frontend
+              rm -rf /home/ZacBlog/frontend/*
+              tar -xzf /home/ZacBlog/dist.tgz -C /home/ZacBlog
+              mv /home/ZacBlog/dist/* /home/ZacBlog/frontend/
+              rm -rf /home/ZacBlog/dist /home/ZacBlog/dist.tgz
+              echo ✅ Frontend Deployed
+            '
 ```
 
-后端 API 应该监听在 `http://localhost:8000`。  
-Nginx 将代理到 `https://api.zaaac.vip`。
+------
 
-### 3.4 退出 screen（保持进程运行）
-按下 `[Ctrl] + A`，然后 `[Ctrl] + D`
+### 🟧 deploy-backend.yml
 
----
+```
+name: Deploy Backend
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - "backend/**"
+      - ".github/workflows/deploy-backend.yml"
+  workflow_dispatch: {}
 
-# 4. screen 常用命令
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          cache: 'maven'
 
-- 新建 session：  
-  ```bash
-  screen -S <session名字>
-  ```
-- 查看 session：  
-  ```bash
-  screen -ls
-  ```
-- 进入 session：  
-  ```bash
-  screen -r <session ID.session名字>
-  ```
-  例：`screen -r 71180.ZacBlog-Backend`
-- 删除 session：  
-  ```bash
-  screen -S <session ID.session名字> -X quit
-  ```
-- 滚动历史内容：  
-  在 session 内按 `[ESC]` 进入滚动模式，再按 `[ESC]` 退出。
+      - name: Build backend (multi-module)
+        working-directory: backend
+        run: mvn -B -DskipTests clean install
 
----
+      - name: Copy final jar
+        run: cp backend/zaaac-admin/target/zaaac-admin.jar ./zaaac-admin.jar
 
-# 5. HTTPS 证书（已完成）
+      - name: Decode SSH key
+        run: |
+          echo "${{ secrets.SSH_KEY_B64 }}" | base64 -d > /tmp/gha_id
+          chmod 600 /tmp/gha_id
 
-证书路径：
-- `/etc/letsencrypt/live/zaaac.vip/fullchain.pem`
-- `/etc/letsencrypt/live/zaaac.vip/privkey.pem`
+      - name: SSH check
+        run: |
+          ssh -i /tmp/gha_id -o StrictHostKeyChecking=no -p ${{ secrets.SSH_PORT }} \
+            ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} 'echo ✅ SSH Connected && whoami'
 
-- `zaaac.vip` → 前端站点  
-- `api.zaaac.vip` → 后端 API  
+      - name: Upload jar & restart backend
+        run: |
+          scp -i /tmp/gha_id -o StrictHostKeyChecking=no -P ${{ secrets.SSH_PORT }} zaaac-admin.jar \
+            ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ secrets.BACKEND_DIR }}/
+          ssh -i /tmp/gha_id -o StrictHostKeyChecking=no -p ${{ secrets.SSH_PORT }} \
+            ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "
+              bash /home/ZacBlog/scripts/restart_backend.sh \
+                '${{ secrets.BACKEND_DIR }}' \
+                '${{ secrets.BACKEND_SCREEN }}' \
+                '${{ secrets.JAVA_BIN }}' \
+                '${{ secrets.BACKEND_JAR_NAME }}'
+              tail -n 30 '${{ secrets.BACKEND_DIR }}/app.log' || true
+              echo ✅ Backend Deployed
+            "
+```
 
-> Certbot 已设置自动续期，无需手动操作。
+------
 
----
+## 6️⃣ 测试部署
 
-# 6. 访问地址
+1️⃣ 推送代码到 `main` 分支
+ 2️⃣ 打开 GitHub → **Actions**
+ 3️⃣ 选择 `Deploy Backend` 或 `Deploy Frontend` → **Run workflow**
+ 4️⃣ 等待运行成功（绿色✅）
+ 5️⃣ 浏览器访问：
 
-✅ 部署完成后可访问：
+- 前端页面：https://zaaac.vip
+- API 接口：https://zaaac.vip/api/***
 
-- 前端： [https://zaaac.vip](https://zaaac.vip)  
-- 后端 API： [https://api.zaaac.vip](https://api.zaaac.vip)
+------
 
----
+## 7️⃣ 故障排查快速表
+
+| 问题                            | 可能原因                     | 解决方案                                       |
+| ------------------------------- | ---------------------------- | ---------------------------------------------- |
+| `Permission denied (publickey)` | SSH 私钥粘贴错误             | 重新生成并用 Base64 添加到 `SSH_KEY_B64`       |
+| `Could not find artifact ...`   | 后端多模块未 install         | workflow 改为 `mvn clean install`              |
+| 前端没更新                      | Nginx 缓存或浏览器缓存       | `sudo nginx -t && sudo systemctl reload nginx` |
+| 后端未启动                      | screen 名称不匹配            | 确保 Secrets 里的 `BACKEND_SCREEN` 与脚本一致  |
+| 自动化日志卡住                  | `StrictHostKeyChecking` 问题 | 我们的 workflow 已禁用 host key 检查           |
+
+------
+
+## ✅ 最终目录结构
+
+服务器端：
+
+```
+/home/ZacBlog/
+├── backend/
+│   ├── zaaac-admin.jar
+│   └── app.log
+├── frontend/
+│   ├── index.html
+│   └── assets/
+├── scripts/
+│   └── restart_backend.sh
+└── .ssh/
+    └── authorized_keys
+```
+
+------
+
+完成以上所有步骤后，你的 ZacBlog 系统即实现：
+
+> **Push 到 main → 自动构建 → 自动上传 → 自动部署 → 即刻上线** 🎯
