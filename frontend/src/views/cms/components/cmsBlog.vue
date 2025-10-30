@@ -1,3 +1,4 @@
+<!-- blog page -->
 <template>
   <el-row :gutter="20" style="margin: 100px 0px;">
     <el-col :sm="1" :lg="3" class="hidden-xs-only" style="opacity:0;">Left PlaceHolder</el-col>

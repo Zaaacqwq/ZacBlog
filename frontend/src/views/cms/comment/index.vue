@@ -1,3 +1,4 @@
+<!-- admin comment management -->
 <template>
   <div class="app-container">
     <el-form :model="queryParams" ref="queryForm" :inline="true" v-show="showSearch" label-width="68px">

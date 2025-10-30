@@ -1,3 +1,4 @@
+<!-- about page -->
 <template>
   <div class="no-caret">
     <el-row :gutter="20" style="margin: 100px 0px;">

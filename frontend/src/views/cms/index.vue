@@ -19,14 +19,8 @@
   import cmsNavBar from './NavBar.vue'
   import cmsFooter from './Footer.vue'
   import ParticlesBackground from './ParticlesBackground.vue'
-  // import backgroundImages from './backgroundImages.js'
 
   export default {
-    data() {
-      return {
-        // backgroundImages,
-      };
-    },
     methods: {
       handleSelect(key, keyPath) {
         console.log(key, keyPath);
