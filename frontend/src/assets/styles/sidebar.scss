@@ -3,7 +3,7 @@
   .main-container {
     min-height: 100vh;
     transition: margin-left .28s;
-    margin-left: $base-sidebar-width;
+    margin-left: calc(#{$base-sidebar-width} + 24px);
     position: relative;
     padding: 16px 16px 24px 0;
   }
@@ -115,7 +115,7 @@
     }
 
     .main-container {
-      margin-left: 54px;
+      margin-left: 78px;
       padding-left: 0;
     }
 
