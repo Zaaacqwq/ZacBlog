@@ -6,11 +6,32 @@
 @import './btn.scss';
 
 body {
+  min-height: 100%;
   height: 100%;
   -moz-osx-font-smoothing: grayscale;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
-  font-family: Helvetica Neue, Helvetica, PingFang SC, Hiragino Sans GB, Microsoft YaHei, Arial, sans-serif;
+  margin: 0;
+  background: #ffffff;
+  color: #1d2433;
+  font-family: "Avenir Next", "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+}
+
+:root {
+  --surface-0: #fffdfa;
+  --surface-1: rgba(255, 253, 247, 0.92);
+  --surface-2: rgba(23, 32, 51, 0.9);
+  --line-soft: rgba(29, 36, 51, 0.1);
+  --line-strong: rgba(29, 36, 51, 0.18);
+  --text-1: #1d2433;
+  --text-2: rgba(29, 36, 51, 0.72);
+  --text-3: rgba(29, 36, 51, 0.52);
+  --accent: #ae7b32;
+  --accent-strong: #8f6327;
+  --accent-soft: rgba(174, 123, 50, 0.16);
+  --admin-ink: #172033;
+  --admin-panel: rgba(255, 252, 245, 0.9);
+  --admin-line: rgba(23, 32, 51, 0.08);
 }
 
 label {
@@ -20,16 +41,35 @@ label {
 html {
   height: 100%;
   box-sizing: border-box;
+  scroll-behavior: smooth;
 }
 
 #app {
-  height: 100%;
+  min-height: 100%;
 }
 
 *,
 *:before,
 *:after {
   box-sizing: inherit;
+}
+
+*::selection {
+  background: rgba(174, 123, 50, 0.18);
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(23, 32, 51, 0.06);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(23, 32, 51, 0.22);
+  border-radius: 999px;
 }
 
 .no-padding {
@@ -121,7 +161,7 @@ aside {
 
 //main-container全局样式
 .app-container {
-  padding: 20px;
+  padding: 24px;
 }
 
 .components-container {
@@ -193,4 +233,10 @@ aside {
 .no-caret {
   user-select: none; /* Prevent text selection */
   cursor: default;   /* Prevent caret */
+}
+
+.el-card {
+  border: 1px solid var(--line-soft);
+  border-radius: 24px;
+  box-shadow: 0 24px 60px rgba(20, 28, 43, 0.08);
 }

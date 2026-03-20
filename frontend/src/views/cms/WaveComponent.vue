@@ -16,10 +16,10 @@
         />
       </defs>
       <g class="parallax">
-        <use xlink:href="#gentle-wave" x="48" y="0" fill="rgba(255,255,255,0.7)" />
-        <use xlink:href="#gentle-wave" x="48" y="3" fill="rgba(255,255,255,0.5)" />
-        <use xlink:href="#gentle-wave" x="48" y="5" fill="rgba(255,255,255,0.3)" />
-        <use xlink:href="#gentle-wave" x="48" y="7" fill="#fff" />
+        <use xlink:href="#gentle-wave" x="48" y="0" fill="rgba(255,255,255,0.56)" />
+        <use xlink:href="#gentle-wave" x="48" y="3" fill="rgba(244,244,244,0.72)" />
+        <use xlink:href="#gentle-wave" x="48" y="5" fill="rgba(241,241,241,0.9)" />
+        <use xlink:href="#gentle-wave" x="48" y="7" fill="#f2f2f2" />
       </g>
     </svg>
     <div class="rectangle"></div>
@@ -55,7 +55,7 @@ export default {
   position: relative;
   width: 100%;
   height: 120px; /* Increased the height to make it longer */
-  background-color: white; /* The color of the rectangle */
+  background: linear-gradient(180deg, #f2f2f2 0%, #f7f7f7 48%, #ffffff 100%);
   margin-top: -10px; /* Further reduce the gap */
   /* background: linear-gradient(to bottom, rgba(255,255,255,1) 0%,rgba(255,255,255,0) 100%); */
 }

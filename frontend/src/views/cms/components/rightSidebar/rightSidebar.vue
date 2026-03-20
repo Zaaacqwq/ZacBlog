@@ -1,202 +1,258 @@
 <!-- right sidebar -->
 <template>
-    <div class="right-sidebar" >
-        <el-card style="background-color: rgba(255,255,255,0.9)" class="right-item">
-            <div slot="header" class="attributes">
-                <b>About Zac</b>
-            </div>
-            <div class="profile-card">
-                <img :src="avatar" alt="Zac's Avatar" class="avatar" />
-                <h3>Zac</h3>
-                <p>CE student @ UW</p>
-                <div class="stats">
-                    <p><strong>{{ totalBlogs }}</strong> Blogs</p>
-                    <p><strong>{{ totalViews }}</strong> Views</p>
-                </div>
-                <div class="social-links">
-                    <a href="https://github.com/Zaaacqwq" target="_blank">
-                        <svg-icon icon-class="github-thin" class="social-icon" />
-                    </a>
-                    <a href="mailto:zacchenzy@gmail.com" target="_blank">
-                        <svg-icon icon-class="email-thin" class="social-icon" />
-                    </a>
-                    <a href="https://www.instagram.com/zaaacqwq" target="_blank">
-                        <svg-icon icon-class="instagram-thin" class="social-icon" />
-                    </a>
-                    <a href="https://www.linkedin.com/in/zaaac" target="_blank">
-                        <svg-icon icon-class="linkedin-thin" class="social-icon" />
-                    </a>
-                </div>
-            </div>
-        </el-card>
-        <el-card style="background-color: rgba(255,255,255,0.9)" class="right-item">
-            <div slot="header" class="attributes">
-                <b>Customized</b>
-            </div>
-            <div class="custom-section">
-                <p>Welcome to Zac's Blog!</p>
-            </div>
-        </el-card>
-        <el-card style="background-color: rgba(255,255,255,0.9)" class="right-item">
-            <div slot="header" class="attributes">
-                <b>Announcement!</b>
-            </div>
-            <div class="announcement-section">
-                <p v-if="latestAnnouncement">{{ latestAnnouncement }}</p>
-                <p v-else>Loading latest announcement...</p>
-            </div>
-        </el-card>
-        <el-card style="background-color: rgba(255,255,255,0.9)" class="right-item">
-            <div slot="header" class="attributes">
-                <b>Site Info</b>
-            </div>
-            <div class="site-info">
-                <p><strong>Blogs Count:</strong> {{ totalBlogs }}</p>
-                <p><strong>Views Count:</strong> {{ totalViews }}</p>
-                <p><strong>Comments Count:</strong> {{ totalComments }}</p>
-                <p><strong>Messages Count:</strong> {{ totalMessages }}</p>
-            </div>
-        </el-card>
-    </div>
+  <div class="right-sidebar">
+    <el-card class="right-item profile-panel">
+      <div class="eyebrow">Editor</div>
+      <div class="profile-card">
+        <img :src="avatar" alt="Zac's Avatar" class="avatar" />
+        <h3>Zac</h3>
+        <p class="role-line">Building software, writing notes, shipping experiments.</p>
+        <div class="stats-grid">
+          <div class="stat-box">
+            <strong>{{ totalBlogs }}</strong>
+            <span>Posts</span>
+          </div>
+          <div class="stat-box">
+            <strong>{{ totalViews }}</strong>
+            <span>Views</span>
+          </div>
+        </div>
+        <div class="social-links">
+          <a href="https://github.com/Zaaacqwq" target="_blank" rel="noopener noreferrer" aria-label="GitHub">
+            <svg-icon icon-class="github-line" class="social-icon" />
+          </a>
+          <a href="https://portfolio.zaaac.vip/" target="_blank" rel="noopener noreferrer" aria-label="Portfolio">
+            <svg-icon icon-class="user-line" class="social-icon" />
+          </a>
+          <a href="https://www.instagram.com/zaaacqwq" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+            <svg-icon icon-class="instagram-line" class="social-icon" />
+          </a>
+          <a href="https://www.linkedin.com/in/zaaac" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
+            <svg-icon icon-class="linkedin-box-line" class="social-icon" />
+          </a>
+        </div>
+      </div>
+    </el-card>
+
+    <el-card class="right-item note-panel">
+      <div class="eyebrow">About This Site</div>
+      <p class="supporting-copy">
+        A personal corner for engineering notes, longer essays, experiments, and the occasional public draft.
+      </p>
+    </el-card>
+
+    <el-card class="right-item note-panel">
+      <div class="eyebrow">Latest Notice</div>
+      <p class="supporting-copy" v-if="latestAnnouncement">{{ latestAnnouncement }}</p>
+      <p class="supporting-copy" v-else>Loading latest announcement...</p>
+    </el-card>
+
+    <el-card class="right-item stats-panel">
+      <div class="eyebrow">Site Numbers</div>
+      <div class="stat-row">
+        <span>Articles</span>
+        <strong>{{ totalBlogs }}</strong>
+      </div>
+      <div class="stat-row">
+        <span>Views</span>
+        <strong>{{ totalViews }}</strong>
+      </div>
+      <div class="stat-row">
+        <span>Comments</span>
+        <strong>{{ totalComments }}</strong>
+      </div>
+      <div class="stat-row">
+        <span>Messages</span>
+        <strong>{{ totalMessages }}</strong>
+      </div>
+    </el-card>
+  </div>
 </template>
 
 <script>
-import avatar from '@/assets/images/avatar.png';
-import { latestNotice } from "@/api/system/notice";
-import { info } from "@/api/cms/charts";
-export default {
-    name: "RightSidebar",
-    data() {
-        return {
-            avatar,
-            totalBlogs: 0,
-            totalViews: 0,
-            totalComments: 0,
-            totalMessages: 0,
-            latestAnnouncement: '',
-        };
-    },
-    created() {
-        this.fetchStatistics();
-    },
-    mounted() {
-        this.fetchLatestAnnouncement();
-    },
-    methods: {
-        async fetchLatestAnnouncement() {
-            try {
-                const response = await latestNotice({
-                    pageSize: 10,
-                    pageNum: 1,
-                });
+import avatar from '@/assets/images/avatar.png'
+import { latestNotice } from '@/api/system/notice'
+import { info } from '@/api/cms/charts'
 
-                if (response.code === 200 && response.rows && response.rows.length > 0) {
-                    const latestAnnouncement = response.rows.reduce((latest, current) =>
-                        current.noticeId > latest.noticeId ? current : latest
-                    );
-                    this.latestAnnouncement = latestAnnouncement.noticeTitle || 'No title available';
-                } else {
-                    this.latestAnnouncement = 'No announcements available.';
-                }
-            } catch (error) {
-                console.error('Error fetching the latest announcement:', error);
-                this.latestAnnouncement = 'Unable to load the latest announcement.';
-            }
-        },
-        async fetchStatistics() {
-            try {
-                const response = await info();
-                this.totalViews = response.views || 0;
-                this.totalBlogs = response.blog || 0;
-                this.totalComments = response.comment || 0;
-                this.totalMessages = response.message || 0;
-            } catch (error) {
-                console.error("Error fetching statistics:", error);
-            }
-        },
-        getBlogInfo(blogId) {
-            let routeUrl = this.$router.resolve({
-                path: '/cms/main/blog',
-                query: {
-                    id: blogId
-                }
-            });
-            window.open(routeUrl.href, '_blank');
-        },
+export default {
+  name: 'RightSidebar',
+  data() {
+    return {
+      avatar,
+      totalBlogs: 0,
+      totalViews: 0,
+      totalComments: 0,
+      totalMessages: 0,
+      latestAnnouncement: '',
+    };
+  },
+  created() {
+    this.fetchStatistics()
+  },
+  mounted() {
+    this.fetchLatestAnnouncement()
+  },
+  methods: {
+    async fetchLatestAnnouncement() {
+      try {
+        const response = await latestNotice({
+          pageSize: 10,
+          pageNum: 1,
+        })
+
+        if (response.code === 200 && response.rows && response.rows.length > 0) {
+          const latestAnnouncement = response.rows.reduce((latest, current) =>
+            current.noticeId > latest.noticeId ? current : latest
+          )
+          this.latestAnnouncement = latestAnnouncement.noticeTitle || 'No title available'
+        } else {
+          this.latestAnnouncement = 'No announcements available.'
+        }
+      } catch (error) {
+        console.error('Error fetching the latest announcement:', error)
+        this.latestAnnouncement = 'Unable to load the latest announcement.'
+      }
     },
-};
+    async fetchStatistics() {
+      try {
+        const response = await info()
+        this.totalViews = response.views || 0
+        this.totalBlogs = response.blog || 0
+        this.totalComments = response.comment || 0
+        this.totalMessages = response.message || 0
+      } catch (error) {
+        console.error('Error fetching statistics:', error)
+      }
+    },
+  },
+}
 </script>
 
-
 <style scoped>
-.el-card /deep/ .el-card__body {
-    padding: 0;
-}
-
 .right-sidebar {
-    display: flex;
-    flex-direction: column;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 }
 
 .right-item {
-    margin-bottom: 20px;
+  overflow: hidden;
+  border-radius: 26px;
+  background: rgba(255, 255, 255, 0.88);
+  border: 1px solid rgba(29, 36, 51, 0.08);
+  box-shadow: 0 24px 60px rgba(20, 28, 43, 0.08);
+}
+
+.right-item /deep/ .el-card__body {
+  padding: 24px;
+}
+
+.eyebrow {
+  margin-bottom: 16px;
+  color: rgba(29, 36, 51, 0.5);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
 }
 
 .profile-card {
-    text-align: center;
+  text-align: left;
 }
 
 .avatar {
-    width: 150px;
-    height: 150px;
-    border-radius: 50%;
-    margin: 10px 0px;
+  width: 96px;
+  height: 96px;
+  border-radius: 24px;
+  margin-bottom: 18px;
+  object-fit: cover;
+  box-shadow: 0 18px 32px rgba(23, 32, 51, 0.14);
 }
 
-.stats {
-    display: flex;
-    justify-content: space-around;
-    margin: 10px 0;
+.profile-card h3 {
+  margin: 0 0 8px;
+  font-size: 1.7rem;
+  font-family: "Iowan Old Style", "Palatino Linotype", Georgia, serif;
+  color: #1d2433;
+}
+
+.role-line,
+.supporting-copy {
+  margin: 0;
+  line-height: 1.7;
+  color: rgba(29, 36, 51, 0.7);
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin: 22px 0 18px;
+}
+
+.stat-box {
+  padding: 14px;
+  border-radius: 18px;
+  background: rgba(23, 32, 51, 0.04);
+}
+
+.stat-box strong,
+.stat-row strong {
+  display: block;
+  font-size: 1.05rem;
+  font-weight: 500;
+  color: rgba(29, 36, 51, 0.82);
+}
+
+.stat-box span,
+.stat-row span {
+  color: rgba(29, 36, 51, 0.58);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 .social-links {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 10px;
-    margin: 10px 0;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
 }
 
 .social-links a {
-    margin: 0px 10px;
-    text-decoration: none;
-    color: #007bff;
+  width: 44px;
+  height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 14px;
+  background: rgba(17, 17, 17, 0.045);
+  color: rgba(29, 36, 51, 0.82);
+  transition: 0.18s ease;
+}
+
+.social-links a:hover {
+  transform: translateY(-2px);
+  background: rgba(23, 32, 51, 0.08);
+  color: rgba(23, 32, 51, 0.96);
 }
 
 .social-icon {
-    width: 40px;
-    height: 40px;
+  width: 21px;
+  height: 21px;
+  display: block;
+  object-fit: contain;
 }
 
-.custom-section {
-    text-align: center;
-    padding: 10px;
-    font-size: 24px;
-    line-height: 1.6;
+.stat-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(29, 36, 51, 0.08);
 }
 
-.announcement-section {
-    text-align: center;
-    padding: 10px;
-    font-size: 24px;
-    line-height: 1.6;
-    border-radius: 5px;
-}
-
-.site-info {
-    padding: 10px;
-    font-size: 14px;
-    line-height: 1.6;
-    border-radius: 5px;
+.stat-row:last-child {
+  border-bottom: 0;
 }
 </style>

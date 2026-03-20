@@ -1,14 +1,14 @@
 <!-- main content area -->
 <template>
 
-  <el-container>
+  <el-container class="cms-shell">
     <!-- <ParticlesBackground /> -->
     <!-- <div class="background" :style="backgroundImage"></div> -->
     <cmsNavBar></cmsNavBar>
     <keep-alive>
       <cmsMain></cmsMain>
     </keep-alive>
-    <el-footer height="40px">
+    <el-footer height="88px" class="cms-footer-wrap">
       <cmsFooter></cmsFooter>
     </el-footer>
   </el-container>
@@ -50,10 +50,15 @@
     min-height: 100vh;
     display: flex;
     flex-direction: column;
+    position: relative;
+    background: #ffffff;
   }
   
-  .el-footer {
-    background-color: rgba(84, 92, 100, 0.5);
+  .cms-footer-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
   }
 
   .background {

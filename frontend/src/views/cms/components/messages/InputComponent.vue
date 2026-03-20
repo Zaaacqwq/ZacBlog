@@ -1,27 +1,23 @@
 <template>
   <transition name="fade">
-    <div class="input-wrapper" v-if="show">
-      <el-input class="gray-bg-input"
-      maxlength="100" show-word-limit
-                v-model="inputComment"
-                type="textarea"
-                :rows="3"
-                @focus="inputFocus"
-                @blur="blur"
-                :placeholder="name">
-      </el-input>
-      <!--enter-active-class="animated fadeInDown" leave-active-class="animated fadeOutUp"-->
+    <div class="input-wrapper" v-if="show" @click.stop>
+      <div class="composer-surface">
+        <el-input class="gray-bg-input"
+        maxlength="100" show-word-limit
+                  v-model="inputComment"
+                  type="textarea"
+                  :rows="3"
+                  @focus="inputFocus"
+                  @blur="blur"
+                  :placeholder="toComment">
+        </el-input>
+      </div>
       <transition name="fade2">
         <div class="btn-control" v-show="controlShow">
-          <el-row>
-            <el-col :span="12" style="text-align: left">
-              <Emoji @output="output"></Emoji>
-            </el-col>
-            <el-col :span="12" style="text-align: right">
-              <span class="cancel" @click="cancel">Cancel</span>
-              <el-button class="btn" type="success" round @click="commitComment">Confirm</el-button>
-            </el-col>
-          </el-row>
+          <div class="action-row">
+            <el-button class="action-button cancel-button" @click.stop="cancel">Cancel</el-button>
+            <el-button class="action-button confirm-button" @click.stop="commitComment">Confirm</el-button>
+          </div>
         </div>
       </transition>
     </div>
@@ -29,7 +25,6 @@
 </template>
 
 <script>
-  import Emoji from '@/components/Emoji'
   export default {
     props: {
       //控制整个组件是否显示
@@ -55,14 +50,9 @@
         // default: 'comment'
       }
     },
-    components: {
-      Emoji
-    },
     data() {
       return {
         inputComment: '',
-        name:'',
-        id:'',
         //确定取消按钮是否显示
         controlShow: false,
         cursorIndexStart: null,//光标选中开始的位置
@@ -85,7 +75,7 @@
        * 提交评论
        */
       commitComment() {
-        this.$emit("confirm", {'inputComment':this.inputComment,'id':this.id})
+        this.$emit("confirm", {'inputComment':this.inputComment,'id':this.toId})
         this.inputComment = ""
       },
 
@@ -99,26 +89,15 @@
       blur(e){
         this.cursorIndexStart = e.srcElement.selectionStart  // 获取input输入框失去焦点时光标选中开始的位置
         this.cursorIndexEnd = e.srcElement.selectionEnd  // 获取input输入框失去焦点时光标选中结束的位置
-      },
-      output(val) {
-        if (this.cursorIndexStart !== null && this.inputComment) {
-          //如果 文本域获取了焦点, 则在光标位置处插入对应字段内容
-          this.inputComment = this.inputComment.substring(0, this.cursorIndexStart) + val + this.inputComment.substring(this.cursorIndexEnd)
-        } else {
-          // 如果 文本域未获取焦点, 则在字符串末尾处插入对应字段内容
-          this.inputComment = this.inputComment?this.inputComment:'' + val
-        }
-      },
+      }
 
     },
     watch: {
       //监听toComment更新，赋值给name
-      toComment: function (newValue, oldValue) {
-        this.name = newValue;
+      toComment: function () {
         this.inputComment = ''
       },
-      toId: function (newValue, oldValue) {
-        this.id = newValue;
+      toId: function () {
         this.inputComment = ''
       }
     },
@@ -133,45 +112,84 @@
   }
 </script>
 
-<style scoped rel="stylesheet/scss" lang="scss">
+<style>
+.fade-enter-active, fade-leave-active {
+  transition: opacity 0.5s;
+}
 
-  .fade-enter-active, fade-leave-active {
-    transition: opacity 0.5s;
-  }
+.fade-enter, .fade-leave-to {
+  opacity: 0;
+}
 
-  .fade-enter, .fade-leave-to {
-    opacity: 0;
-  }
+.input-wrapper {
+  padding: 8px 0 4px;
+}
 
-  .input-wrapper {
-    padding: 10px;
+.input-wrapper .fade2-enter-active,
+.input-wrapper .fade2-leave-active {
+  transition: opacity 0.5s;
+}
 
-    .fade2-enter-active, fade2-leave-active {
-      transition: opacity 0.5s;
-    }
+.input-wrapper .fade2-enter,
+.input-wrapper .fade2-leave-to {
+  opacity: 0;
+}
 
-    .fade2-enter, .fade2-leave-to {
-      opacity: 0;
-    }
-    .gray-bg-input, .el-input__inner {
-      /*background-color: #67C23A;*/
-    }
-    .btn-control {
-      justify-content: flex-end;
-      align-items: center;
-      padding-top: 10px;
-      .cancel {
-        font-size: 16px;
-        color: #606266;
-        margin-right: 20px;
-        cursor: pointer;
-        &:hover {
-          color: #333;
-        }
-      }
-      .confirm {
-        font-size: 16px;
-      }
-    }
-  }
+.input-wrapper .composer-surface {
+  padding: 12px;
+  border: 1px solid rgba(29, 36, 51, 0.06);
+  border-radius: 18px;
+  background: rgba(245, 246, 247, 0.72);
+}
+
+.input-wrapper .composer-surface .el-textarea__inner,
+.input-wrapper .composer-surface textarea {
+  min-height: 132px !important;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  outline: none;
+  resize: none;
+}
+
+.input-wrapper .composer-surface .el-textarea__inner:focus,
+.input-wrapper .composer-surface textarea:focus {
+  border: 0;
+  box-shadow: none;
+  outline: none;
+}
+
+.input-wrapper .composer-surface .el-input__count {
+  background: transparent;
+  color: rgba(29, 36, 51, 0.42);
+  right: 0;
+  bottom: 0;
+}
+
+.input-wrapper .btn-control {
+  padding-top: 10px;
+}
+
+.input-wrapper .btn-control .action-row {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.input-wrapper .btn-control .action-button {
+  min-width: 92px;
+  border: 1px solid rgba(29, 36, 51, 0.08);
+  border-radius: 16px;
+  background: #f2f2f2;
+  color: #1d2433;
+  font-weight: 500;
+  box-shadow: none;
+}
+
+.input-wrapper .btn-control .action-button:hover,
+.input-wrapper .btn-control .action-button:focus {
+  background: #ebebeb;
+  color: #111827;
+}
 </style>

@@ -1,5 +1,5 @@
 <template>
-  <div :class="classObj" class="app-wrapper" :style="{'--current-color': theme}">
+  <div :class="classObj" class="app-wrapper admin-shell" :style="{'--current-color': theme}">
     <div v-if="device==='mobile'&&sidebar.opened" class="drawer-bg" @click="handleClickOutside"/>
     <sidebar class="sidebar-container"/>
     <div :class="{hasTagsView:needTagsView}" class="main-container">
@@ -69,8 +69,11 @@ export default {
   .app-wrapper {
     @include clearfix;
     position: relative;
-    height: 100%;
+    min-height: 100vh;
     width: 100%;
+    background:
+      radial-gradient(circle at top left, rgba(183, 146, 82, 0.16), transparent 20%),
+      linear-gradient(180deg, #f6f1e8 0%, #eef1f5 40%, #ecf1f7 100%);
 
     &.mobile.openSidebar {
       position: fixed;
@@ -90,11 +93,12 @@ export default {
 
   .fixed-header {
     position: fixed;
-    top: 0;
+    top: 16px;
     right: 0;
     z-index: 9;
     width: calc(100% - #{$base-sidebar-width});
     transition: width 0.28s;
+    padding: 0 16px 0 0;
   }
 
   .hideSidebar .fixed-header {
@@ -103,5 +107,6 @@ export default {
 
   .mobile .fixed-header {
     width: 100%;
+    padding: 0 12px;
   }
 </style>

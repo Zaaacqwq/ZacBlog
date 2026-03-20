@@ -1,9 +1,9 @@
 <!-- about page -->
 <template>
   <div class="no-caret">
-    <el-row :gutter="20" style="margin: 100px 0px;">
-      <el-col :sm="1" :lg="3" class="hidden-xs-only" style="opacity: 0;">Left PlaceHolder</el-col>
-      <el-col :xs="24" :sm="16" :lg="13">
+    <section class="document-shell">
+      <div class="document-grid">
+        <div class="document-main">
         <el-container style="opacity: 0.9" class="document-container">
           <el-card class="animate__animated animate__fadeInLeft content-card">
             <div class="markdown-content">
@@ -11,17 +11,17 @@
             </div>
           </el-card>
         </el-container>
-      </el-col>
-      <el-col :xs="24" :sm="6" :lg="5" class="right-sidebar">
+        </div>
+      <div class="document-side right-sidebar">
         <RightSidebar />
-      </el-col>
-      <el-col :sm="1" :lg="3" class="hidden-xs-only" style="opacity: 0;">Right PlaceHolder</el-col>
+      </div>
       <el-backtop :bottom="60">
         <div class="backtop-icon">
           <svg-icon icon-class="top" style="color: black;"/>
         </div>
       </el-backtop>
-    </el-row>
+      </div>
+    </section>
   </div>
 </template>
 
@@ -77,6 +77,32 @@ export default {
 </script>
 
 <style scoped lang="scss">
+.document-shell {
+  width: min(1360px, calc(100vw - 24px));
+  margin: 0 auto;
+  padding-top: 132px;
+}
+
+.document-grid {
+  width: 100%;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  gap: 20px;
+  align-items: start;
+}
+
+.document-main {
+  min-width: 0;
+}
+
+.document-side {
+  width: 320px;
+}
+
+.document-container {
+  width: 100%;
+  display: block;
+}
 
 .content-container {
   // Central container with shadow and transparency
@@ -97,5 +123,20 @@ export default {
   font-size: 16px;
   line-height: 1.6;
   color: #333;
+}
+
+@media screen and (max-width: 768px) {
+  .document-shell {
+    width: calc(100vw - 12px);
+    padding-top: 112px;
+  }
+
+  .document-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .document-side {
+    width: 100%;
+  }
 }
 </style>

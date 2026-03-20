@@ -1,7 +1,8 @@
 <!--留言模块-->
 <template>
   <div class="container">
-    <div class="comment" v-for="item in comments">
+    <div class="comment" v-for="item in comments" :key="item.id">
+      <div class="comment-main" @click="showCommentInput(item)">
       <div class="info" :id="item.id">
         <el-avatar v-if="item.avatar!==''&&item.avatar!=null" :src="item.avatar"></el-avatar>
         <el-avatar v-else icon="el-icon-user-solid"></el-avatar>
@@ -12,36 +13,40 @@
       </div>
       <div class="content">{{item.content}}</div>
       <div class="control">
-        <span class="like" :class="{active: item.isLike}" @click="likeClick(item)">
-          <svg-icon icon-class="like" />
-          <span class="like-num" style="margin-left: 5px;">{{item.likeNum > 0 ? item.likeNum + ' People Liked' : 'Like'}}</span>
+        <span class="like" :class="{active: isLiked(item)}" @click.stop="likeClick(item)">
+          <img
+            class="heart-icon"
+            :src="isLiked(item) ? heartFillIcon : heartLineIcon"
+            alt=""
+          >
+          <span class="like-num">{{ item.likeNum || 0 }}</span>
         </span>
-        <span class="comment-reply" @click="showCommentInput(item)">
-          <svg-icon icon-class="comment" />
-          <span style="margin-left: 5px;">Reply</span>
-        </span>
+        <span class="reply-hint">Click comment to reply</span>
       </div>
-      <div class="reply">
-        <div class="item" v-for="reply in item.children" :id="reply.id">
+      </div>
+      <div
+        v-if="(item.children && item.children.length > 0) || showItemId === item.id"
+        class="reply"
+      >
+        <div class="item" v-for="reply in item.children" :key="reply.id" :id="reply.id" @click="showCommentInput(item, reply)">
           <div class="reply-content">
             <span class="from-name">{{reply.createBy}}</span><span>: </span>
             <span class="to-name" v-show="reply.parentId!=reply.mainId">@{{reply.pcreateBy}}</span>
-            <span v-show="reply.delFlag=='0'">{{reply.content}}</span>
-            <span v-show="reply.delFlag=='1'" style="color: #909399;">The comment has been deleted!</span>
+            <span v-if="reply.delFlag !== '1'">{{reply.content}}</span>
+            <span v-else style="color: #909399;">The comment has been deleted!</span>
           </div>
           <div class="reply-bottom">
             <span>{{reply.createTime}}</span>
-            <span class="reply-text" @click="showCommentInput(item, reply)">
-              <svg-icon icon-class="comment" />
-              <span style="margin-left: 5px;">Reply</span>
-            </span>
           </div>
+          <input-component :show="showItemId === item.id && showReplyId === reply.id"
+                           :value="inputComment"
+                           :toComment="name"
+                           :toId="id"
+                           @cancel="cancelInput"
+                           @confirm="commitComment">
+          </input-component>
         </div>
-        <div class="write-reply" v-if="item.children!=null" @click="showCommentInput(item)">
-          <i class="el-icon-edit"></i>
-          <span class="add-comment">Add New Comment</span>
-        </div>
-        <input-component :show="showItemId === item.id"
+        <input-component :show="showItemId === item.id && showReplyId === null"
                          :value="inputComment"
                          :toComment="name"
                          :toId="id"
@@ -72,6 +77,8 @@
 
   import Vue from 'vue'
   import InputComponent from './InputComponent'
+  import heartLineIcon from '@/assets/images/heart-line.svg'
+  import heartFillIcon from '@/assets/images/heart-fill.svg'
   import {
     getToken
   } from '@/utils/auth'
@@ -95,12 +102,19 @@
         inputComment: '',
         name: '',
         id: null,
+        mainId: null,
         showItemId: '',
+        showReplyId: null,
+        heartLineIcon,
+        heartFillIcon,
         messageLikeForm: {},
       }
     },
     computed: {},
     methods: {
+      isLiked(item) {
+        return !!item.isLike
+      },
       // 表单重置
       reset() {
         this.messageLikeForm = {
@@ -156,7 +170,7 @@
        * 点赞
        */
       likeClick(item) {
-        if (item.isLike === null) {
+        if (item.isLike === null || item.isLike === undefined) {
           Vue.$set(item, "isLike", true);
           item.likeNum++
           this.addMessageLike(item)
@@ -177,13 +191,18 @@
        */
       cancelInput() {
         this.showItemId = ''
+        this.showReplyId = null
+        this.mainId = null
       },
 
       /**
        * 提交评论
        */
       commitComment(value) {
-        this.$emit("replyConfirm", value)
+        this.$emit("replyConfirm", {
+          ...value,
+          mainId: this.mainId
+        })
         // console.log(value);
       },
 
@@ -193,14 +212,17 @@
        * reply: 当前回复的评论
        */
       showCommentInput(item, reply) {
+        this.mainId = item.id
         if (reply) {
           this.inputComment = ""
           this.name = "Reply@" + reply.createBy + ":"
           this.id = reply.id
+          this.showReplyId = reply.id
         } else {
           this.inputComment = ''
           this.name = 'Leave your comment'
           this.id = item.id
+          this.showReplyId = null
         }
         this.showItemId = item.id
       }
@@ -219,8 +241,19 @@
     .comment {
       display: flex;
       flex-direction: column;
-      padding: 10px;
-      border-bottom: 1px solid #F2F6FC;
+      padding: 18px 18px 12px;
+      margin-bottom: 14px;
+      border: 1px solid rgba(29, 36, 51, 0.06);
+      border-radius: 22px;
+      box-shadow: 0 8px 20px rgba(17, 24, 39, 0.035);
+      transition: background-color 0.2s ease, transform 0.2s ease;
+      &:hover {
+        background: rgba(17, 24, 39, 0.02);
+        box-shadow: 0 10px 24px rgba(17, 24, 39, 0.05);
+      }
+      .comment-main {
+        cursor: pointer;
+      }
       .info {
         display: flex;
         align-items: center;
@@ -249,88 +282,86 @@
       .control {
         display: flex;
         align-items: center;
+        justify-content: space-between;
         font-size: 14px;
         color: #909399;
         .like {
+          min-width: 56px;
           display: flex;
           align-items: center;
-          margin-right: 20px;
+          gap: 6px;
+          padding: 6px 10px;
+          border-radius: 999px;
+          background: rgba(17, 24, 39, 0.04);
           cursor: pointer;
+          user-select: none;
           &.active, &:hover {
-            color: #5a5abc;
+            color: #d14b72;
+            background: rgba(209, 75, 114, 0.08);
           }
-          .iconfont {
-            font-size: 14px;
-            margin-right: 5px;
+          .heart-icon {
+            width: 14px;
+            height: 14px;
+            display: block;
+            object-fit: contain;
+          }
+          .like-num {
+            font-size: 13px;
+            font-weight: 600;
           }
         }
-        .comment-reply {
-          display: flex;
-          align-items: center;
-          cursor: pointer;
-          &:hover {
-            color: #333;
-          }
-          .iconfont {
-            font-size: 16px;
-            margin-right: 5px;
-          }
+        .reply-hint {
+          font-size: 12px;
+          letter-spacing: 0.04em;
+          color: #9ca3af;
         }
 
       }
       .reply {
-        margin: 10px 0;
-        border-left: 2px solid #DCDFE6;
+        margin: 14px 0 4px;
+        padding: 12px 14px;
+        border-radius: 18px;
+        background: rgba(17, 24, 39, 0.025);
+        border: 1px solid rgba(29, 36, 51, 0.05);
         .item {
-          margin: 0 10px;
-          padding: 10px 0;
-          border-bottom: 1px dashed #EBEEF5;
+          margin: 0;
+          padding: 12px 14px;
+          border-radius: 14px;
+          border-bottom: 1px solid rgba(29, 36, 51, 0.06);
+          cursor: pointer;
+          transition: color 0.2s ease, background-color 0.2s ease;
+          &:hover {
+            color: #111827;
+            background: rgba(255, 255, 255, 0.58);
+          }
+          &:first-child {
+            padding-top: 4px;
+          }
+          &:last-child {
+            border-bottom: 0;
+            padding-bottom: 4px;
+          }
           .reply-content {
-            display: flex;
-            align-items: center;
+            display: block;
             font-size: 14px;
             color: #303133;
+            line-height: 1.7;
             .from-name {
-              color: #686868;
+              color: #111827;
+              font-weight: 600;
             }
             .to-name {
-              color: #686868;
-              margin-left: 5px;
-              margin-right: 5px;
+              color: #6b7280;
+              margin-left: 6px;
+              margin-right: 6px;
             }
           }
           .reply-bottom {
             display: flex;
             align-items: center;
-            margin-top: 6px;
+            margin-top: 8px;
             font-size: 12px;
-            color: #909399;
-            .reply-text {
-              display: flex;
-              align-items: center;
-              margin-left: 10px;
-              cursor: pointer;
-              &:hover {
-                color: #333;
-              }
-              .icon-comment {
-                margin-right: 5px;
-              }
-            }
-          }
-        }
-        .write-reply {
-          display: flex;
-          align-items: center;
-          font-size: 14px;
-          color: #909399;
-          padding: 10px;
-          cursor: pointer;
-          &:hover {
-            color: #303133;
-          }
-          .el-icon-edit {
-            margin-right: 5px;
+            color: #9ca3af;
           }
         }
         .fade-enter-active, fade-leave-active {

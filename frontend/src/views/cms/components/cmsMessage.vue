@@ -1,59 +1,57 @@
 <!-- comments page -->
 <template>
   <div class="no-caret">
-    <el-row :gutter="20" style="margin: 100px 0px;">
-      <el-col :sm="1" :lg="3" class="hidden-xs-only" style="opacity:0;">Left PlaceHolder</el-col>
-      <el-col :xs="24" :sm="16" :lg="13">
+    <section class="message-shell">
+      <div class="message-grid">
+        <div class="message-main">
         <el-container style="opacity: 0.9" class="message">
           <el-card class="animate__animated animate__fadeInLeft publish">
-            <div class="author">
-              <el-avatar v-if="token == null" icon="el-icon-user-solid" size="large">
-                <!-- style="background-color: #666" -->
+            <div class="composer-head author">
+              <el-avatar v-if="token == null" icon="el-icon-user-solid" size="large" class="composer-avatar">
               </el-avatar>
-              <el-avatar v-else :src="avatar" size="large"></el-avatar>
-              <div>
+              <el-avatar v-else :src="avatar" size="large" class="composer-avatar"></el-avatar>
+              <div class="composer-meta">
                 <div class="nkname">
                   <span class="name" v-if="token == null">Anonymous User</span>
                   <span class="name" v-else>{{ name }} </span>
                 </div>
+                <div class="composer-caption">Share a thought, quick note, or reply.</div>
               </div>
             </div>
             <el-form :model="messageForm" :rules="messageFormRules" ref="messageFormRef">
-              <el-form-item prop="content">
-                <el-input @blur="blur" :rows="5" v-model="messageForm.content" type="textarea" maxlength="100"
+              <el-form-item prop="content" class="composer-field">
+                <div class="composer-surface">
+                  <el-input @blur="blur" :rows="4" v-model="messageForm.content" type="textarea" maxlength="100"
                   show-word-limit placeholder="Enter your message"></el-input>
+                </div>
               </el-form-item>
-              <el-form-item>
-                <el-row>
-                  <el-col :span="12" style="text-align: left">
-                    <Emoji @output="output"></Emoji>
-                  </el-col>
-                  <el-col :span="12" style="text-align: right">
-                    <el-button type="primary" @click="publish">Click to Publish</el-button>
-                  </el-col>
-                </el-row>
+              <el-form-item class="publish-actions">
+                <div class="publish-action-row">
+                  <span class="composer-tip">Keep it concise and readable.</span>
+                  <el-button class="publish-button" @click="publish">Publish Message</el-button>
+                </div>
               </el-form-item>
             </el-form>
           </el-card>
 
           <el-card v-if="messageList.length > 0" class="animate__animated animate__fadeInLeft">
             <comment :comments="messageList" @replyConfirm="commitComment"></comment>
-            <pagination v-show="total > 0" :total="total" :page.sync="queryParams.pageNum"
+            <pagination class="message-pagination" v-show="total > 0" :total="total" :page.sync="queryParams.pageNum"
               :limit.sync="queryParams.pageSize" @pagination="getMessageList" />
           </el-card>
         </el-container>
-      </el-col>
-      <el-col :xs="24" :sm="6" :lg="5" class="right-sidebar">
+        </div>
+      <div class="message-side right-sidebar">
         <RightSidebar />
-      </el-col>
-      <el-col :sm="1" :lg="3" class="hidden-xs-only" style="opacity:0;">Right PlaceHolder</el-col>
+      </div>
       <!-- 设置底部距离的 -->
       <el-backtop :bottom="60">
         <div class="backtop-icon">
           <svg-icon icon-class="top" style="color: black;"/>
         </div>
       </el-backtop>
-    </el-row>
+      </div>
+    </section>
   </div>
 </template>
 
@@ -69,7 +67,6 @@ import {
   cmsAddMessage,
 } from "@/api/cms/message"
 import comment from './messages/messages.vue'
-import Emoji from '@/components/Emoji'
 import RightSidebar from "./rightSidebar/rightSidebar.vue";
 export default {
   name: 'message',
@@ -130,7 +127,6 @@ export default {
   },
   components: {
     comment,
-    Emoji,
     RightSidebar
   },
   methods: {
@@ -183,6 +179,7 @@ export default {
       this.reset();
       this.messageForm.content = value.inputComment;
       this.messageForm.parentId = value.id;
+      this.messageForm.mainId = value.mainId;
       let token = getToken();
       this.$refs.messageFormRef.validate(async valid => {
         if (!valid) return
@@ -272,12 +269,43 @@ export default {
 </script>
 
 <style scoped>
+.message-shell {
+  width: min(1360px, calc(100vw - 24px));
+  margin: 0 auto;
+  padding-top: 132px;
+  padding-bottom: 40px;
+}
+
+.message-grid {
+  width: 100%;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  gap: 20px;
+  align-items: start;
+}
+
+.message-main {
+  min-width: 0;
+}
+
+.message-side {
+  width: 320px;
+}
+
 .el-container {
   display: block;
+  width: 100%;
 }
 
 .publish {
   margin-bottom: 20px;
+  border-radius: 28px;
+  border: 1px solid rgba(29, 36, 51, 0.08);
+  box-shadow: 0 20px 50px rgba(20, 28, 43, 0.08);
+}
+
+.publish /deep/ .el-card__body {
+  padding: 22px;
 }
 
 .author {
@@ -285,7 +313,97 @@ export default {
   justify-content: flex-start;
   align-items: center;
   width: 100%;
-  margin-bottom: 20px;
+  margin-bottom: 16px;
+}
+
+.composer-head {
+  gap: 14px;
+}
+
+.composer-avatar {
+  flex-shrink: 0;
+}
+
+.composer-meta {
+  min-width: 0;
+}
+
+.composer-caption {
+  margin-top: 4px;
+  color: rgba(29, 36, 51, 0.54);
+  font-size: 13px;
+}
+
+.composer-field {
+  margin-bottom: 14px;
+}
+
+.composer-field /deep/ .el-form-item__content {
+  line-height: normal;
+}
+
+.composer-surface {
+  padding: 12px;
+  border: 1px solid rgba(29, 36, 51, 0.07);
+  border-radius: 22px;
+  background: #f5f6f7;
+}
+
+.composer-surface /deep/ .el-textarea__inner {
+  min-height: 132px !important;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  resize: none;
+}
+
+.composer-surface /deep/ .el-input__count {
+  background: transparent;
+  color: rgba(29, 36, 51, 0.42);
+  right: 0;
+  bottom: 0;
+}
+
+.publish-actions {
+  margin-bottom: 0;
+}
+
+.publish-action-row {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 14px;
+  padding-top: 4px;
+}
+
+.composer-tip {
+  margin-right: auto;
+  color: rgba(29, 36, 51, 0.46);
+  font-size: 12px;
+}
+
+.publish-button {
+  min-width: 152px;
+  padding: 12px 20px;
+  border: 1px solid rgba(29, 36, 51, 0.08);
+  border-radius: 999px;
+  background: #eceff2;
+  color: #1d2433;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  box-shadow: none;
+}
+
+.publish-button:hover,
+.publish-button:focus {
+  background: #e3e7eb;
+  color: #111827;
+  transform: none;
+}
+
+.publish-button:active {
+  transform: translateY(0);
 }
 
 .comment {
@@ -315,5 +433,76 @@ export default {
 
 .reply {
   margin-left: 10px;
+}
+
+.message-pagination /deep/ .pagination-container {
+  padding: 22px 12px 10px;
+  background: transparent;
+}
+
+.message-pagination /deep/ .el-pagination {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  color: rgba(29, 36, 51, 0.6);
+  font-weight: 500;
+}
+
+.message-pagination /deep/ .btn-prev,
+.message-pagination /deep/ .btn-next,
+.message-pagination /deep/ .el-pager li,
+.message-pagination /deep/ .el-pagination__jump .el-input__inner,
+.message-pagination /deep/ .el-pagination__sizes .el-input__inner {
+  border: 1px solid rgba(29, 36, 51, 0.07);
+  border-radius: 14px !important;
+  background: #f5f5f5 !important;
+  color: #1d2433 !important;
+  box-shadow: none !important;
+}
+
+.message-pagination /deep/ .el-pager li {
+  min-width: 36px;
+  height: 36px;
+  line-height: 34px;
+  margin: 0 2px;
+}
+
+.message-pagination /deep/ .btn-prev,
+.message-pagination /deep/ .btn-next {
+  width: 36px;
+  height: 36px;
+  padding: 0;
+}
+
+.message-pagination /deep/ .el-pager li.active {
+  background: #e8e8e8 !important;
+  border-color: rgba(29, 36, 51, 0.1);
+  color: #111827 !important;
+  font-weight: 700;
+}
+
+.message-pagination /deep/ .btn-prev:hover,
+.message-pagination /deep/ .btn-next:hover,
+.message-pagination /deep/ .el-pager li:hover,
+.message-pagination /deep/ .el-pagination__jump .el-input__inner:hover,
+.message-pagination /deep/ .el-pagination__sizes .el-input__inner:hover {
+  background: #eeeeee !important;
+}
+
+@media screen and (max-width: 768px) {
+  .message-shell {
+    width: calc(100vw - 12px);
+    padding-top: 112px;
+  }
+
+  .message-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .message-side {
+    width: 100%;
+  }
 }
 </style>

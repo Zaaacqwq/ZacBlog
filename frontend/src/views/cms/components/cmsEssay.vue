@@ -1,34 +1,34 @@
 <!-- notes page -->
 <template>
   <div class="no-caret">
-    <el-row :gutter="20" style="margin: 100px 0px;">
-      <el-col :sm="1" :lg="3" class="hidden-xs-only" style="opacity:0;">Left PlaceHolder</el-col>
-      <el-col :xs="24" :sm="16" :lg="13">
-        <el-container>
-          <el-timeline class="animate__animated animate__fadeInLeft">
+    <section class="essay-shell">
+      <div class="essay-grid">
+        <div class="essay-main">
+          <el-container class="essay-container">
+          <el-timeline class="animate__animated animate__fadeInLeft essay-list">
             <el-timeline-item :color="color" v-for="essay in essayList" :key="essay.id" :timestamp="essay.createTime"
               placement="top">
-              <el-card
-                style="letter-spacing: 1px;border: 1px solid rgba(220, 220, 220,0.9); background-color: rgba(255,255,255,0.9);box-shadow: 0 0 30px -10px ">
-                <h2 v-if="essay.title" style="color: rgba(0,0,0,1);">{{ essay.title }}</h2>
-                <div v-if="essay.contentType === '1'" class="typo ql-editor" v-html="essay.content"></div>
-                <div v-else v-html="essay.content"></div>
+              <el-card class="essay-card">
+                <div class="essay-stamp">{{ essay.createTime }}</div>
+                <h2 v-if="essay.title">{{ essay.title }}</h2>
+                <div v-if="essay.contentType === '1'" class="typo ql-editor essay-body" v-html="essay.content"></div>
+                <div v-else class="essay-body" v-html="essay.content"></div>
               </el-card>
             </el-timeline-item>
           </el-timeline>
-        </el-container>
-      </el-col>
-      <el-col :xs="24" :sm="6" :lg="5" class="right-sidebar">
-        <RightSidebar />
-      </el-col>
-      <el-col :sm="1" :lg="3" class="hidden-xs-only" style="opacity:0;">Right PlaceHolder</el-col>
+          </el-container>
+        </div>
+        <div class="essay-side">
+          <RightSidebar />
+        </div>
+      </div>
       <!-- 设置底部距离的 -->
       <el-backtop :bottom="60">
         <div class="backtop-icon">
           <svg-icon icon-class="top" style="color: black;"/>
         </div>
       </el-backtop>
-    </el-row>
+    </section>
   </div>
 </template>
 
@@ -71,25 +71,89 @@ export default {
       cmsEssayList(this.queryParams).then(response => {
         this.essayList = response.rows;
       });
-    },
+    }
   }
 }
 </script>
 
 <style scoped>
+.essay-shell {
+  width: min(1360px, calc(100vw - 24px));
+  margin: 0 auto;
+  padding-top: 132px;
+}
+
+.essay-grid {
+  width: 100%;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  gap: 20px;
+  align-items: start;
+}
+
+.essay-main {
+  min-width: 0;
+}
+
+.essay-side {
+  width: 320px;
+  background: transparent;
+}
+
+.essay-container {
+  gap: 18px;
+}
+
 .el-timeline {
   font: 16px/1.5 'Microsoft Yahei', 'PingFang SC', 'Hiragino Sans GB', sans-serif !important;
-
-  width: 80%;
+  width: 88%;
   margin: 0 auto;
 }
 
-.el-card {
-  border-radius: 20px;
-  box-shadow: 0 0 15px 5px white;
+.essay-list {
+  width: 100%;
+}
+
+.essay-card {
+  border-radius: 26px;
+  border: 1px solid rgba(29, 36, 51, 0.08);
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 20px 50px rgba(20, 28, 43, 0.08);
+}
+
+.essay-card h2 {
+  margin: 0 0 10px;
+  color: #1d2433;
+  font-family: "Iowan Old Style", "Palatino Linotype", Georgia, serif;
+}
+
+.essay-stamp {
+  margin-bottom: 12px;
+  color: rgba(29, 36, 51, 0.52);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.essay-body {
+  color: rgba(29, 36, 51, 0.78);
 }
 
 @media screen and (max-width: 768px) {
+  .essay-shell {
+    width: calc(100vw - 12px);
+    padding-top: 112px;
+  }
+
+  .essay-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .essay-side {
+    width: 100%;
+  }
+
   .el-timeline {
     width: 98%;
     padding: 2px;

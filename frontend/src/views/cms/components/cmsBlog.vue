@@ -1,117 +1,91 @@
 <!-- blog page -->
 <template>
-  <el-row :gutter="20" style="margin: 100px 0px;">
-    <el-col :sm="1" :lg="3" class="hidden-xs-only" style="opacity:0;">Left PlaceHolder</el-col>
-    <el-col :xs="24" :sm="16" :lg="13">
-      <el-card style="background-color: rgba(255, 255, 255,1)" class="first-card">
-        <div slot="header" class="total blog-info">
-          <div class="user-info">
-            <i class="el-icon-user"></i>
-            <span class="header">  {{blog.createBy}}</span>
-          </div>
-          <div class="blog-date">
-            <i class="el-icon-date"></i>
-            <span>  {{blog.createTime}}</span>
-          </div>
-          <div class="blog-views">
-            <i class="el-icon-view"></i>
-            <span>  {{blog.views}}</span>
-          </div>
-        </div>
-        <h2 class="blog-title header">{{blog.title}}
-          <el-tag size="mini" v-for="tag in blog.types" :key="tag.typeId" type="info">{{tag.typeName}}</el-tag>
-        </h2>
-        <div  v-if="blog.contentType ==='1'" class="typo m-padded-lr-responsive m-padded-tb-large ql-editor" v-html="blog.content"></div>
-        <div  v-if="blog.contentType ==='3'" v-html="blog.content"></div>
-        <CherryMarkdown ref="CherryMarkdown" v-if="blog.contentType ==='2'" v-model='blog.contentMarkdown' :defaultModel="'previewOnly'"></CherryMarkdown>
-        <div v-if="blog.contentType === '4'" ref="vditorPreview" class="mvditor-reset md-preview math-wrap typo m-padded-lr-responsive m-padded-tb-large"></div>
-        <div class="tags">
-          <div class="tag-item" v-for="tag in blog.tags" :key="tag.tagId">
-            <div class="sjx-outer">
-              <div class="sjx-inner"></div>
+  <div class="blog-detail-shell no-caret">
+    <div class="blog-detail-grid">
+      <div class="blog-detail-main">
+        <el-card class="first-card">
+          <div class="story-hero">
+            <div class="story-kicker">Essay</div>
+            <h1 class="blog-title">{{ blog.title }}</h1>
+            <div class="hero-meta">
+              <span><i class="el-icon-user"></i>{{ blog.createBy }}</span>
+              <span><i class="el-icon-date"></i>{{ blog.createTime }}</span>
+              <span><i class="el-icon-view"></i>{{ blog.views }} views</span>
             </div>
-            <div class="tag">
-              {{tag.tagName}}
+            <div class="hero-types">
+              <el-tag v-for="tag in blog.types" :key="tag.typeId" size="mini" effect="plain" type="info">
+                {{ tag.typeName }}
+              </el-tag>
             </div>
           </div>
-        </div>
-        <!-- <div class="appreciate">
-          <el-popover
-                  placement="bottom"
-                  title=""
-                  width="300"
-                  trigger="hover"
-                  content="这是一段内容,这是一段内容,这是一段内容,这是一段内容。">
-            <el-button class="zanshang" slot="reference" type="danger" round plain>赞赏</el-button>
-          </el-popover>
-        </div> -->
-        <el-table :data="blog.blogFilesNew" :border="true" style="width: 99.99%;">
-          <el-table-column align="center" min-width="30%" prop="remark" label="Attachment">
-            <template slot-scope="scope">
-              <el-row>
-                <el-col :span="6"><div class="blogFilesInfoName">Name:</div></el-col>
-                <el-col :span="18"><el-input v-model="scope.row.fileOriginName" disabled/></el-col>
-              </el-row>
-              <el-row style="margin-top: 4px;">
-                <el-col :span="6"><div class="blogFilesInfoName">Size:</div></el-col>
-                <el-col :span="18"><el-input v-model="scope.row.fileSize" disabled/></el-col>
-              </el-row>
-              <el-row style="margin-top: 4px;">
-                <el-col :span="6"><div class="blogFilesInfoName">Type:</div></el-col>
-                <el-col :span="18"><el-input v-model="scope.row.fileSuffix" disabled/></el-col>
-              </el-row>
-            </template>
-          </el-table-column>
-          <el-table-column align="center" min-width="50%" prop="remark" label="Remark">
-            <template slot-scope="scope">
-              <el-input v-model="scope.row.remark" type="textarea" :rows="6" size="small" disabled />
-            </template>
-          </el-table-column>
-          <el-table-column align="center" min-width="20%" label="Action">
-            <template slot-scope="scope">
-              <el-button size="mini" plain @click="handleDownload(scope.row)">Download</el-button>
-            </template>
-          </el-table-column>
-        </el-table>
-        <div class="author no-caret">
-          <ul>
-            <li>Author: {{blog.createBy}}</li>
-            <li>Time Published: {{blog.createTime}}</li>
-          </ul>
-        </div>
-        <el-card shadow="never" class="comments no-caret">
-          <div class="header" style="padding-bottom: 10px;">
-            Comments
+
+          <div v-if="blog.contentType === '1'" class="story-body typo m-padded-lr-responsive m-padded-tb-large ql-editor" v-html="blog.content"></div>
+          <div v-if="blog.contentType === '3'" class="story-body" v-html="blog.content"></div>
+          <CherryMarkdown ref="CherryMarkdown" v-if="blog.contentType === '2'" v-model="blog.contentMarkdown" :defaultModel="'previewOnly'"></CherryMarkdown>
+          <div v-if="blog.contentType === '4'" ref="vditorPreview" class="story-body mvditor-reset md-preview math-wrap typo m-padded-lr-responsive m-padded-tb-large"></div>
+
+          <div class="tags" v-if="blog.tags && blog.tags.length">
+            <span class="tag-item" v-for="tag in blog.tags" :key="tag.tagId">
+              {{ tag.tagName }}
+            </span>
           </div>
-          <comment></comment>
+
+          <section v-if="blog.blogFilesNew && blog.blogFilesNew.length" class="attachment-section">
+            <div class="section-label">Attachments</div>
+            <el-table :data="blog.blogFilesNew" :border="false" class="attachment-table">
+              <el-table-column align="center" min-width="30%" prop="remark" label="Attachment">
+                <template slot-scope="scope">
+                  <el-row>
+                    <el-col :span="6"><div class="blogFilesInfoName">Name</div></el-col>
+                    <el-col :span="18"><el-input v-model="scope.row.fileOriginName" disabled /></el-col>
+                  </el-row>
+                  <el-row style="margin-top: 4px;">
+                    <el-col :span="6"><div class="blogFilesInfoName">Size</div></el-col>
+                    <el-col :span="18"><el-input v-model="scope.row.fileSize" disabled /></el-col>
+                  </el-row>
+                  <el-row style="margin-top: 4px;">
+                    <el-col :span="6"><div class="blogFilesInfoName">Type</div></el-col>
+                    <el-col :span="18"><el-input v-model="scope.row.fileSuffix" disabled /></el-col>
+                  </el-row>
+                </template>
+              </el-table-column>
+              <el-table-column align="center" min-width="50%" prop="remark" label="Remark">
+                <template slot-scope="scope">
+                  <el-input v-model="scope.row.remark" type="textarea" :rows="6" size="small" disabled />
+                </template>
+              </el-table-column>
+              <el-table-column align="center" min-width="20%" label="Action">
+                <template slot-scope="scope">
+                  <el-button size="mini" plain @click="handleDownload(scope.row)">Download</el-button>
+                </template>
+              </el-table-column>
+            </el-table>
+          </section>
+
+          <div class="author">
+            <div class="section-label">Article Notes</div>
+            <ul>
+              <li>Written by {{ blog.createBy }}</li>
+              <li>Published on {{ blog.createTime }}</li>
+            </ul>
+          </div>
+
+          <el-card shadow="never" class="comments">
+            <div class="section-label">Comments</div>
+            <comment></comment>
+          </el-card>
         </el-card>
-      </el-card>
-    </el-col>
-    <el-col :xs="24" :sm="6" :lg="5" class="right-sidebar">
-      <RightSidebar />
-    </el-col>
-    <el-col :sm="1" :lg="3" class="hidden-xs-only" style="opacity:0;">Right PlaceHolder</el-col>
-    <!-- 设置底部距离的 -->
-    <!-- <el-backtop :bottom="60">
-        <div style="
-            height: 50px;
-            width: 50px;
-            background-color: rgba(240,239,241,1);
-            box-shadow: 0 0 6px rgba(0,0,0, .12);
-            text-align: center;
-            line-height: 40px;
-            border-radius:2px;
-            color: #686868;
-          ">
-          <svg-icon icon-class="top" />
-        </div>
-      </el-backtop> -->
-    <el-backtop :bottom="60">
+      </div>
+      <div class="blog-detail-side right-sidebar">
+        <RightSidebar />
+      </div>
+      <el-backtop :bottom="60">
         <div class="backtop-icon">
-          <svg-icon icon-class="top" style="color: black;"/>
+          <svg-icon icon-class="top" style="color: black;" />
         </div>
       </el-backtop>
-  </el-row>
+    </div>
+  </div>
 </template>
 
 <script>
@@ -563,6 +537,27 @@ export default {
   }
 </style>
 <style scoped>
+.blog-detail-shell {
+  width: 100%;
+  padding-top: 132px;
+}
+
+.blog-detail-grid {
+  width: min(1360px, calc(100vw - 24px));
+  margin: 0 auto 48px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  gap: 20px;
+  align-items: start;
+}
+
+.blog-detail-main {
+  min-width: 0;
+}
+
+.blog-detail-side {
+  width: 320px;
+}
 
   .el-card {
     width: 100%;
@@ -573,12 +568,12 @@ export default {
   }
 
   .first-card {
-    border-radius: 10px 10px 10px 10px;
+    border-radius: 30px;
     position: relative;
-    padding-bottom: 10px;
-    /*text-align: center;*/
+    padding: 0 0 10px;
     font: 300 1em/1.8 PingFang SC, Lantinghei SC, Microsoft Yahei, Hiragino Sans GB, Microsoft Sans Serif, WenQuanYi Micro Hei, sans-serif;
-
+    overflow: hidden;
+    background: #ffffff;
   }
 
   hr.style-one {
@@ -590,72 +585,103 @@ export default {
     text-align: center;
   }
 
+  .story-hero {
+    padding: 34px 36px 18px;
+    border-bottom: 1px solid rgba(29, 36, 51, 0.08);
+    background: #ffffff;
+  }
+
+  .story-kicker,
+  .section-label {
+    margin-bottom: 12px;
+    color: rgba(29, 36, 51, 0.5);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+  }
+
+  .story-body {
+    padding: 30px 36px 8px;
+    color: #273041;
+  }
+
+  .hero-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 14px;
+    color: rgba(29, 36, 51, 0.58);
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .hero-meta span {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .hero-types {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .hero-types /deep/ .el-tag {
+    border-radius: 999px;
+  }
+
   .tags {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
-    margin-left: 50px;
-    margin-top: 20px;
+    gap: 10px;
+    margin: 8px 36px 24px;
   }
 
   .tag-item {
-    display: flex;
-    justify-content: space-around;
+    display: inline-flex;
     align-items: center;
-    margin-left: 10px;
-    margin-bottom: 20px;
+    margin-bottom: 8px;
+    color: rgba(29, 36, 51, 0.72);
+    font-size: 13px;
+    line-height: 1;
   }
 
-  .tag {
-    padding-left: 10px;
-    padding-right: 10px;
-    border-radius: 5px;
-    background-color: #ecf5ff;
-    border: 1px solid #686868;
-    color: #686868;
-    display: flex;
-  }
-
-  .sjx-outer {
-    width: 0;
-    height: 0;
-    border-top: 7px solid transparent;
-    border-bottom: 7px solid transparent;
-    border-right: 7px solid #686868;
-    position: relative;
-  }
-
-  .sjx-inner {
-    border-top: 7px solid transparent;
-    border-bottom: 7px solid transparent;
-    border-right: 7px solid #ecf5ff;
-    top: -7px;
-    left: 1px;
-    position: absolute;
+  .tag-item::before {
+    content: "#";
+    margin-right: 4px;
+    color: rgba(29, 36, 51, 0.46);
   }
 
   .author {
     text-align: left;
-    background-color: #fcfff5;
-    box-shadow: 0 0 0 1px #a3c293 inset;
-    color: #2c662d;
-    width: 100%;
-    position: absolute;
-    left: 0;
-    margin: 20px 0;
-    padding: 20px 0;
+    margin: 24px 36px;
+    padding: 24px;
+    border-radius: 24px;
+    background-color: rgba(23, 32, 51, 0.04);
+    color: #273041;
     font-size: small;
     font-family: PingFang SC, Lantinghei SC, Microsoft Yahei, Hiragino Sans GB, Microsoft Sans Serif, WenQuanYi Micro Hei, sans-serif;
   }
 
   .comments {
-    margin-top: 150px;
-    box-shadow: 0 1px 2px 0 rgb(34 36 38 / 15%);
-    border: 1px solid rgba(34, 36, 38, .15);
-    border-top: 2px solid #686868;
+    margin: 24px 36px 30px;
+    box-shadow: none;
+    border: 1px solid rgba(29, 36, 51, 0.08);
+    border-radius: 24px;
+    background: #ffffff;
     text-align: left;
   }
   .blog-title {
-    text-align: center;
+    margin: 0 0 18px;
+    text-align: left;
+    font-size: clamp(2.4rem, 4vw, 4.4rem);
+    line-height: 1.05;
+    font-family: "Iowan Old Style", "Palatino Linotype", Georgia, serif;
+    color: #1d2433;
   }
 
   .blog-info {
@@ -683,14 +709,52 @@ export default {
 
   .header {
     text-decoration: none;
-    color: #686868;
+    color: #111;
     font-weight: bold;
   }
 
+  .attachment-section {
+    margin: 0 36px 20px;
+    padding: 4px 0 0;
+  }
+
+  .attachment-table /deep/ .el-table__body-wrapper,
+  .attachment-table /deep/ .el-table__header-wrapper {
+    border-radius: 20px;
+  }
+
+  .attachment-table /deep/ .el-input__inner,
+  .attachment-table /deep/ .el-textarea__inner {
+    background: #ffffff;
+  }
+
   @media screen and (max-width: 768px) {
+    .blog-detail-shell {
+      padding-top: 112px;
+    }
+
+    .blog-detail-grid {
+      width: calc(100vw - 12px);
+      grid-template-columns: 1fr;
+    }
+
+    .blog-detail-side {
+      width: 100%;
+    }
+
     .tags {
-      margin-left: 0;
-      margin-top: 20px;
+      margin: 8px 20px 24px;
+    }
+
+    .story-hero,
+    .story-body,
+    .attachment-section,
+    .author,
+    .comments {
+      margin-left: 20px;
+      margin-right: 20px;
+      padding-left: 20px;
+      padding-right: 20px;
     }
   }
 

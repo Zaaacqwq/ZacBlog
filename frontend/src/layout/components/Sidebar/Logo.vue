@@ -35,7 +35,7 @@ export default {
   },
   data() {
     return {
-      title: 'Blog Manager',
+      title: 'Zac Console',
       logo: logoImg
     }
   }
@@ -55,9 +55,9 @@ export default {
 .sidebar-logo-container {
   position: relative;
   width: 100%;
-  height: 50px;
-  line-height: 50px;
-  background: #2b2f3a;
+  height: 72px;
+  line-height: 72px;
+  background: transparent;
   text-align: center;
   overflow: hidden;
 
@@ -66,20 +66,24 @@ export default {
     width: 100%;
 
     & .sidebar-logo {
-      width: 32px;
-      height: 32px;
+      width: 38px;
+      height: 38px;
       vertical-align: middle;
       margin-right: 12px;
+      border-radius: 14px;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.18);
     }
 
     & .sidebar-title {
       display: inline-block;
       margin: 0;
       color: #fff;
-      font-weight: 600;
-      line-height: 50px;
-      font-size: 14px;
-      font-family: Avenir, Helvetica Neue, Arial, Helvetica, sans-serif;
+      font-weight: 700;
+      line-height: 72px;
+      font-size: 15px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-family: "Avenir Next", "Segoe UI", sans-serif;
       vertical-align: middle;
     }
   }

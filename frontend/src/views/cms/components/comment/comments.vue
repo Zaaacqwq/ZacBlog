@@ -1,369 +1,351 @@
 <!--评论模块-->
 <template>
   <div class="container">
-    <div class="comment" v-for="item in comments">
-      <div class="info" :id="item.id">
-        <el-avatar v-if="item.avatar!==''&&item.avatar!=null" :src="item.avatar"></el-avatar>
-        <el-avatar v-else icon="el-icon-user-solid"></el-avatar>
-        <div class="right">
-          <div class="name">{{item.createBy}}</div>
-          <div class="date">{{item.createTime}}</div>
+    <div class="comment" v-for="item in comments" :key="item.id">
+      <div class="comment-main" @click="showCommentInput(item)">
+        <div class="info" :id="item.id">
+          <el-avatar v-if="item.avatar !== '' && item.avatar != null" :src="item.avatar"></el-avatar>
+          <el-avatar v-else icon="el-icon-user-solid"></el-avatar>
+          <div class="right">
+            <div class="name">{{ item.createBy }}</div>
+            <div class="date">{{ item.createTime }}</div>
+          </div>
+        </div>
+        <div class="content">{{ item.content }}</div>
+        <div class="control">
+          <span class="like" :class="{ active: isLiked(item) }" @click.stop="likeClick(item)">
+            <img
+              class="heart-icon"
+              :src="isLiked(item) ? heartFillIcon : heartLineIcon"
+              alt=""
+            >
+            <span class="like-num">{{ item.likeNum || 0 }}</span>
+          </span>
+          <span class="reply-hint">Click comment to reply</span>
         </div>
       </div>
-      <div class="content">{{item.content}}</div>
-      <div class="control">
-        <span class="like" :class="{active: item.isLike}" @click="likeClick(item)">
-          <svg-icon icon-class="like" />
-          <span class="like-num" style="margin-left: 5px;">{{item.likeNum > 0 ? item.likeNum + ' People Liked' : 'Like'}}</span>
-        </span>
-        <span class="comment-reply" @click="showCommentInput(item)">
-          <svg-icon icon-class="comment" />
-          <span style="margin-left: 5px;">Reply</span>
-        </span>
-      </div>
-      <div class="reply">
-        <div class="item" v-for="reply in item.children" :id="reply.id">
+
+      <div
+        v-if="(item.children && item.children.length > 0) || showItemId === item.id"
+        class="reply"
+      >
+        <div
+          class="item"
+          v-for="reply in item.children"
+          :key="reply.id"
+          :id="reply.id"
+          @click="showCommentInput(item, reply)"
+        >
           <div class="reply-content">
-            <span class="from-name">{{reply.createBy}}</span><span>: </span>
-            <span class="to-name" v-show="reply.parentId!=reply.mainId">@{{reply.pcreateBy}}</span>
-            <span v-show="reply.delFlag=='0'">{{reply.content}}</span>
-            <span v-show="reply.delFlag=='1'" style="color: #909399;">The comment has been deleted!</span>
+            <span class="from-name">{{ reply.createBy }}</span><span>: </span>
+            <span class="to-name" v-show="reply.parentId != reply.mainId">@{{ reply.pcreateBy }}</span>
+            <span v-if="reply.delFlag !== '1'">{{ reply.content }}</span>
+            <span v-else style="color: #909399;">The comment has been deleted!</span>
           </div>
           <div class="reply-bottom">
-            <span>{{reply.createTime}}</span>
-            <span class="reply-text" @click="showCommentInput(item, reply)">
-              <svg-icon icon-class="comment" />
-              <span style="margin-left: 5px;">Reply</span>
-            </span>
+            <span>{{ reply.createTime }}</span>
           </div>
+          <input-component
+            :show="showItemId === item.id && showReplyId === reply.id"
+            :value="inputComment"
+            :toComment="name"
+            :toId="id"
+            @cancel="cancelInput"
+            @confirm="commitComment"
+          />
         </div>
-        <div class="write-reply" v-if="item.children!=null" @click="showCommentInput(item)">
-          <i class="el-icon-edit"></i>
-          <span class="add-comment">Add New Comment</span>
-        </div>
-        <input-component :show="showItemId === item.id"
-                         :value="inputComment"
-                         :toComment="name"
-                         :toId="id"
-                         @cancel="cancelInput"
-                         @confirm="commitComment">
-        </input-component>
-        <!--<transition name="fade">-->
-        <!--<div class="input-wrapper" v-if="showItemId === item.id">-->
-        <!--<el-input class="gray-bg-input"-->
-        <!--v-model="inputComment"-->
-        <!--type="textarea"-->
-        <!--:rows="3"-->
-        <!--autofocus-->
-        <!--placeholder="写下你的评论">-->
-        <!--</el-input>-->
-        <!--<div class="btn-control">-->
-        <!--<span class="cancel" @click="cancel">取消</span>-->
-        <!--<el-button class="btn" type="success" round @click="commitComment">确定</el-button>-->
-        <!--</div>-->
-        <!--</div>-->
-        <!--</transition>-->
+        <input-component
+          :show="showItemId === item.id && showReplyId === null"
+          :value="inputComment"
+          :toComment="name"
+          :toId="id"
+          @cancel="cancelInput"
+          @confirm="commitComment"
+        />
       </div>
     </div>
   </div>
 </template>
 
 <script>
+import Vue from 'vue'
+import InputComponent from './InputComponent'
+import heartLineIcon from '@/assets/images/heart-line.svg'
+import heartFillIcon from '@/assets/images/heart-fill.svg'
+import { getToken } from '@/utils/auth'
+import { addCmsCommentLike, delCmsCommentLike } from '@/api/cms/comment'
 
-  import Vue from 'vue'
-  import InputComponent from './InputComponent'
-  import {
-    getToken
-  } from '@/utils/auth'
-  import {
-    addCmsCommentLike,
-    delCmsCommentLike,
-  } from "@/api/cms/comment"
-
-  export default {
-    props: {
-      comments: {
-        type: Array,
-        required: true
+export default {
+  props: {
+    comments: {
+      type: Array,
+      required: true
+    }
+  },
+  components: {
+    'input-component': InputComponent
+  },
+  data() {
+    return {
+      inputComment: '',
+      name: '',
+      id: null,
+      mainId: null,
+      showItemId: '',
+      showReplyId: null,
+      heartLineIcon,
+      heartFillIcon,
+      commentLikeForm: {},
+    }
+  },
+  methods: {
+    isLiked(item) {
+      return !!item.isLike
+    },
+    reset() {
+      this.commentLikeForm = {
+        commentId: null,
+        userId: null,
+        likeNum: null,
+        createBy: null,
+        createTime: null,
+        updateBy: null,
+        updateTime: null
+      };
+      this.resetForm('commentLikeForm');
+    },
+    addCommentLike(item) {
+      let token = getToken();
+      this.reset();
+      if (token == null || token == '') {
+        this.commentLikeForm.createBy = 'Anonymous User'
+        this.commentLikeForm.commentId = item.id
+        this.commentLikeForm.likeNum = item.likeNum
+      } else {
+        this.commentLikeForm.createBy = this.$store.getters.name
+        this.commentLikeForm.commentId = item.id
+        this.commentLikeForm.likeNum = item.likeNum
       }
+      addCmsCommentLike(this.commentLikeForm).then(() => {
+        this.reset();
+      });
     },
-    components: {
-      "input-component": InputComponent
-    },
-    data() {
-      return {
-        inputComment: '',
-        name: '',
-        id: null,
-        showItemId: '',
-        commentLikeForm: {},
+    delCommentLike(item) {
+      let token = getToken();
+      this.reset();
+      if (token == null || token == '') {
+        this.commentLikeForm.createBy = 'Anonymous User'
+        this.commentLikeForm.commentId = item.id
+        this.commentLikeForm.likeNum = item.likeNum
+      } else {
+        this.commentLikeForm.createBy = this.$store.getters.name
+        this.commentLikeForm.commentId = item.id
+        this.commentLikeForm.likeNum = item.likeNum
       }
+      delCmsCommentLike(this.commentLikeForm).then(() => {
+        this.reset();
+      });
     },
-    computed: {},
-    methods: {
-      // 表单重置
-      reset() {
-        this.commentLikeForm = {
-          commentId: null,
-          userId: null,
-          likeNum: null,
-          createBy: null,
-          createTime: null,
-          updateBy: null,
-          updateTime: null
-        };
-        this.resetForm("commentLikeForm");
-      },
-      /**
-       * 新增点赞
-       */
-      addCommentLike(item){
-        let token = getToken();
-        this.reset();
-        if (token==null || token == '') {
-          this.commentLikeForm.createBy = "Anonymous User"
-          this.commentLikeForm.commentId = item.id
-          this.commentLikeForm.likeNum = item.likeNum
+    likeClick(item) {
+      if (item.isLike === null || item.isLike === undefined) {
+        Vue.$set(item, 'isLike', true);
+        item.likeNum++
+        this.addCommentLike(item)
+      } else {
+        if (item.isLike) {
+          item.likeNum--
+          this.delCommentLike(item)
         } else {
-          this.commentLikeForm.createBy = this.$store.getters.name
-          this.commentLikeForm.commentId = item.id
-          this.commentLikeForm.likeNum = item.likeNum
-        }
-        addCmsCommentLike(this.commentLikeForm).then(response => {
-          this.reset();
-        });
-      },
-      /**
-       * 删除点赞
-       */
-      delCommentLike(item){
-        let token = getToken();
-        this.reset();
-        if (token==null || token == '') {
-          this.commentLikeForm.createBy = "Anonymous User"
-          this.commentLikeForm.commentId = item.id
-          this.commentLikeForm.likeNum = item.likeNum
-        } else {
-          this.commentLikeForm.createBy = this.$store.getters.name
-          this.commentLikeForm.commentId = item.id
-          this.commentLikeForm.likeNum = item.likeNum
-        }
-        delCmsCommentLike(this.commentLikeForm).then(response => {
-          this.reset();
-        });
-      },
-      /**
-       * 点赞
-       */
-      likeClick(item) {
-        if (item.isLike === null) {
-          Vue.$set(item, "isLike", true);
           item.likeNum++
           this.addCommentLike(item)
-        } else {
-          if (item.isLike) {
-            item.likeNum--
-            this.delCommentLike(item)
-          } else {
-            item.likeNum++
-            this.addCommentLike(item)
-          }
-          item.isLike = !item.isLike;
         }
-      },
-
-      /**
-       * 点击取消按钮
-       */
-      cancelInput() {
-        this.showItemId = ''
-      },
-
-      /**
-       * 提交评论
-       */
-      commitComment(value) {
-        this.$emit("replyConfirm", value)
-        // console.log(value);
-      },
-
-      /**
-       * 点击评论按钮显示输入框
-       * item: 当前大评论
-       * reply: 当前回复的评论
-       */
-      showCommentInput(item, reply) {
-        if (reply) {
-          this.inputComment = ""
-          this.name = "Reply@" + reply.createBy + ":"
-          this.id = reply.id
-        } else {
-          this.inputComment = ''
-          this.name = 'Leave your comment'
-          this.id = item.id
-        }
-        this.showItemId = item.id
+        item.isLike = !item.isLike;
       }
     },
-    created() {
-      // console.log(this.comments)
+    cancelInput() {
+      this.showItemId = ''
+      this.showReplyId = null
+      this.mainId = null
+    },
+    commitComment(value) {
+      this.$emit('replyConfirm', {
+        ...value,
+        mainId: this.mainId
+      })
+    },
+    showCommentInput(item, reply) {
+      this.mainId = item.id
+      if (reply) {
+        this.inputComment = ''
+        this.name = 'Reply@' + reply.createBy + ':'
+        this.id = reply.id
+        this.showReplyId = reply.id
+      } else {
+        this.inputComment = ''
+        this.name = 'Leave your comment'
+        this.id = item.id
+        this.showReplyId = null
+      }
+      this.showItemId = item.id
     }
   }
+}
 </script>
 
-<style scoped rel="stylesheet/scss"  lang="scss">
+<style scoped rel="stylesheet/scss" lang="scss">
+.container {
+  padding: 0 10px;
+  box-sizing: border-box;
 
-  .container {
-    padding: 0 10px;
-    box-sizing: border-box;
-    .comment {
+  .comment {
+    display: flex;
+    flex-direction: column;
+    padding: 18px 18px 12px;
+    margin-bottom: 14px;
+    border: 1px solid rgba(29, 36, 51, 0.06);
+    border-radius: 22px;
+    box-shadow: 0 8px 20px rgba(17, 24, 39, 0.035);
+    transition: background-color 0.2s ease, transform 0.2s ease;
+
+    &:hover {
+      background: rgba(17, 24, 39, 0.02);
+      box-shadow: 0 10px 24px rgba(17, 24, 39, 0.05);
+    }
+
+    .comment-main {
+      cursor: pointer;
+    }
+
+    .info {
       display: flex;
-      flex-direction: column;
-      padding: 10px;
-      border-bottom: 1px solid #dddddd;
-      .info {
+      align-items: center;
+
+      .right {
         display: flex;
-        align-items: center;
-        .right {
-          display: flex;
-          flex-direction: column;
-          margin-left: 10px;
-          .name {
-            font-size: 16px;
-            color: #303133;
-            margin-bottom: 5px;
-            font-weight: 500;
-          }
-          .date {
-            font-size: 12px;
-            color: #909399;
-          }
+        flex-direction: column;
+        margin-left: 10px;
+
+        .name {
+          font-size: 16px;
+          color: #303133;
+          margin-bottom: 5px;
+          font-weight: 500;
+        }
+
+        .date {
+          font-size: 12px;
+          color: #909399;
         }
       }
-      .content {
-        font-size: 16px;
-        color: #303133;
-        line-height: 20px;
-        padding: 10px 0;
-      }
-      .control {
+    }
+
+    .content {
+      font-size: 16px;
+      color: #303133;
+      line-height: 20px;
+      padding: 10px 0;
+    }
+
+    .control {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 14px;
+      color: #909399;
+
+      .like {
+        min-width: 56px;
         display: flex;
         align-items: center;
-        font-size: 14px;
-        color: #909399;
-        .like {
-          display: flex;
-          align-items: center;
-          margin-right: 20px;
-          cursor: pointer;
-          &.active, &:hover {
-            color: #5a5abc;
-          }
-          .iconfont {
-            font-size: 14px;
-            margin-right: 5px;
-          }
+        gap: 6px;
+        padding: 6px 10px;
+        border-radius: 999px;
+        background: rgba(17, 24, 39, 0.04);
+        cursor: pointer;
+        user-select: none;
+
+        &.active,
+        &:hover {
+          color: #d598a8;
+          background: rgba(213, 152, 168, 0.1);
         }
-        .comment-reply {
-          display: flex;
-          align-items: center;
-          cursor: pointer;
-          &:hover {
-            color: #333;
+
+        .heart-icon {
+          width: 14px;
+          height: 14px;
+          display: block;
+          object-fit: contain;
+        }
+
+        .like-num {
+          font-size: 13px;
+          font-weight: 600;
+        }
+      }
+
+      .reply-hint {
+        font-size: 12px;
+        letter-spacing: 0.04em;
+        color: #9ca3af;
+      }
+    }
+
+    .reply {
+      margin: 14px 0 4px;
+      padding: 12px 14px;
+      border-radius: 18px;
+      background: rgba(17, 24, 39, 0.025);
+      border: 1px solid rgba(29, 36, 51, 0.05);
+
+      .item {
+        margin: 0;
+        padding: 12px 14px;
+        border-radius: 14px;
+        border-bottom: 1px solid rgba(29, 36, 51, 0.06);
+        cursor: pointer;
+        transition: color 0.2s ease, background-color 0.2s ease;
+
+        &:hover {
+          color: #111827;
+          background: rgba(255, 255, 255, 0.58);
+        }
+
+        &:first-child {
+          padding-top: 4px;
+        }
+
+        &:last-child {
+          border-bottom: 0;
+          padding-bottom: 4px;
+        }
+
+        .reply-content {
+          display: block;
+          font-size: 14px;
+          color: #303133;
+          line-height: 1.7;
+
+          .from-name {
+            color: #111827;
+            font-weight: 600;
           }
-          .iconfont {
-            font-size: 16px;
-            margin-right: 5px;
+
+          .to-name {
+            color: #6b7280;
+            margin-left: 6px;
+            margin-right: 6px;
           }
         }
 
-      }
-      .reply {
-        margin: 10px 0;
-        border-left: 2px solid #DCDFE6;
-        .item {
-          margin: 0 10px;
-          padding: 10px 0;
-          border-bottom: 1px dashed #EBEEF5;
-          .reply-content {
-            display: flex;
-            align-items: center;
-            font-size: 14px;
-            color: #303133;
-            .from-name {
-              color: #686868;
-            }
-            .to-name {
-              color: #686868;
-              margin-left: 5px;
-              margin-right: 5px;
-            }
-          }
-          .reply-bottom {
-            display: flex;
-            align-items: center;
-            margin-top: 6px;
-            font-size: 12px;
-            color: #909399;
-            .reply-text {
-              display: flex;
-              align-items: center;
-              margin-left: 10px;
-              cursor: pointer;
-              &:hover {
-                color: #333;
-              }
-              .icon-comment {
-                margin-right: 5px;
-              }
-            }
-          }
-        }
-        .write-reply {
+        .reply-bottom {
           display: flex;
           align-items: center;
-          font-size: 14px;
-          color: #909399;
-          padding: 10px;
-          cursor: pointer;
-          &:hover {
-            color: #303133;
-          }
-          .el-icon-edit {
-            margin-right: 5px;
-          }
-        }
-        .fade-enter-active, fade-leave-active {
-          transition: opacity 0.5s;
-        }
-        .fade-enter, .fade-leave-to {
-          opacity: 0;
-        }
-        .input-wrapper {
-          padding: 10px;
-          .gray-bg-input, .el-input__inner {
-            /*background-color: #67C23A;*/
-          }
-          .btn-control {
-            display: flex;
-            justify-content: flex-end;
-            align-items: center;
-            padding-top: 10px;
-            .cancel {
-              font-size: 16px;
-              color: #606266;
-              margin-right: 20px;
-              cursor: pointer;
-              &:hover {
-                color: #333;
-              }
-            }
-            .confirm {
-              font-size: 16px;
-            }
-          }
+          margin-top: 8px;
+          font-size: 12px;
+          color: #9ca3af;
         }
       }
     }
   }
+}
 </style>

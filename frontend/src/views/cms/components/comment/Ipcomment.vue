@@ -1,36 +1,34 @@
 <template>
   <el-container style="opacity: 0.9">
-    <div class="author">
-      <el-avatar v-if="token==null" icon="el-icon-user-solid" size="large">
-        <!-- style="background-color: #666" -->
+    <div class="composer-head author">
+      <el-avatar v-if="token==null" icon="el-icon-user-solid" size="large" class="composer-avatar">
       </el-avatar>
-      <el-avatar v-else :src="avatar" size="large"></el-avatar>
-      <div>
+      <el-avatar v-else :src="avatar" size="large" class="composer-avatar"></el-avatar>
+      <div class="composer-meta">
         <div class="nkname">
           <span class="name" v-if="token==null">Anonymous User</span>
           <span class="name" v-else>{{name}} </span>
         </div>
+        <div class="composer-caption">Leave a comment on this article.</div>
       </div>
     </div>
     <el-form :model="messageForm" :rules="messageFormRules" ref="messageFormRef">
-      <el-form-item prop="content">
-        <el-input @blur="blur" :rows="5" v-model="messageForm.content" type="textarea" maxlength="100" show-word-limit
+      <el-form-item prop="content" class="composer-field">
+        <div class="composer-surface">
+          <el-input @blur="blur" :rows="4" v-model="messageForm.content" type="textarea" maxlength="100" show-word-limit
           placeholder="Leave your comment"></el-input>
+        </div>
       </el-form-item>
-      <el-form-item style="text-align: right">
-        <el-row>
-          <el-col :span="12" style="text-align: left">
-            <Emoji @output="output"></Emoji>
-          </el-col>
-          <el-col :span="12" style="text-align: right">
-            <el-button type="primary" @click="publish">Click to publish</el-button>
-          </el-col>
-        </el-row>
+      <el-form-item class="publish-actions">
+        <div class="publish-action-row">
+          <span class="composer-tip">Thoughtful comments work best.</span>
+          <el-button class="publish-button" @click="publish">Publish Comment</el-button>
+        </div>
       </el-form-item>
     </el-form>
     <el-divider v-if="messageList.length>0"><span style="color: #999;font-size: small;">Latest Comment</span></el-divider>
     <comment :comments="messageList" @replyConfirm="commitComment"></comment>
-    <pagination v-show="total>0" :total="total" :page.sync="queryParams.pageNum" :limit.sync="queryParams.pageSize"
+    <pagination class="blog-comment-pagination" v-show="total>0" :total="total" :page.sync="queryParams.pageNum" :limit.sync="queryParams.pageSize"
       @pagination="getMessageList" />
   </el-container>
 </template>
@@ -47,7 +45,6 @@
     cmsAddComment,
   } from "@/api/cms/comment"
   import comment from './comments.vue'
-  import Emoji from '@/components/Emoji'
   export default {
     name: 'Ipcomment',
     data() {
@@ -106,8 +103,7 @@
       ]),
     },
     components: {
-      comment,
-      Emoji
+      comment
     },
     methods: {
       // 表单重置
@@ -159,6 +155,7 @@
         this.reset();
         this.messageForm.content = value.inputComment;
         this.messageForm.parentId = value.id;
+        this.messageForm.mainId = value.mainId;
         let token = getToken();
         this.$refs.messageFormRef.validate(async valid => {
           if (!valid) return
@@ -209,15 +206,6 @@
         this.cursorIndexStart = e.srcElement.selectionStart  // 获取input输入框失去焦点时光标选中开始的位置
         this.cursorIndexEnd = e.srcElement.selectionEnd  // 获取input输入框失去焦点时光标选中结束的位置
       },
-      output(val) {
-        if (this.cursorIndexStart !== null && this.messageForm.content) {
-          //如果 文本域获取了焦点, 则在光标位置处插入对应字段内容
-          this.messageForm.content = this.messageForm.content.substring(0, this.cursorIndexStart) + val + this.messageForm.content.substring(this.cursorIndexEnd)
-        } else {
-          // 如果 文本域未获取焦点, 则在字符串末尾处插入对应字段内容
-          this.messageForm.content = this.messageForm.content?this.messageForm.content:'' + val
-        }
-      },
       //跳转到相应位置
       to() {
         if (this.$route.query.commentId != null) {
@@ -252,12 +240,97 @@
     display: block;
   }
 
+  .el-container /deep/ .el-form-item__content {
+    line-height: normal;
+  }
+
   .author {
     display: flex;
     justify-content: flex-start;
     align-items: center;
     width: 100%;
-    margin-bottom: 20px;
+    margin-bottom: 16px;
+  }
+
+  .composer-head {
+    gap: 14px;
+  }
+
+  .composer-avatar {
+    flex-shrink: 0;
+  }
+
+  .composer-meta {
+    min-width: 0;
+  }
+
+  .composer-caption {
+    margin-top: 4px;
+    color: rgba(29, 36, 51, 0.54);
+    font-size: 13px;
+  }
+
+  .composer-field {
+    margin-bottom: 14px;
+  }
+
+  .composer-surface {
+    padding: 12px;
+    border: 1px solid rgba(29, 36, 51, 0.07);
+    border-radius: 22px;
+    background: #f5f6f7;
+  }
+
+  .composer-surface /deep/ .el-textarea__inner {
+    min-height: 132px !important;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+    resize: none;
+  }
+
+  .composer-surface /deep/ .el-input__count {
+    background: transparent;
+    color: rgba(29, 36, 51, 0.42);
+    right: 0;
+    bottom: 0;
+  }
+
+  .publish-actions {
+    margin-bottom: 0;
+  }
+
+  .publish-action-row {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 14px;
+    padding-top: 4px;
+  }
+
+  .composer-tip {
+    margin-right: auto;
+    color: rgba(29, 36, 51, 0.46);
+    font-size: 12px;
+  }
+
+  .publish-button {
+    min-width: 152px;
+    padding: 12px 20px;
+    border: 1px solid rgba(29, 36, 51, 0.08);
+    border-radius: 999px;
+    background: #eceff2;
+    color: #1d2433;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    box-shadow: none;
+  }
+
+  .publish-button:hover,
+  .publish-button:focus {
+    background: #e3e7eb;
+    color: #111827;
   }
 
   .comment {
@@ -287,5 +360,61 @@
 
   .reply {
     margin-left: 10px;
+  }
+
+  .blog-comment-pagination /deep/ .pagination-container {
+    padding: 22px 0 10px;
+    background: transparent;
+  }
+
+  .blog-comment-pagination /deep/ .el-pagination {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    color: rgba(29, 36, 51, 0.6);
+    font-weight: 500;
+  }
+
+  .blog-comment-pagination /deep/ .btn-prev,
+  .blog-comment-pagination /deep/ .btn-next,
+  .blog-comment-pagination /deep/ .el-pager li,
+  .blog-comment-pagination /deep/ .el-pagination__jump .el-input__inner,
+  .blog-comment-pagination /deep/ .el-pagination__sizes .el-input__inner {
+    border: 1px solid rgba(29, 36, 51, 0.07);
+    border-radius: 14px !important;
+    background: #f5f5f5 !important;
+    color: #1d2433 !important;
+    box-shadow: none !important;
+  }
+
+  .blog-comment-pagination /deep/ .el-pager li {
+    min-width: 36px;
+    height: 36px;
+    line-height: 34px;
+    margin: 0 2px;
+  }
+
+  .blog-comment-pagination /deep/ .btn-prev,
+  .blog-comment-pagination /deep/ .btn-next {
+    width: 36px;
+    height: 36px;
+    padding: 0;
+  }
+
+  .blog-comment-pagination /deep/ .el-pager li.active {
+    background: #e8e8e8 !important;
+    border-color: rgba(29, 36, 51, 0.1);
+    color: #111827 !important;
+    font-weight: 700;
+  }
+
+  .blog-comment-pagination /deep/ .btn-prev:hover,
+  .blog-comment-pagination /deep/ .btn-next:hover,
+  .blog-comment-pagination /deep/ .el-pager li:hover,
+  .blog-comment-pagination /deep/ .el-pagination__jump .el-input__inner:hover,
+  .blog-comment-pagination /deep/ .el-pagination__sizes .el-input__inner:hover {
+    background: #eeeeee !important;
   }
 </style>
