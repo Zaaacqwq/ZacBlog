@@ -72,12 +72,12 @@
       @pagination="getList" />
 
     <!-- 添加或修改随笔管理对话框 -->
-    <el-dialog :title="title" :visible.sync="open" :before-close="cancel" width="1200px" append-to-body>
-      <el-form ref="form" :model="form" :rules="rules" label-width="80px">
-        <el-form-item label="Title" prop="title">
+    <el-dialog :title="title" :visible.sync="open" :before-close="cancel" width="1200px" custom-class="note-editor-dialog" append-to-body>
+      <el-form ref="form" :model="form" :rules="rules" label-position="top" class="note-editor-form">
+        <el-form-item label="Title" prop="title" class="note-title-field">
           <el-input v-model="form.title" placeholder="Enter title" />
         </el-form-item>
-        <el-form-item label="Content">
+        <el-form-item label="Content" class="note-content-panel">
           <!-- Only Vditor Markdown editor is supported -->
           <el-row>
             <el-col>
@@ -89,10 +89,10 @@
           <el-checkbox v-model="top">置顶</el-checkbox>
         </el-form-item> -->
       </el-form>
-      <div slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="releaseForm">Publish</el-button>
-        <el-button type="info" @click="saveForm">Save</el-button>
-        <el-button @click="cancel">Cancel</el-button>
+      <div slot="footer" class="dialog-footer note-editor-footer">
+        <el-button class="note-action-btn note-action-btn--publish" type="success" plain @click="releaseForm">Publish</el-button>
+        <el-button class="note-action-btn note-action-btn--save" type="warning" plain @click="saveForm">Save</el-button>
+        <el-button class="note-action-btn note-action-btn--cancel" type="danger" plain @click="cancel">Cancel</el-button>
       </div>
     </el-dialog>
 
@@ -476,3 +476,129 @@
     }
   };
 </script>
+
+<style scoped lang="scss">
+.note-editor-form {
+  padding: 8px 6px 0;
+}
+
+.note-title-field {
+  margin-bottom: 18px;
+}
+
+.note-content-panel {
+  margin-bottom: 0;
+}
+
+.note-editor-form :deep(.el-form-item__label) {
+  color: #3f4c61;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.2;
+  padding-bottom: 10px;
+}
+
+.note-editor-form :deep(.el-input__inner) {
+  height: 42px;
+  border-radius: 14px;
+  border-color: rgba(23, 32, 51, 0.1);
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.note-editor-form :deep(.el-input__inner:focus) {
+  border-color: rgba(174, 123, 50, 0.42);
+  box-shadow: 0 0 0 4px rgba(174, 123, 50, 0.12);
+}
+
+.note-content-panel :deep(.el-form-item__content) {
+  padding: 18px 18px 10px;
+  border: 1px solid rgba(23, 32, 51, 0.08);
+  border-radius: 28px;
+  background: rgba(255, 252, 245, 0.72);
+  box-shadow: 0 24px 60px rgba(18, 27, 43, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.72);
+}
+
+.note-content-panel :deep(.vditor) {
+  box-shadow: none;
+}
+
+.note-editor-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding-top: 18px;
+}
+
+.note-editor-footer :deep(.el-button) {
+  min-width: 104px;
+  height: 40px;
+  padding: 0 22px;
+  border-radius: 14px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  box-shadow: 0 10px 20px rgba(18, 27, 43, 0.05);
+}
+
+.note-editor-footer :deep(.note-action-btn--publish.el-button--success.is-plain) {
+  background: rgba(47, 143, 116, 0.1);
+  border-color: rgba(47, 143, 116, 0.18);
+  color: #236b56;
+}
+
+.note-editor-footer :deep(.note-action-btn--save.el-button--warning.is-plain) {
+  background: rgba(254, 193, 113, 0.18);
+  border-color: rgba(174, 123, 50, 0.22);
+  color: #9a6719;
+}
+
+.note-editor-footer :deep(.note-action-btn--cancel.el-button--danger.is-plain) {
+  background: rgba(192, 54, 57, 0.08);
+  border-color: rgba(192, 54, 57, 0.15);
+  color: #b02e33;
+}
+
+.note-editor-form :deep(.el-form-item__error) {
+  position: static;
+  margin-top: 8px;
+  line-height: 1.35;
+}
+</style>
+
+<style lang="scss">
+.note-editor-dialog {
+  border-radius: 30px;
+  overflow: hidden;
+  background: linear-gradient(180deg, rgba(255, 253, 249, 0.98) 0%, rgba(251, 248, 241, 0.98) 100%);
+  box-shadow: 0 40px 100px rgba(18, 27, 43, 0.16);
+}
+
+.note-editor-dialog .el-dialog__header {
+  padding: 28px 30px 20px;
+  border-bottom: 1px solid rgba(23, 32, 51, 0.06);
+}
+
+.note-editor-dialog .el-dialog__title {
+  color: #172033;
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.note-editor-dialog .el-dialog__headerbtn {
+  top: 26px;
+  right: 28px;
+}
+
+.note-editor-dialog .el-dialog__headerbtn .el-dialog__close {
+  color: rgba(29, 36, 51, 0.42);
+  font-size: 18px;
+}
+
+.note-editor-dialog .el-dialog__body {
+  padding: 20px 30px 16px;
+}
+
+.note-editor-dialog .el-dialog__footer {
+  padding: 0 30px 28px;
+}
+</style>

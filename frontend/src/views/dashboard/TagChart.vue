@@ -1,7 +1,10 @@
 <!-- admin tag chart -->
 <template>
     <div class="com-container">
-        <h3 class="title">Tags</h3>
+        <div class="panel-heading">
+            <span class="panel-eyebrow">Tag Cloud</span>
+            <h3 class="title">Topic distribution</h3>
+        </div>
         <div class="com-chart" ref="tag_ref">
             <div class="tag" v-for="tag in randerList" :key="tag.id"
                  :style="{left:tag.x+'px',top:tag.y+'px',color:tag.color,opacity:tag.opacity,filter:tag.filter,fontSize:tag.fontSize+'px',transform: tag.transform}">
@@ -137,10 +140,24 @@ export default {
         position: relative;
     }
 
+    .panel-heading {
+        margin-bottom: 6px;
+    }
+
+    .panel-eyebrow {
+        display: inline-block;
+        margin-bottom: 8px;
+        color: rgba(29, 36, 51, 0.46);
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+    }
+
     .com-chart {
         position: absolute;
         left: 50%;
-        top: 50%;
+        top: calc(50% + 14px);
         width: 100%;
         height: 100%;
     }
@@ -155,13 +172,11 @@ export default {
     }
 
     .title{
-        position: absolute;
-        top: 0;
-        left: 0;
         margin: 0;
-        color: rgba(0, 0, 0, 0.45);
-        font-size: 16px;
-        font-weight:bold;
+        color: #172033;
+        font-size: 20px;
+        font-weight:700;
+        letter-spacing: -0.03em;
     }
 
     canvas {

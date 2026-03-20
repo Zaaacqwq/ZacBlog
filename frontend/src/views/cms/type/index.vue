@@ -70,32 +70,37 @@
       @pagination="getList" />
 
     <!-- 添加或修改分类管理对话框 -->
-    <el-dialog :title="title" :visible.sync="open" :before-close="cancel" width="500px" append-to-body>
-      <el-form ref="form" :model="form" :rules="rules" label-width="130px">
-        <el-form-item label="Category Name" prop="typeName">
+    <el-dialog :title="title" :visible.sync="open" :before-close="cancel" width="620px" custom-class="category-editor-dialog" append-to-body>
+      <el-form ref="form" :model="form" :rules="rules" label-position="top" class="category-editor-form">
+        <el-form-item label="Category Name" prop="typeName" class="category-title-field">
           <el-input v-model="form.typeName" placeholder="Enter category name" />
         </el-form-item>
-        <el-form-item label="Category Image">
+        <el-form-item label="Category Image" class="category-panel category-image-panel">
+          <div class="category-image-intro">Pick an icon-style image for the category card and list view.</div>
           <el-radio-group v-model="form.typePicType">
             <el-radio-button label="0">URL</el-radio-button>
             <el-radio-button label="1">Upload</el-radio-button>
           </el-radio-group>
           <div v-show="form.typePicType == '0'" class="tabBlock">
-            <el-input v-model="form.typePicLink" placeholder="Enter image URL https://" style="margin-bottom: 10px;" />
-            <el-image :src="form.typePicLink" :preview-src-list="[form.typePicLink]" fit="cover" class="typePic" >
-              <div slot="error" class="image-slot">
-                <i class="el-icon-collection"></i>
-              </div>
-            </el-image>
+            <el-input v-model="form.typePicLink" placeholder="Enter image URL https://" class="category-image-input" />
+            <div class="category-image-preview-card">
+              <el-image :src="form.typePicLink" :preview-src-list="[form.typePicLink]" fit="cover" class="typePic" >
+                <div slot="error" class="image-slot">
+                  <i class="el-icon-collection"></i>
+                </div>
+              </el-image>
+            </div>
           </div>
           <div v-show="form.typePicType == '1'" class="tabBlock">
-            <imageUpload v-model="form.typePic" :limit="1" />
+            <div class="category-upload-surface">
+              <imageUpload v-model="form.typePic" :limit="1" />
+            </div>
           </div>
         </el-form-item>
       </el-form>
-      <div slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="submitForm">Confirm</el-button>
-        <el-button @click="cancel">Cancel</el-button>
+      <div slot="footer" class="dialog-footer category-editor-footer">
+        <el-button class="category-action-btn category-action-btn--confirm" type="success" plain @click="submitForm">Confirm</el-button>
+        <el-button class="category-action-btn category-action-btn--cancel" type="danger" plain @click="cancel">Cancel</el-button>
       </div>
     </el-dialog>
   </div>
@@ -270,13 +275,174 @@
 </script>
 
 <style scoped lang="scss">
-  .tabBlock {
-    height: 180px;
-    margin-top: 20px;
+  .category-editor-form {
+    padding: 8px 6px 0;
   }
+
+  .category-title-field {
+    margin-bottom: 18px;
+  }
+
+  .category-panel :deep(.el-form-item__content) {
+    padding: 18px 18px 14px;
+    border: 1px solid rgba(23, 32, 51, 0.08);
+    border-radius: 28px;
+    background: rgba(255, 252, 245, 0.72);
+    box-shadow: 0 24px 60px rgba(18, 27, 43, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.72);
+  }
+
+  .category-image-intro {
+    margin-bottom: 14px;
+    color: rgba(29, 36, 51, 0.52);
+    font-size: 13px;
+    line-height: 1.6;
+  }
+
+  .tabBlock {
+    min-height: 180px;
+    margin-top: 18px;
+  }
+
+  .category-image-input {
+    margin-bottom: 14px;
+  }
+
+  .category-image-preview-card {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 88px;
+    height: 88px;
+    border-radius: 24px;
+    background: rgba(245, 246, 247, 0.82);
+    border: 1px solid rgba(23, 32, 51, 0.06);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.72);
+  }
+
+  .category-upload-surface {
+    padding: 12px;
+    border-radius: 20px;
+    background: rgba(245, 246, 247, 0.72);
+    border: 1px dashed rgba(23, 32, 51, 0.12);
+  }
+
   .typePic {
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
+    width: 42px;
+    height: 42px;
+    border-radius: 16px;
+  }
+
+  .category-editor-form :deep(.el-form-item__label) {
+    color: #3f4c61;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1.2;
+    padding-bottom: 10px;
+  }
+
+  .category-editor-form :deep(.el-input__inner) {
+    height: 42px;
+    border-radius: 14px;
+    border-color: rgba(23, 32, 51, 0.1);
+    background: rgba(255, 255, 255, 0.9);
+  }
+
+  .category-editor-form :deep(.el-input__inner:focus) {
+    border-color: rgba(174, 123, 50, 0.42);
+    box-shadow: 0 0 0 4px rgba(174, 123, 50, 0.12);
+  }
+
+  .category-image-panel :deep(.el-radio-group) {
+    display: inline-flex;
+    padding: 4px;
+    background: rgba(23, 32, 51, 0.06);
+    border-radius: 14px;
+  }
+
+  .category-image-panel :deep(.el-radio-button__inner) {
+    border: none;
+    border-radius: 10px;
+    box-shadow: none !important;
+    background: transparent;
+    color: #5a6474;
+  }
+
+  .category-image-panel :deep(.el-radio-button__orig-radio:checked + .el-radio-button__inner) {
+    background: rgba(255, 255, 255, 0.96);
+    color: #1d2433;
+  }
+
+  .category-editor-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    padding-top: 18px;
+  }
+
+  .category-editor-footer :deep(.el-button) {
+    min-width: 108px;
+    height: 40px;
+    padding: 0 22px;
+    border-radius: 14px;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    box-shadow: 0 10px 20px rgba(18, 27, 43, 0.05);
+  }
+
+  .category-editor-footer :deep(.category-action-btn--confirm.el-button--success.is-plain) {
+    background: rgba(47, 143, 116, 0.1);
+    border-color: rgba(47, 143, 116, 0.18);
+    color: #236b56;
+  }
+
+  .category-editor-footer :deep(.category-action-btn--cancel.el-button--danger.is-plain) {
+    background: rgba(192, 54, 57, 0.08);
+    border-color: rgba(192, 54, 57, 0.15);
+    color: #b02e33;
+  }
+
+  .category-editor-form :deep(.el-form-item__error) {
+    position: static;
+    margin-top: 8px;
+    line-height: 1.35;
+  }
+</style>
+
+<style lang="scss">
+  .category-editor-dialog {
+    border-radius: 30px;
+    overflow: hidden;
+    background: linear-gradient(180deg, rgba(255, 253, 249, 0.98) 0%, rgba(251, 248, 241, 0.98) 100%);
+    box-shadow: 0 40px 100px rgba(18, 27, 43, 0.16);
+  }
+
+  .category-editor-dialog .el-dialog__header {
+    padding: 28px 30px 20px;
+    border-bottom: 1px solid rgba(23, 32, 51, 0.06);
+  }
+
+  .category-editor-dialog .el-dialog__title {
+    color: #172033;
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+  }
+
+  .category-editor-dialog .el-dialog__headerbtn {
+    top: 26px;
+    right: 28px;
+  }
+
+  .category-editor-dialog .el-dialog__headerbtn .el-dialog__close {
+    color: rgba(29, 36, 51, 0.42);
+    font-size: 18px;
+  }
+
+  .category-editor-dialog .el-dialog__body {
+    padding: 20px 30px 16px;
+  }
+
+  .category-editor-dialog .el-dialog__footer {
+    padding: 0 30px 28px;
   }
 </style>

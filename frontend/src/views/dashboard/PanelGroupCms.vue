@@ -95,42 +95,61 @@ export default {
 
 <style lang="scss" scoped>
 .panel-group {
-  margin-top: 18px;
+  margin: 0 0 28px;
 
   .card-panel-col {
-    margin-bottom: 32px;
+    margin-bottom: 20px;
   }
 
   .card-panel {
-    height: 108px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 138px;
     cursor: pointer;
-    font-size: 12px;
     position: relative;
     overflow: hidden;
-    color: #666;
-    background: #fff;
-    box-shadow: 4px 4px 40px rgba(0, 0, 0, .05);
-    border-color: rgba(0, 0, 0, .05);
+    color: #5e6777;
+    background: linear-gradient(180deg, rgba(255, 253, 249, 0.98) 0%, rgba(249, 246, 239, 0.96) 100%);
+    border: 1px solid rgba(23, 32, 51, 0.08);
+    border-radius: 28px;
+    box-shadow: 0 24px 60px rgba(18, 27, 43, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.78);
+    transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+
+    &::after {
+      content: '';
+      position: absolute;
+      inset: auto -20% -45% auto;
+      width: 180px;
+      height: 180px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(174, 123, 50, 0.08), transparent 68%);
+      pointer-events: none;
+    }
 
     &:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 28px 70px rgba(18, 27, 43, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.78);
+      border-color: rgba(174, 123, 50, 0.18);
+
       .card-panel-icon-wrapper {
-        color: #fff;
+        transform: scale(1.04);
       }
 
       .icon-people {
-        background: #40c9c6;
+        background: rgba(64, 201, 198, 0.14);
       }
 
       .icon-message {
-        background: #36a3f7;
+        background: rgba(54, 163, 247, 0.14);
       }
 
       .icon-money {
-        background: #f4516c;
+        background: rgba(244, 81, 108, 0.14);
       }
 
       .icon-shopping {
-        background: #34bfa3
+        background: rgba(52, 191, 163, 0.14)
       }
     }
 
@@ -151,33 +170,47 @@ export default {
     }
 
     .card-panel-icon-wrapper {
-      float: left;
-      margin: 14px 0 0 14px;
-      padding: 16px;
-      transition: all 0.38s ease-out;
-      border-radius: 6px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex: 0 0 72px;
+      width: 72px;
+      height: 72px;
+      margin-left: 22px;
+      border-radius: 24px;
+      background: rgba(23, 32, 51, 0.04);
+      transition: transform .2s ease, background .2s ease;
     }
 
     .card-panel-icon {
-      float: left;
-      font-size: 48px;
+      font-size: 34px;
     }
 
     .card-panel-description {
-      float: right;
-      font-weight: bold;
-      margin: 26px;
-      margin-left: 0px;
+      display: flex;
+      flex: 1;
+      flex-direction: column;
+      align-items: flex-end;
+      margin: 0;
+      padding: 0 24px 0 18px;
+      text-align: right;
 
       .card-panel-text {
-        line-height: 18px;
-        color: rgba(0, 0, 0, 0.45);
-        font-size: 16px;
-        margin-bottom: 12px;
+        margin-bottom: 10px;
+        color: rgba(29, 36, 51, 0.52);
+        font-size: 13px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        line-height: 1.2;
+        text-transform: uppercase;
       }
 
       .card-panel-num {
-        font-size: 20px;
+        color: #172033;
+        font-size: 34px;
+        font-weight: 700;
+        line-height: 1;
+        letter-spacing: -0.04em;
       }
     }
   }

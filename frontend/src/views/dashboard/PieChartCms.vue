@@ -1,7 +1,10 @@
 <!-- admin pie chart -->
 <template>
   <div :class="className" :style="{height:height,width:width}" >
-    <h3 class="title">Category</h3>
+    <div class="panel-heading">
+      <span class="panel-eyebrow">Category Mix</span>
+      <h3 class="title">Publishing balance</h3>
+    </div>
     <div id="pieChartId" style="height: 280px;width: 100%;"></div>
   </div>
 </template>
@@ -103,12 +106,25 @@ export default {
 </script>
 
 <style scoped>
+  .panel-heading {
+    margin-bottom: 6px;
+  }
+
+  .panel-eyebrow {
+    display: inline-block;
+    margin-bottom: 8px;
+    color: rgba(29, 36, 51, 0.46);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
   .title{
-    top: 0;
-    left: 0;
     margin: 0;
-    color: rgba(0, 0, 0, 0.45);
-    font-size: 16px;
-    font-weight:bold;
+    color: #172033;
+    font-size: 20px;
+    font-weight:700;
+    letter-spacing: -0.03em;
   }
 </style>

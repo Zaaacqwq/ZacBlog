@@ -1,7 +1,11 @@
 <!-- admin bar chart -->
 <template>
   <div :class="className" :style="{height:height,width:width}" >
-    <h3 class="title">Notes Total: {{total}}</h3>
+    <div class="panel-heading">
+      <span class="panel-eyebrow">Notes</span>
+      <h3 class="title">Draft rhythm</h3>
+      <div class="panel-metric">{{ total }} total</div>
+    </div>
     <div id="barChartId" style="height: 280px;width: 100%;"></div>
   </div>
 </template>
@@ -109,12 +113,35 @@ export default {
 </script>
 
 <style scoped>
+  .panel-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 6px 12px;
+    margin-bottom: 6px;
+  }
+
+  .panel-eyebrow {
+    display: inline-block;
+    color: rgba(29, 36, 51, 0.46);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
   .title{
-    top: 0;
-    left: 0;
     margin: 0;
-    color: rgba(0, 0, 0, 0.45);
-    font-size: 16px;
-    font-weight:bold;
+    color: #172033;
+    font-size: 20px;
+    font-weight:700;
+    letter-spacing: -0.03em;
+  }
+
+  .panel-metric {
+    color: rgba(29, 36, 51, 0.5);
+    font-size: 13px;
+    font-weight: 700;
   }
 </style>

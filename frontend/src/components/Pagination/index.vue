@@ -98,9 +98,69 @@ export default {
 
 <style scoped>
 .pagination-container {
-  background: #fff;
-  padding: 32px 16px;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  width: 100%;
+  margin-top: 20px;
+  padding: 0;
+  background: transparent;
+  overflow-x: auto;
 }
+
+.pagination-container ::v-deep .el-pagination {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: center;
+  margin-left: auto;
+  gap: 10px;
+  row-gap: 12px;
+  color: rgba(29, 36, 51, 0.6);
+  font-weight: 500;
+}
+
+.pagination-container ::v-deep .btn-prev,
+.pagination-container ::v-deep .btn-next,
+.pagination-container ::v-deep .el-pager li,
+.pagination-container ::v-deep .el-pagination__jump .el-input__inner,
+.pagination-container ::v-deep .el-pagination__sizes .el-input__inner {
+  border: 1px solid rgba(29, 36, 51, 0.07);
+  border-radius: 14px !important;
+  background: #f5f5f5 !important;
+  color: #1d2433 !important;
+  box-shadow: none !important;
+}
+
+.pagination-container ::v-deep .el-pager li {
+  min-width: 36px;
+  height: 36px;
+  line-height: 34px;
+  margin: 0 2px;
+}
+
+.pagination-container ::v-deep .btn-prev,
+.pagination-container ::v-deep .btn-next {
+  width: 36px;
+  height: 36px;
+  padding: 0;
+}
+
+.pagination-container ::v-deep .el-pager li.active {
+  background: #e8e8e8 !important;
+  border-color: rgba(29, 36, 51, 0.1);
+  color: #111827 !important;
+  font-weight: 700;
+}
+
+.pagination-container ::v-deep .btn-prev:hover,
+.pagination-container ::v-deep .btn-next:hover,
+.pagination-container ::v-deep .el-pager li:hover,
+.pagination-container ::v-deep .el-pagination__jump .el-input__inner:hover,
+.pagination-container ::v-deep .el-pagination__sizes .el-input__inner:hover {
+  background: #eeeeee !important;
+}
+
 .pagination-container.hidden {
   display: none;
 }

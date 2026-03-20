@@ -4,10 +4,12 @@
     <el-form :model="queryParams" ref="queryForm" :inline="true" v-show="showSearch" label-width="68px">
       <el-form-item label="Title" prop="title">
         <el-input v-model="queryParams.title" placeholder="Enter title" clearable size="small"
+          @clear="handleQuery"
           @keyup.enter.native="handleQuery" />
       </el-form-item>
       <el-form-item label="Status" prop="status">
-        <el-select v-model="queryParams.status" placeholder="Select status" clearable size="small">
+        <el-select v-model="queryParams.status" placeholder="Select status" clearable size="small"
+          @change="handleQuery" @clear="handleQuery">
           <el-option v-for="dict in dict.type.cms_blog_status" :key="dict.value" :label="dict.label"
             :value="dict.value" />
         </el-select>
@@ -38,7 +40,7 @@
       <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
     </el-row>
 
-    <el-table v-loading="loading" :data="blogList" @selection-change="handleSelectionChange"
+    <el-table v-loading="loading" :data="blogList" :empty-text="tableEmptyText" @selection-change="handleSelectionChange"
       :row-class-name="tableRowClassName">
       <el-table-column type="selection" width="55" align="center" />
       <!-- <el-table-column label="ID" align="center" prop="id" /> -->
@@ -107,14 +109,14 @@
       @pagination="getList" />
 
     <!-- 添加或修改文章管理对话框 -->
-    <el-dialog :title="title" :visible.sync="open" :before-close="cancel" width="1200px" append-to-body>
-      <el-form ref="form" :model="form" :rules="rules" label-width="100px">
-        <el-form-item label="Title" prop="title">
+    <el-dialog :title="title" :visible.sync="open" :before-close="cancel" width="1200px" custom-class="blog-editor-dialog" append-to-body>
+      <el-form ref="form" :model="form" :rules="rules" label-position="top" class="blog-editor-form">
+        <el-form-item label="Title" prop="title" class="editor-title-field">
           <el-input v-model="form.title" placeholder="Enter title" />
         </el-form-item>
-        <el-row>
+        <el-row :gutter="20" class="editor-meta-grid">
           <el-col :span="8">
-            <el-form-item label="Cover Image">
+            <el-form-item label="Cover Image" class="editor-panel editor-cover-panel">
               <el-radio-group v-model="form.blogPicType">
                 <el-radio-button label="0">Url</el-radio-button>
                 <el-radio-button label="1">Upload</el-radio-button>
@@ -133,12 +135,21 @@
             </el-form-item>
           </el-col>
           <el-col :span="16">
-            <el-form-item label="Description">
-              <el-input type="textarea" v-model="form.blogDesc" :autosize="{ minRows: 7, maxRows: 7}" maxlength="50" show-word-limit placeholder="Enter Description" />
-            </el-form-item>
+        <el-form-item label="Description" class="editor-panel editor-description-panel">
+          <div class="editor-comment-hint">Write a short summary for the post.</div>
+          <div class="description-surface">
+            <textarea
+              v-model="form.blogDesc"
+              class="description-textarea"
+              maxlength="50"
+              placeholder="Enter Description"
+            />
+            <div class="description-count">{{ (form.blogDesc || '').length }}/50</div>
+          </div>
+        </el-form-item>
           </el-col>
         </el-row>
-        <el-form-item label="Content">
+        <el-form-item label="Content" class="editor-content-panel">
           <!-- Only Vditor Markdown editor is supported -->
           <el-row>
             <el-col>
@@ -146,33 +157,36 @@
             </el-col>
           </el-row>
         </el-form-item>
-        <el-form-item label="Tags">
-          <el-checkbox-group v-model="form.tagIds">
-            <el-checkbox v-for="item in tagOptions" :label="item.tagId" :key="item.tagId" :value="item.tagId">
-              {{item.tagName}}
-            </el-checkbox>
-          </el-checkbox-group>
-        </el-form-item>
-        <el-row>
-          <el-col :span="7">
-            <el-form-item label="Category">
-              <el-select v-model="form.typeIds" multiple placeholder="Select" filterable clearable>
+        <el-row :gutter="20" class="editor-bottom-grid editor-meta-bottom-grid">
+          <el-col :span="12">
+            <el-form-item label="Tags" class="editor-panel editor-tags-panel">
+              <el-select v-model="form.tagIds" multiple filterable clearable collapse-tags reserve-keyword
+                placeholder="Search and add tags">
+                <el-option v-for="item in tagOptions" :key="item.tagId" :label="item.tagName" :value="item.tagId" />
+              </el-select>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="Category" class="editor-panel editor-category-panel">
+              <el-select v-model="form.typeIds" multiple filterable clearable collapse-tags reserve-keyword
+                placeholder="Search and add categories">
                 <el-option v-for="item in typeOptions" :key="item.typeId" :label="item.typeName" :value="item.typeId">
                 </el-option>
               </el-select>
             </el-form-item>
           </el-col>
-          <el-col :span="17">
-            <el-form-item label="Pin">
-              <el-checkbox v-model="top"></el-checkbox>
-            </el-form-item>
-          </el-col>
         </el-row>
+        <div class="editor-page-actions">
+          <button type="button" class="pin-toggle" :class="{ 'is-active': top }" @click="top = !top">
+            <span class="pin-toggle__dot"></span>
+            <span class="pin-toggle__label">{{ top ? 'Pinned' : 'Pin Post' }}</span>
+          </button>
+        </div>
       </el-form>
-      <div slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="releaseForm">Publish</el-button>
-        <el-button type="info" @click="saveForm">Save</el-button>
-        <el-button @click="cancel">Cancel</el-button>
+      <div slot="footer" class="dialog-footer editor-footer">
+        <el-button class="editor-action-btn editor-action-btn--publish" type="success" plain @click="releaseForm">Publish</el-button>
+        <el-button class="editor-action-btn editor-action-btn--save" type="warning" plain @click="saveForm">Save</el-button>
+        <el-button class="editor-action-btn editor-action-btn--cancel" type="danger" plain @click="cancel">Cancel</el-button>
       </div>
     </el-dialog>
 
@@ -349,6 +363,18 @@
     },
     created() {
       this.getList();
+    },
+    computed: {
+      tableEmptyText() {
+        const hasTitle = this.queryParams.title && this.queryParams.title.trim() !== "";
+        const hasStatus = this.queryParams.status !== null && this.queryParams.status !== undefined && this.queryParams.status !== "";
+
+        if (hasTitle || hasStatus) {
+          return "No matching blog posts for the current filters";
+        }
+
+        return "No blog posts yet";
+      }
     },
     methods: {
       /** 查询文章管理列表 */
@@ -748,11 +774,350 @@
     padding-top: 5px;
   }
   .tabBlock {
-    height: 180px;
-    margin-top: 20px;
+    min-height: 220px;
+    margin-top: 16px;
   }
   .blogPic {
-    width: 200px;
-    height: 100px;
+    width: 100%;
+    max-width: 260px;
+    height: 148px;
+    border-radius: 18px;
+    object-fit: cover;
   }
+
+  .blog-editor-form {
+    padding: 4px 8px 0;
+  }
+
+  .editor-title-field {
+    margin-bottom: 20px;
+  }
+
+  .editor-meta-grid,
+  .editor-bottom-grid {
+    margin-bottom: 8px;
+  }
+
+  .editor-panel {
+    padding: 18px 20px 20px;
+    border: 1px solid rgba(23, 32, 51, 0.08);
+    border-radius: 24px;
+    background: rgba(255, 253, 249, 0.84);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
+  }
+
+  .editor-content-panel {
+    margin: 18px 0 22px;
+    padding: 20px 22px 24px;
+  }
+
+  .editor-comment-hint {
+    margin-bottom: 10px;
+    color: rgba(29, 36, 51, 0.5);
+    font-size: 13px;
+  }
+
+  .editor-tags-panel :deep(.el-select),
+  .editor-bottom-grid :deep(.el-select) {
+    width: 100%;
+  }
+
+  .editor-tags-panel :deep(.el-select__tags),
+  .editor-bottom-grid :deep(.el-select__tags) {
+    max-width: calc(100% - 64px) !important;
+  }
+
+  .editor-pin-panel :deep(.el-form-item__content) {
+    min-height: 42px;
+    display: flex;
+    align-items: center;
+  }
+
+  .editor-inline-toggle {
+    display: flex;
+    align-items: flex-end;
+    justify-content: flex-start;
+    margin-top: 18px;
+    padding-top: 16px;
+    border-top: 1px solid rgba(23, 32, 51, 0.08);
+  }
+
+  .editor-page-actions {
+    display: flex;
+    justify-content: flex-start;
+    margin-top: 18px;
+    margin-bottom: 4px;
+  }
+
+  .pin-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    height: 40px;
+    padding: 0 16px;
+    border: 1px solid rgba(29, 36, 51, 0.1);
+    border-radius: 999px;
+    background: rgba(29, 36, 51, 0.06);
+    color: #1d2433;
+    font-size: 13px;
+    font-weight: 700;
+    box-shadow: 0 10px 20px rgba(18, 27, 43, 0.05);
+    transition: background .18s ease, border-color .18s ease, color .18s ease, transform .18s ease;
+    cursor: pointer;
+  }
+
+  .pin-toggle:hover {
+    transform: translateY(-1px);
+  }
+
+  .pin-toggle__dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: rgba(29, 36, 51, 0.32);
+  }
+
+  .pin-toggle.is-active {
+    background: rgba(174, 123, 50, 0.16);
+    border-color: rgba(174, 123, 50, 0.24);
+    color: #8f6327;
+  }
+
+  .pin-toggle.is-active .pin-toggle__dot {
+    background: #ae7b32;
+  }
+
+  .editor-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    padding-top: 18px;
+  }
+
+  .editor-footer :deep(.el-button) {
+    min-width: 104px;
+    height: 40px;
+    padding: 0 22px;
+    border-radius: 16px;
+    font-weight: 700;
+    box-shadow: 0 10px 20px rgba(18, 27, 43, 0.05);
+  }
+
+  .editor-footer :deep(.editor-action-btn) {
+    letter-spacing: 0.01em;
+  }
+
+  .editor-footer :deep(.editor-action-btn--publish.el-button--success.is-plain) {
+    background: rgba(47, 143, 116, 0.1);
+    border-color: rgba(47, 143, 116, 0.18);
+    color: #236b56;
+  }
+
+  .editor-footer :deep(.editor-action-btn--save.el-button--warning.is-plain) {
+    background: rgba(254, 193, 113, 0.18);
+    border-color: rgba(174, 123, 50, 0.22);
+    color: #9a6719;
+  }
+
+  .editor-footer :deep(.editor-action-btn--cancel.el-button--danger.is-plain) {
+    background: rgba(192, 54, 57, 0.08);
+    border-color: rgba(192, 54, 57, 0.15);
+    color: #b02e33;
+  }
+
+  .blog-editor-form :deep(.el-form-item__label) {
+    color: #3f4c61;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1.2;
+    padding-bottom: 10px;
+  }
+
+  .blog-editor-form :deep(.el-input__inner),
+  .blog-editor-form :deep(.el-textarea__inner),
+  .blog-editor-form :deep(.el-select .el-input__inner) {
+    border-radius: 14px;
+    border-color: rgba(23, 32, 51, 0.1);
+    background: rgba(255, 255, 255, 0.9);
+  }
+
+  .blog-editor-form :deep(.el-input__inner) {
+    height: 42px;
+  }
+
+  .blog-editor-form :deep(.el-textarea__inner) {
+    min-height: 180px !important;
+    line-height: 1.7;
+    padding: 14px 16px;
+  }
+
+  .editor-description-panel :deep(.el-form-item__content) {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .description-surface {
+    padding: 12px;
+    border: 1px solid rgba(29, 36, 51, 0.06);
+    border-radius: 18px;
+    background: rgba(245, 246, 247, 0.72);
+  }
+
+  .description-textarea {
+    display: block;
+    width: 100%;
+    min-height: 156px;
+    padding: 0;
+    border: none;
+    outline: none;
+    resize: none;
+    background: transparent;
+    box-shadow: none;
+    color: #1d2433;
+    font-size: 18px;
+    line-height: 1.8;
+    font-family: inherit;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+
+  .description-textarea:focus,
+  .description-textarea:active {
+    border: none;
+    outline: none;
+    box-shadow: none;
+  }
+
+  .description-textarea::placeholder {
+    color: rgba(29, 36, 51, 0.36);
+  }
+
+  .description-count {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 8px;
+    color: rgba(29, 36, 51, 0.42);
+    font-size: 12px;
+    line-height: 1;
+  }
+
+  .editor-description-panel :deep(.el-textarea) {
+    flex: 1;
+  }
+
+  .editor-description-panel :deep(.el-textarea__inner) {
+    border: none;
+    background: transparent;
+    box-shadow: none;
+    padding: 0;
+    min-height: 156px !important;
+    font-size: 18px;
+    line-height: 1.8;
+    resize: none;
+  }
+
+  .editor-description-panel :deep(.el-textarea__inner:focus) {
+    border: none;
+    box-shadow: none;
+    outline: none;
+  }
+
+  .editor-description-panel :deep(.el-input__count) {
+    bottom: 6px;
+    right: 0;
+    background: transparent;
+  }
+
+  .editor-cover-panel :deep(.el-radio-group) {
+    display: inline-flex;
+    padding: 4px;
+    background: rgba(23, 32, 51, 0.06);
+    border-radius: 14px;
+  }
+
+  .editor-cover-panel :deep(.el-radio-button__inner) {
+    border: none;
+    border-radius: 10px;
+    box-shadow: none !important;
+    background: transparent;
+    color: #5a6474;
+  }
+
+  .editor-cover-panel :deep(.el-radio-button__orig-radio:checked + .el-radio-button__inner) {
+    background: rgba(255, 255, 255, 0.96);
+    color: #1d2433;
+  }
+
+  .editor-content-panel :deep(.vditor) {
+    box-shadow: none;
+  }
+
+  .editor-content-panel :deep(.vditor-toolbar) {
+    padding: 14px 18px;
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    overflow-x: auto;
+    overflow-y: hidden;
+    white-space: nowrap;
+  }
+
+  .editor-content-panel :deep(.vditor-toolbar::-webkit-scrollbar) {
+    height: 0;
+  }
+
+  .editor-content-panel :deep(.vditor-toolbar__item),
+  .editor-content-panel :deep(.vditor-toolbar__divider) {
+    flex: 0 0 auto;
+  }
+
+  .editor-content-panel :deep(.vditor-reset) {
+    padding: 36px 38px 42px;
+  }
+
+  .editor-content-panel :deep(.vditor-ir pre.vditor-reset),
+  .editor-content-panel :deep(.vditor-sv__editor),
+  .editor-content-panel :deep(.vditor-wysiwyg) {
+    padding: 36px 38px 42px !important;
+  }
+
+  .blog-editor-form :deep(.el-form-item__error) {
+    position: static;
+    margin-top: 8px;
+    padding-left: 2px;
+  }
+</style>
+
+<style lang="scss">
+.blog-editor-dialog {
+  border-radius: 30px;
+  overflow: hidden;
+  background: linear-gradient(180deg, rgba(251, 248, 241, 0.98) 0%, rgba(245, 247, 251, 0.98) 100%);
+  box-shadow: 0 34px 90px rgba(13, 19, 32, 0.2);
+}
+
+.blog-editor-dialog .el-dialog__header {
+  padding: 22px 26px 16px;
+  border-bottom: 1px solid rgba(23, 32, 51, 0.06);
+}
+
+.blog-editor-dialog .el-dialog__title {
+  font-size: 30px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: #1a2335;
+}
+
+.blog-editor-dialog .el-dialog__headerbtn {
+  top: 24px;
+  right: 22px;
+}
+
+.blog-editor-dialog .el-dialog__body {
+  padding: 22px 24px 12px;
+}
+
+.blog-editor-dialog .el-dialog__footer {
+  padding: 0 24px 24px;
+}
 </style>

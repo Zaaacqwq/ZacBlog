@@ -23,9 +23,6 @@ export default {
   data() {
     return {
       vditor: null,
-      // hide custom preview controls by default since user requested no preview actions
-      previewMode: 'desktop',
-      showControls: false,
       // prevent cursor jump by distinguishing internal edits from external value changes
       _internalEdit: false
     }
@@ -58,31 +55,29 @@ export default {
       'code',
       'inline-code',
       '|',
-      'outdent',
-      'indent',
-      'insert-after',
-      'insert-before',
-      '|',
       'undo',
       'redo',
+      '|',
+      'edit-mode',
       '|',
       'upload',
       'table',
       '|',
-      'edit-mode',
-      'fullscreen',
-      'outline',
-      'export'
+      'fullscreen'
     ]
 
       const options = {
         value: this.value || '',
         height: Number(this.height) || 400,
-        mode: 'sv',
+        // IR mode is the closest Vditor offers to Typora-style Markdown editing.
+        mode: 'ir',
+        lang: 'en_US',
         cache: { enable: false },
-        // vditor expects an array for toolbar; passing boolean caused runtime error
         toolbar: defaultToolbar,
-        // disable all preview actions (desktop/tablet/mobile/mp-wechat/zhihu)
+        placeholder: 'Write in Markdown...',
+        toolbarConfig: {
+          pin: true
+        },
         preview: {
           actions: []
         },
@@ -154,5 +149,131 @@ export default {
 <style scoped>
 .vditor-editor-component {
   width: 100%;
+}
+</style>
+
+<style lang="scss">
+.vditor-editor-component {
+  .vditor {
+    border: 1px solid rgba(23, 32, 51, 0.08);
+    border-radius: 24px;
+    overflow: visible;
+    background: rgba(255, 253, 249, 0.96);
+    box-shadow: 0 24px 60px rgba(18, 27, 43, 0.08);
+  }
+
+  .vditor-toolbar {
+    display: flex;
+    align-items: center;
+    flex-wrap: nowrap;
+    padding: 10px 12px;
+    background: linear-gradient(180deg, rgba(247, 244, 237, 0.98) 0%, rgba(239, 235, 228, 0.96) 100%);
+    border-bottom: 1px solid rgba(23, 32, 51, 0.08);
+  }
+
+  .vditor-ir,
+  .vditor-sv,
+  .vditor-wysiwyg {
+    overflow: hidden;
+    border-radius: 0 0 24px 24px;
+  }
+
+  .vditor-toolbar__item {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    margin: 0 3px;
+    border-radius: 10px;
+    line-height: 1;
+    color: #667085;
+    transition: background .18s ease, color .18s ease, transform .18s ease;
+  }
+
+  .vditor-toolbar__item:hover,
+  .vditor-toolbar__item--current {
+    background: rgba(174, 123, 50, 0.12);
+    color: #8f6327;
+    transform: translateY(-1px);
+  }
+
+  .vditor-toolbar__divider {
+    align-self: center;
+    width: 1px;
+    height: 20px;
+    background: rgba(23, 32, 51, 0.08);
+    margin: 0 6px;
+  }
+
+  .vditor-ir,
+  .vditor-sv,
+  .vditor-wysiwyg {
+    background: transparent;
+  }
+
+  .vditor-reset {
+    padding: 28px 32px 36px;
+    color: #1d2433;
+    font-size: 15px;
+    line-height: 1.8;
+  }
+
+  .vditor-ir pre.vditor-reset,
+  .vditor-sv__editor,
+  .vditor-wysiwyg {
+    padding: 28px 32px 36px !important;
+  }
+
+  .vditor-ir__node,
+  .vditor-wysiwyg__block {
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  .vditor-reset h1,
+  .vditor-reset h2,
+  .vditor-reset h3,
+  .vditor-reset h4 {
+    color: #162033;
+    letter-spacing: -0.02em;
+  }
+
+  .vditor-reset blockquote {
+    margin: 1.2em 0;
+    padding: 12px 16px;
+    border-left: 4px solid rgba(174, 123, 50, 0.4);
+    background: rgba(174, 123, 50, 0.08);
+    border-radius: 0 14px 14px 0;
+    color: rgba(29, 36, 51, 0.78);
+  }
+
+  .vditor-reset code:not(.hljs),
+  .vditor-reset .vditor-ir__marker--code {
+    background: rgba(23, 32, 51, 0.06);
+    border-radius: 8px;
+    padding: 2px 6px;
+  }
+
+  .vditor-reset pre {
+    border-radius: 16px;
+    background: #1d2433;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  }
+
+  .vditor-reset table th,
+  .vditor-reset table td {
+    border-color: rgba(23, 32, 51, 0.08);
+  }
+
+  .vditor-counter {
+    padding: 8px 16px 14px;
+    color: rgba(29, 36, 51, 0.45);
+    background: rgba(255, 253, 249, 0.96);
+  }
+
+  .vditor-resize {
+    background: transparent;
+  }
 }
 </style>

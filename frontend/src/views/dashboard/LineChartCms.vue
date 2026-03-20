@@ -82,19 +82,23 @@ export default {
         xAxis: {
           data: this.datex,
           boundaryGap: false,
+          axisLine: {
+            lineStyle: {
+              color: 'rgba(23, 32, 51, 0.12)'
+            }
+          },
           axisTick: {
             show: false
           },
-          // axisLabel: {
-          //    interval:0,
-          //    rotate:40
-          // }
+          axisLabel: {
+            color: 'rgba(29, 36, 51, 0.46)'
+          }
         },
         grid: {
-          left: 10,
-          right: 10,
-          bottom: 20,
-          top: 30,
+          left: 8,
+          right: 18,
+          bottom: 12,
+          top: 44,
           containLabel: true
         },
         tooltip: {
@@ -102,14 +106,38 @@ export default {
           axisPointer: {
             type: 'cross'
           },
-          padding: [5, 10]
+          padding: [10, 14],
+          backgroundColor: 'rgba(23, 32, 51, 0.92)',
+          borderWidth: 0,
+          textStyle: {
+            color: '#fffdfa'
+          }
         },
         yAxis: {
+          axisLine: {
+            show: false
+          },
           axisTick: {
             show: false
+          },
+          axisLabel: {
+            color: 'rgba(29, 36, 51, 0.42)'
+          },
+          splitLine: {
+            lineStyle: {
+              color: 'rgba(23, 32, 51, 0.08)'
+            }
           }
         },
         legend: {
+          top: 0,
+          right: 0,
+          itemWidth: 10,
+          itemHeight: 10,
+          icon: 'circle',
+          textStyle: {
+            color: 'rgba(29, 36, 51, 0.58)'
+          },
           data: [ 'Blog','Comment','Message']
         },
         series: [
@@ -122,13 +150,15 @@ export default {
               color: '#3888fa',
               lineStyle: {
                 color: '#3888fa',
-                width: 2
+                width: 3
               },
               areaStyle: {
                 color: blogColor
               }
             }
           },
+          symbol: 'circle',
+          symbolSize: 7,
           data: this.blogData,
           animationDuration: 2800,
           animationEasing: 'quadraticOut'
@@ -139,13 +169,15 @@ export default {
               color: '#FF005A',
               lineStyle: {
                 color: '#FF005A',
-                width: 2
+                width: 3
               },
               areaStyle: {
                 color: commentColor
               }
             }
           },
+          symbol: 'circle',
+          symbolSize: 7,
           smooth: true,
           type: 'line',
           data: this.commentData,
@@ -158,13 +190,15 @@ export default {
               color: '#34bfa3',
               lineStyle: {
                 color: '#34bfa3',
-                width: 2
+                width: 3
               },
               areaStyle: {
                 color: messageColor
               }
             }
           },
+          symbol: 'circle',
+          symbolSize: 7,
           smooth: true,
           type: 'line',
           data: this.messageData,
