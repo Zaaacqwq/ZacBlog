@@ -66,7 +66,7 @@
           </ul>
         </div>
 
-        <div v-if="islogin" class="account-area">
+        <div v-if="islogin" class="account-area desktop-account">
           <el-dropdown class="avatar-container" trigger="click">
             <div class="avatar-wrapper">
               <el-avatar
@@ -88,7 +88,7 @@
             </el-dropdown-menu>
           </el-dropdown>
         </div>
-        <div v-else class="account-area">
+        <div v-else class="account-area desktop-account">
           <el-button
             @click="tologin"
             type="primary"
@@ -108,15 +108,6 @@
       <transition name="mobile-nav">
         <div v-if="menuHiddenVisiable" class="mobile-panel">
           <div class="mobile-panel-inner">
-            <div class="mobile-search">
-              <el-input
-                v-model="queryInfo.query"
-                @focus="checkInput"
-                @blur="notSearching()"
-                placeholder="Search articles"
-                prefix-icon="el-icon-search"
-              />
-            </div>
             <el-menu
               :default-active="activeIndex"
               router
@@ -139,6 +130,36 @@
                 {{ item.authName }}
               </el-menu-item>
             </el-menu>
+            <div class="mobile-search">
+              <el-input
+                v-model="queryInfo.query"
+                @focus="checkInput"
+                @blur="notSearching()"
+                placeholder="Search articles"
+                prefix-icon="el-icon-search"
+              />
+            </div>
+            <div class="mobile-panel-footer">
+              <template v-if="islogin">
+                <div class="mobile-user-chip">
+                  <el-avatar
+                    class="user-avatar"
+                    :src="avatar"
+                    @error="errorHandler"
+                  >
+                    <i class="el-icon-s-custom" />
+                  </el-avatar>
+                  <span>{{ name }}</span>
+                </div>
+                <div class="mobile-auth-actions">
+                  <el-button class="mobile-ghost-btn" @click="$router.push('/index')">Admin</el-button>
+                  <el-button class="mobile-primary-btn" @click="logout">Logout</el-button>
+                </div>
+              </template>
+              <template v-else>
+                <el-button class="mobile-primary-btn mobile-login-btn" @click="tologin">Login</el-button>
+              </template>
+            </div>
           </div>
         </div>
       </transition>
@@ -253,7 +274,7 @@ export default {
     },
     menuExpend() {
       this.menuHiddenVisiable = !this.menuHiddenVisiable;
-      this.headerBottom = this.menuHiddenVisiable ? 320 : 0;
+      this.headerBottom = this.menuHiddenVisiable && window.innerWidth > 768 ? 320 : 0;
     },
     menuAway() {
       this.menuHiddenVisiable = false;
@@ -468,6 +489,10 @@ export default {
   gap: 12px;
 }
 
+.desktop-account {
+  display: flex;
+}
+
 .search_input {
   position: relative;
   width: 260px;
@@ -553,19 +578,24 @@ export default {
 }
 
 .mobile-panel {
-  grid-column: 1 / -1;
-  width: 100%;
+  position: absolute;
+  top: calc(100% + 10px);
+  left: 0;
+  right: 0;
+  z-index: 1001;
 }
 
 .mobile-panel-inner {
-  padding: 14px;
-  border-radius: 22px;
-  border: 1px solid rgba(29, 36, 51, 0.08);
-  background: rgba(255, 253, 248, 0.94);
+  padding: 12px;
+  border-radius: 20px;
+  border: 1px solid rgba(29, 36, 51, 0.09);
+  background: rgba(255, 255, 255, 0.86);
+  backdrop-filter: blur(20px);
+  box-shadow: 0 20px 44px rgba(18, 27, 43, 0.12);
 }
 
 .mobile-search {
-  margin-bottom: 12px;
+  margin-top: 10px;
 }
 
 .mobile-menu {
@@ -573,18 +603,94 @@ export default {
 }
 
 .mobile-menu /deep/ .el-menu-item {
-  height: 42px;
-  line-height: 42px;
-  margin-bottom: 6px;
-  border-radius: 14px;
+  height: 48px;
+  line-height: 48px;
+  margin-bottom: 4px;
+  padding: 0 14px !important;
+  border-radius: 12px;
   border-bottom: 0 !important;
-  letter-spacing: 0.06em;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
+  position: relative;
+  transition: background-color 0.18s ease, color 0.18s ease;
 }
 
 .mobile-menu /deep/ .el-menu-item.is-active,
 .mobile-menu /deep/ .el-menu-item:hover {
-  background: rgba(17, 17, 17, 0.08) !important;
+  background: rgba(17, 17, 17, 0.045) !important;
+  color: #111827 !important;
+}
+
+.mobile-menu /deep/ .el-menu-item.is-active {
+  font-weight: 600;
+}
+
+.mobile-menu /deep/ .el-menu-item.is-active::before {
+  content: "";
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  width: 2px;
+  height: 18px;
+  border-radius: 999px;
+  background: rgba(29, 36, 51, 0.7);
+  transform: translateY(-50%);
+}
+
+.mobile-search /deep/ .el-input__inner {
+  height: 44px;
+  border: 1px solid rgba(29, 36, 51, 0.08);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.mobile-panel-footer {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(29, 36, 51, 0.08);
+}
+
+.mobile-user-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 10px 4px 4px;
+  border-radius: 999px;
+  background: rgba(17, 17, 17, 0.045);
+  color: #1d2433;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.mobile-auth-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.mobile-ghost-btn,
+.mobile-primary-btn {
+  min-height: 42px;
+  border-radius: 999px;
+  font-weight: 600;
+}
+
+.mobile-ghost-btn {
+  border: 1px solid rgba(29, 36, 51, 0.08);
+  background: rgba(255, 255, 255, 0.72);
+  color: #1d2433;
+}
+
+.mobile-primary-btn {
+  border: 1px solid rgba(29, 36, 51, 0.08);
+  background: #dedede;
+  color: #1d2433;
+}
+
+.mobile-login-btn {
+  width: 100%;
 }
 
 .mobile-nav-enter-active,
@@ -619,19 +725,43 @@ export default {
     min-height: 74px;
     padding: 12px;
     border-radius: 22px;
+    width: calc(100vw - 18px);
   }
 
   .brand-copy small,
-  .avatar-name {
+  .avatar-name,
+  .desktop-account {
     display: none;
   }
 
   .brand-copy strong {
     font-size: 0.9rem;
+    letter-spacing: 0.14em;
   }
 
-  .login-btn {
-    padding: 10px 14px;
+  .nav-right {
+    gap: 8px;
+  }
+
+  .menu-expend {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+  }
+
+  .brand-lockup {
+    gap: 10px;
+  }
+
+  .brand-badge {
+    width: 44px;
+    height: 44px;
+    border-radius: 14px;
+  }
+
+  .brand-logo {
+    width: 40px;
+    height: 40px;
   }
 }
 </style>

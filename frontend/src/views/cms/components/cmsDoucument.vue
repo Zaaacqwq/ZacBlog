@@ -81,6 +81,7 @@ export default {
   width: min(1360px, calc(100vw - 24px));
   margin: 0 auto;
   padding-top: 132px;
+  padding-bottom: 40px;
 }
 
 .document-grid {
@@ -129,6 +130,7 @@ export default {
   .document-shell {
     width: calc(100vw - 12px);
     padding-top: 112px;
+    padding-bottom: 32px;
   }
 
   .document-grid {
