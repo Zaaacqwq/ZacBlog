@@ -7,17 +7,6 @@
     <top-nav id="topmenu-container" class="topmenu-container" v-if="topNav"/>
 
     <div class="right-menu">
-      <template v-if="device!=='mobile'">
-        <search id="header-search" class="right-menu-item" />
-
-        <screenfull id="screenfull" class="right-menu-item hover-effect" />
-
-        <el-tooltip content="Layout Size" effect="dark" placement="bottom">
-          <size-select id="size-select" class="right-menu-item hover-effect" />
-        </el-tooltip>
-
-      </template>
-
       <el-dropdown class="avatar-container right-menu-item hover-effect" trigger="click">
         <div class="avatar-wrapper">
           <!-- <img :src="avatar" class="user-avatar"> -->
@@ -47,18 +36,12 @@ import { mapGetters } from 'vuex'
 import Breadcrumb from '@/components/Breadcrumb'
 import TopNav from '@/components/TopNav'
 import Hamburger from '@/components/Hamburger'
-import Screenfull from '@/components/Screenfull'
-import SizeSelect from '@/components/SizeSelect'
-import Search from '@/components/HeaderSearch'
 
 export default {
   components: {
     Breadcrumb,
     TopNav,
     Hamburger,
-    Screenfull,
-    SizeSelect,
-    Search,
   },
   computed: {
     ...mapGetters([
@@ -148,6 +131,8 @@ export default {
     float: right;
     height: 100%;
     line-height: 64px;
+    display: flex;
+    align-items: center;
 
     &:focus {
       outline: none;
@@ -175,20 +160,21 @@ export default {
       margin-right: 5px;
 
       .avatar-wrapper {
-        margin-top: 5px;
+        height: 100%;
         position: relative;
+        display: flex;
+        align-items: center;
+        gap: 10px;
 
         .user-avatar {
           cursor: pointer;
-          // width: 40px;
-          // height: 40px;
-          // border-radius: 10px;
           border: dashed rgba($color: #ffff7f, $alpha: 0.5);
+          flex: 0 0 auto;
         }
         .avatar-Name {
-          margin-left: 10px;
           cursor: pointer;
-          float: right;
+          display: flex;
+          align-items: center;
           font-size: 14px;
           font-weight: bold;
           color: #1d2433;

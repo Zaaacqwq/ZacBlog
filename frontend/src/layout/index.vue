@@ -116,7 +116,7 @@ export default {
 }
 
 .hideSidebar .fixed-header {
-  left: 78px;
+  left: calc(#{$base-sidebar-collapse-width} + 24px);
 }
 
 .mobile .fixed-header {

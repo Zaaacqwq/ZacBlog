@@ -57,6 +57,8 @@ const permission = {
 // 遍历后台传来的路由字符串，转换为组件对象
 function filterAsyncRouter(asyncRouterMap, lastRouter = false, type = false) {
   return asyncRouterMap.filter(route => {
+    normalizeExternalRoute(route)
+
     if (type && route.children) {
       route.children = filterChildren(route.children)
     }
@@ -104,6 +106,41 @@ function filterChildren(childrenMap, lastRouter = false) {
     children = children.concat(el)
   })
   return children
+}
+
+function normalizeExternalRoute(route) {
+  if (!route) {
+    return
+  }
+
+  if (typeof route.path === 'string') {
+    route.path = normalizeExternalUrl(route.path)
+  }
+
+  if (route.meta && typeof route.meta.link === 'string') {
+    route.meta.link = normalizeExternalUrl(route.meta.link)
+  }
+}
+
+function normalizeExternalUrl(url) {
+  if (typeof url !== 'string' || !/^https?:\/\//.test(url)) {
+    return url
+  }
+
+  try {
+    const parsed = new URL(url)
+    if (!/^localhost$|^127(?:\.\d{1,3}){3}$/.test(parsed.hostname)) {
+      return url
+    }
+
+    if (typeof window === 'undefined' || !window.location || !window.location.origin) {
+      return parsed.pathname + parsed.search + parsed.hash
+    }
+
+    return `${window.location.origin}${parsed.pathname}${parsed.search}${parsed.hash}`
+  } catch (error) {
+    return url
+  }
 }
 
 export const loadView = (view) => {

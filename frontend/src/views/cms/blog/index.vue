@@ -160,16 +160,16 @@
         <el-row :gutter="20" class="editor-bottom-grid editor-meta-bottom-grid">
           <el-col :span="12">
             <el-form-item label="Tags" class="editor-panel editor-tags-panel">
-              <el-select v-model="form.tagIds" multiple filterable clearable collapse-tags reserve-keyword
-                placeholder="Search and add tags">
+              <el-select v-model="form.tagIds" multiple filterable allow-create clearable collapse-tags reserve-keyword
+                placeholder="Search and add tags" @change="handleTagSelectionChange">
                 <el-option v-for="item in tagOptions" :key="item.tagId" :label="item.tagName" :value="item.tagId" />
               </el-select>
             </el-form-item>
           </el-col>
           <el-col :span="12">
             <el-form-item label="Category" class="editor-panel editor-category-panel">
-              <el-select v-model="form.typeIds" multiple filterable clearable collapse-tags reserve-keyword
-                placeholder="Search and add categories">
+              <el-select v-model="form.typeIds" multiple filterable allow-create clearable collapse-tags reserve-keyword
+                placeholder="Search and add categories" @change="handleTypeSelectionChange">
                 <el-option v-for="item in typeOptions" :key="item.typeId" :label="item.typeName" :value="item.typeId">
                 </el-option>
               </el-select>
@@ -285,6 +285,8 @@
   import {
     delFileInfo
   } from "@/api/cms/fileInfo";
+  import { addTag } from "@/api/cms/tag";
+  import { addType } from "@/api/cms/type";
   import {
     addFileBlogInfo,
     delFileBlogInfo,
@@ -359,6 +361,8 @@
         typeOptions: [],
         // 标签选项
         tagOptions: [],
+        creatingTagNames: [],
+        creatingTypeNames: [],
       };
     },
     created() {
@@ -757,6 +761,82 @@
         } else {
           this.form.content = this.form.contentMarkdown
         }
+      },
+      async handleTagSelectionChange(values) {
+        await this.resolveCreatedOptions({
+          values,
+          optionList: this.tagOptions,
+          labelKey: 'tagName',
+          valueKey: 'tagId',
+          creatingNamesKey: 'creatingTagNames',
+          createOption: async (name) => {
+            const response = await addTag({ tagName: name })
+            return {
+              tagId: response.data,
+              tagName: name
+            }
+          },
+          assignValues: (resolvedValues) => {
+            this.form.tagIds = resolvedValues
+          }
+        })
+      },
+      async handleTypeSelectionChange(values) {
+        await this.resolveCreatedOptions({
+          values,
+          optionList: this.typeOptions,
+          labelKey: 'typeName',
+          valueKey: 'typeId',
+          creatingNamesKey: 'creatingTypeNames',
+          createOption: async (name) => {
+            const response = await addType({ typeName: name })
+            return {
+              typeId: response.data,
+              typeName: name
+            }
+          },
+          assignValues: (resolvedValues) => {
+            this.form.typeIds = resolvedValues
+          }
+        })
+      },
+      async resolveCreatedOptions({ values, optionList, labelKey, valueKey, creatingNamesKey, createOption, assignValues }) {
+        const list = Array.isArray(values) ? values.slice() : []
+        const resolvedValues = []
+
+        for (const value of list) {
+          if (typeof value !== 'string') {
+            resolvedValues.push(value)
+            continue
+          }
+
+          const name = value.trim()
+          if (!name) {
+            continue
+          }
+
+          const existing = optionList.find(item => (item[labelKey] || '').trim().toLowerCase() === name.toLowerCase())
+          if (existing) {
+            resolvedValues.push(existing[valueKey])
+            continue
+          }
+
+          if (this[creatingNamesKey].includes(name.toLowerCase())) {
+            continue
+          }
+
+          this[creatingNamesKey].push(name.toLowerCase())
+          try {
+            const createdOption = await createOption(name)
+            optionList.push(createdOption)
+            resolvedValues.push(createdOption[valueKey])
+            this.$modal.msgSuccess(`Created "${name}"`)
+          } finally {
+            this[creatingNamesKey] = this[creatingNamesKey].filter(item => item !== name.toLowerCase())
+          }
+        }
+
+        assignValues(Array.from(new Set(resolvedValues)))
       },
     }
   };

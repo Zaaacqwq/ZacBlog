@@ -36,16 +36,20 @@
       <!-- <el-table-column label="分类ID" align="center" prop="typeId" /> -->
       <el-table-column label="Category Image" align="center" prop="typePic" width="130">
         <template slot-scope="scope">
-          <el-image style="width: 28px;height: 28px; border-radius: 50%; margin-right: 10px" :src="scope.row.typePicLink" lazy :preview-src-list="[scope.row.typePicLink]" v-if="scope.row.typePicType == '0'">
-            <div slot="error" class="image-slot">
-              <i class="el-icon-collection"></i>
-            </div>
-          </el-image>
-          <el-image style="width: 28px;height: 28px; border-radius: 50%; margin-right: 10px" :src="scope.row.typePic" lazy :preview-src-list="[scope.row.typePic]" v-if="scope.row.typePicType == '1'">
-            <div slot="error" class="image-slot">
-              <i class="el-icon-collection"></i>
-            </div>
-          </el-image>
+          <div class="category-image-cell" v-if="scope.row.typePicType == '0'">
+            <el-image style="width: 28px;height: 28px; border-radius: 50%;" :src="scope.row.typePicLink || defaultCategoryIcon" lazy :preview-src-list="[scope.row.typePicLink || defaultCategoryIcon]">
+              <div slot="error" class="image-slot">
+                <img :src="defaultCategoryIcon" alt="category" class="category-fallback-icon">
+              </div>
+            </el-image>
+          </div>
+          <div class="category-image-cell" v-if="scope.row.typePicType == '1'">
+            <el-image style="width: 28px;height: 28px; border-radius: 50%;" :src="scope.row.typePic || defaultCategoryIcon" lazy :preview-src-list="[scope.row.typePic || defaultCategoryIcon]">
+              <div slot="error" class="image-slot">
+                <img :src="defaultCategoryIcon" alt="category" class="category-fallback-icon">
+              </div>
+            </el-image>
+          </div>
         </template>
       </el-table-column>
       <el-table-column label="Category Name" align="center" prop="typeName" />
@@ -82,11 +86,11 @@
             <el-radio-button label="1">Upload</el-radio-button>
           </el-radio-group>
           <div v-show="form.typePicType == '0'" class="tabBlock">
-            <el-input v-model="form.typePicLink" placeholder="Enter image URL https://" class="category-image-input" />
+            <el-input v-model="form.typePicLink" :placeholder="defaultCategoryPlaceholder" class="category-image-input" />
             <div class="category-image-preview-card">
-              <el-image :src="form.typePicLink" :preview-src-list="[form.typePicLink]" fit="cover" class="typePic" >
+              <el-image :src="form.typePicLink || defaultCategoryIcon" :preview-src-list="[form.typePicLink || defaultCategoryIcon]" fit="cover" class="typePic" >
                 <div slot="error" class="image-slot">
-                  <i class="el-icon-collection"></i>
+                  <img :src="defaultCategoryIcon" alt="category" class="category-fallback-icon category-fallback-icon--large">
                 </div>
               </el-image>
             </div>
@@ -107,6 +111,8 @@
 </template>
 
 <script>
+  const defaultCategoryIcon = `data:image/svg+xml;utf8,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%235a6474"><path d="M9 2.00318V2H19.9978C20.5513 2 21 2.45531 21 2.9918V21.0082C21 21.556 20.5551 22 20.0066 22H3.9934C3.44476 22 3 21.5501 3 20.9932V8L9 2.00318ZM5.82918 8H9V4.83086L5.82918 8ZM11 4V9C11 9.55228 10.5523 10 10 10H5V20H19V4H11Z"/></svg>')}`;
+  const defaultCategoryPlaceholder = "Default category icon (file-line.svg)";
   import {
     listType,
     getType,
@@ -156,7 +162,9 @@
             message: "Category name cannot be empty",
             trigger: "blur"
           }],
-        }
+        },
+        defaultCategoryIcon,
+        defaultCategoryPlaceholder
       };
     },
     created() {
@@ -237,6 +245,9 @@
       submitForm() {
         this.$refs["form"].validate(valid => {
           if (valid) {
+            if (this.form.typePicType === '0' && !this.form.typePicLink) {
+              this.form.typePicLink = defaultCategoryIcon;
+            }
             if (this.form.typeId != null) {
               updateType(this.form).then(response => {
                 this.$modal.msgSuccess("Update successful");
@@ -319,6 +330,13 @@
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.72);
   }
 
+  .category-image-cell {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 28px;
+  }
+
   .category-upload-surface {
     padding: 12px;
     border-radius: 20px;
@@ -330,6 +348,18 @@
     width: 42px;
     height: 42px;
     border-radius: 16px;
+  }
+
+  .category-fallback-icon {
+    width: 18px;
+    height: 18px;
+    object-fit: contain;
+    opacity: 0.9;
+  }
+
+  .category-fallback-icon--large {
+    width: 42px;
+    height: 42px;
   }
 
   .category-editor-form :deep(.el-form-item__label) {
