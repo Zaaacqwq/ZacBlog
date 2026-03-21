@@ -279,6 +279,7 @@ export default {
         let html = md.render(src)
         // 渲染后把占位符替换回原始数学文本（不被 <br> 打断）
         html = html.replace(/::MATH(\d+)::/g, (m, idx) => holders[Number(idx)] || m)
+        html = this.normalizeRenderedAssetUrls(html)
 
         el.innerHTML = html
         this.decorateMathAndCode()
@@ -286,6 +287,17 @@ export default {
         console.error('Markdown 渲染失败：', err)
         el.textContent = mdText || ''
       }
+    },
+    normalizeRenderedAssetUrls(html) {
+      if (!html) {
+        return html
+      }
+
+      return html
+        .replace(/(["'(])http:\/\/api\.zaaac\.vip\//gi, '$1https://api.zaaac.vip/')
+        .replace(/(["'(])\/dev-api\//gi, '$1https://api.zaaac.vip/')
+        .replace(/(["'(])\/stage-api\//gi, '$1https://api.zaaac.vip/')
+        .replace(/(["'(])\/profile\/upload\//gi, '$1https://api.zaaac.vip/profile/upload/')
     },
 
     decorateMathAndCode() {
@@ -435,6 +447,16 @@ export default {
     margin-left: 0.4rem;
     color: #999;
   }
+  .md-preview img {
+    display: block;
+    max-width: 100%;
+    width: auto;
+    height: auto;
+    max-height: min(72vh, 900px);
+    margin: 1.25rem auto;
+    object-fit: contain;
+    border-radius: 18px;
+  }
   /* Nested blockquotes styling: stacked vertical bars with spacing */
   .md-preview blockquote {
     margin: 1.2em 0;
@@ -534,6 +556,18 @@ export default {
     background: transparent;
     padding: 0;
     border: 0;
+  }
+  ::v-deep(.md-preview) img,
+  ::v-deep(.story-body) img,
+  ::v-deep(.ql-editor) img {
+    display: block;
+    max-width: 100% !important;
+    width: auto !important;
+    height: auto !important;
+    max-height: min(72vh, 900px);
+    margin: 1.25rem auto;
+    object-fit: contain !important;
+    border-radius: 18px;
   }
 </style>
 <style scoped>

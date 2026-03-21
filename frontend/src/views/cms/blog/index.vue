@@ -153,7 +153,12 @@
           <!-- Only Vditor Markdown editor is supported -->
           <el-row>
             <el-col>
-              <VditorEditor ref="VditorEditor" v-model="form.contentMarkdown" :height='400' />
+              <VditorEditor
+                ref="VditorEditor"
+                v-model="form.contentMarkdown"
+                :height='400'
+                @upload-success="handleEditorUploadSuccess"
+              />
             </el-col>
           </el-row>
         </el-form-item>
@@ -229,7 +234,27 @@
             <el-table :data="form.blogFilesNew" :border="true" style="width: 99.99%;">
               <el-table-column align="center" min-width="20%" prop="pic" label="Attachment">
                 <template slot-scope="scope">
-                  <filesUpload v-model="scope.row.fileId" @handleFilesSuccess="filesSuccess" :is-show-tip="false" />
+                  <div class="attachment-preview-cell">
+                    <el-image
+                      v-if="scope.row.filePath && isImageFile(scope.row.fileSuffix)"
+                      :src="getAttachmentPreviewUrl(scope.row)"
+                      :preview-src-list="[getAttachmentPreviewUrl(scope.row)]"
+                      fit="cover"
+                      class="attachment-preview-image"
+                    />
+                    <div
+                      v-else-if="scope.row.filePath"
+                      class="attachment-preview-file"
+                    >
+                      <img src="/file.png" alt="file preview" class="attachment-preview-file__icon">
+                    </div>
+                    <filesUpload
+                      v-else
+                      v-model="scope.row.fileId"
+                      @handleFilesSuccess="filesSuccess"
+                      :is-show-tip="false"
+                    />
+                  </div>
                 </template>
               </el-table-column>
               <el-table-column align="center" min-width="20%" prop="remark" label="Attachment Info">
@@ -285,8 +310,8 @@
   import {
     delFileInfo
   } from "@/api/cms/fileInfo";
-  import { addTag } from "@/api/cms/tag";
-  import { addType } from "@/api/cms/type";
+  import { addTag, listTag } from "@/api/cms/tag";
+  import { addType, listType } from "@/api/cms/type";
   import {
     addFileBlogInfo,
     delFileBlogInfo,
@@ -363,6 +388,8 @@
         tagOptions: [],
         creatingTagNames: [],
         creatingTypeNames: [],
+        tagResolutionPromise: null,
+        typeResolutionPromise: null,
       };
     },
     created() {
@@ -422,6 +449,8 @@
       },
       // 表单重置
       reset() {
+        this.tagResolutionPromise = null
+        this.typeResolutionPromise = null
         this.form = {
           id: null,
           createBy: null,
@@ -499,7 +528,7 @@
       releaseForm() {
         this.$refs["form"].validate(valid => {
           if (valid) {
-            this.$modal.confirm('Are you sure you want to publish?').then(()=>{
+            this.$modal.confirm('Are you sure you want to publish?').then(async ()=>{
               this.form.type = 1;
               this.form.status = 1;
               if (this.top) {
@@ -509,6 +538,10 @@
               }
               // Always sync content from the active editor (Vditor)
               this.setFormContent()
+              const isValid = await this.normalizeAssociationsBeforeSubmit()
+              if (!isValid) {
+                return
+              }
               if (this.form.id != null) {
                 updateBlog(this.form).then(response => {
                   if (this.fileIds.length > 0) {
@@ -546,7 +579,7 @@
       saveForm() {
         this.$refs["form"].validate(valid => {
           if (valid) {
-            this.$modal.confirm('Are you sure you want to save?').then(()=>{
+            this.$modal.confirm('Are you sure you want to save?').then(async ()=>{
               this.form.type = 1;
               this.form.status = 0;
               if (this.top) {
@@ -556,6 +589,10 @@
               }
               // Always sync content from the active editor (Vditor)
               this.setFormContent()
+              const isValid = await this.normalizeAssociationsBeforeSubmit()
+              if (!isValid) {
+                return
+              }
               if (this.form.id != null) {
                 updateBlog(this.form).then(response => {
                   if (this.fileIds.length > 0) {
@@ -610,6 +647,15 @@
       getFileId(data) {
         this.fileIds.push(data);
       },
+      handleEditorUploadSuccess(fileInfo) {
+        if (!fileInfo || !fileInfo.fileId) {
+          return
+        }
+
+        if (!this.fileIds.includes(fileInfo.fileId)) {
+          this.fileIds.push(fileInfo.fileId)
+        }
+      },
       /** 资源列表按钮操作 */
       fileList(row) {
         let loadingInstance = Loading.service({
@@ -641,14 +687,12 @@
       blogFiles(row) {
         this.reset();
         const id = row.id || this.ids
-        getBlog(id).then(response => {
+        Promise.all([getBlog(id), getFileList(id)]).then(([blogResponse, fileResponse]) => {
+          const response = blogResponse
           this.typeOptions = response.types;
           this.tagOptions = response.tags;
           this.form = response.data;
-          this.form.blogFilesNew = []
-          if (response.data.blogFiles !== null) {
-            this.form.blogFilesNew = JSON.parse(response.data.blogFiles)
-          }
+          this.form.blogFilesNew = this.mergeAttachmentRows(response.data.blogFiles, fileResponse.data)
           if (this.form.top == 1) {
             this.top = true;
           };
@@ -709,6 +753,65 @@
           }
         });
       },
+      parseBlogFiles(blogFiles) {
+        if (!blogFiles) {
+          return []
+        }
+
+        try {
+          return JSON.parse(blogFiles)
+        } catch (e) {
+          return []
+        }
+      },
+      createAttachmentRow(fileInfo = {}) {
+        const filePath = fileInfo.filePath || fileInfo.fileId || ''
+        return {
+          id: fileInfo.id || this.uuid(),
+          fileId: filePath,
+          fileOriginName: fileInfo.fileOriginName || '',
+          fileSuffix: fileInfo.fileSuffix || '',
+          fileSize: fileInfo.fileSize || fileInfo.fileSizeInfo || '',
+          filePath,
+          remark: fileInfo.remark || ''
+        }
+      },
+      mergeAttachmentRows(blogFiles, linkedFiles) {
+        const savedRows = this.parseBlogFiles(blogFiles).map(item => this.createAttachmentRow(item))
+        const savedRemarkMap = new Map()
+        savedRows.forEach(item => {
+          const key = item.filePath || item.fileId
+          if (key) {
+            savedRemarkMap.set(key, item.remark || '')
+          }
+        })
+
+        const linkedRows = Array.isArray(linkedFiles)
+          ? linkedFiles.map(item => this.createAttachmentRow({
+            fileId: item.filePath,
+            fileOriginName: item.fileOriginName,
+            fileSuffix: item.fileSuffix,
+            fileSize: item.fileSizeInfo,
+            filePath: item.filePath,
+            remark: savedRemarkMap.get(item.filePath) || ''
+          }))
+          : []
+
+        const linkedRowMap = new Map()
+        linkedRows.forEach(item => {
+          const key = item.filePath || item.fileId
+          if (key) {
+            linkedRowMap.set(key, item)
+          }
+        })
+
+        const extraSavedRows = savedRows.filter(item => {
+          const key = item.filePath || item.fileId
+          return key && !linkedRowMap.has(key)
+        })
+
+        return [...linkedRows, ...extraSavedRows]
+      },
       //保存文件
       saveBlogFiles(){
         if (this.form.blogFilesNew.length > 0) {
@@ -723,7 +826,8 @@
             }
           }
         }
-        this.form.blogFiles = JSON.stringify(this.form.blogFilesNew)
+        const normalizedRows = this.form.blogFilesNew.map(item => this.createAttachmentRow(item))
+        this.form.blogFiles = JSON.stringify(normalizedRows)
         updateBlog(this.form).then(response => {
           this.$modal.msgSuccess("Saved successfully");
           this.blogFilesOpen = false;
@@ -740,6 +844,19 @@
         a.setAttribute('target', '_blank')
         a.setAttribute('href', process.env.VUE_APP_BASE_API + url)
         a.click()
+      },
+      isImageFile(fileSuffix) {
+        const imageTypes = ['png', 'jpg', 'jpeg', 'bmp', 'gif', 'webp', 'svg', 'apng', 'jfif']
+        return imageTypes.includes((fileSuffix || '').toLowerCase())
+      },
+      getAttachmentPreviewUrl(row) {
+        if (!row || !row.filePath) {
+          return ''
+        }
+
+        return row.filePath.indexOf('http') === 0
+          ? row.filePath
+          : `${process.env.VUE_APP_BASE_API}${row.filePath}`
       },
       tableRowClassName({
         row,
@@ -761,44 +878,132 @@
         } else {
           this.form.content = this.form.contentMarkdown
         }
+        this.form.contentMarkdown = this.normalizeMarkdownAssetUrls(this.form.contentMarkdown)
+        this.form.content = this.normalizeHtmlAssetUrls(this.form.content)
+      },
+      normalizeMarkdownAssetUrls(markdown) {
+        if (!markdown) {
+          return markdown
+        }
+
+        return markdown
+          .replace(/\((\/dev-api\/[^)]+)\)/gi, '(https://api.zaaac.vip$1)')
+          .replace(/\((\/stage-api\/[^)]+)\)/gi, '(https://api.zaaac.vip$1)')
+          .replace(/\((\/profile\/upload\/[^)]+)\)/gi, '(https://api.zaaac.vip$1)')
+          .replace(/\(http:\/\/api\.zaaac\.vip\/([^)]+)\)/gi, '(https://api.zaaac.vip/$1)')
+          .replace(/https:\/\/api\.zaaac\.vip\/dev-api\//gi, 'https://api.zaaac.vip/')
+          .replace(/https:\/\/api\.zaaac\.vip\/stage-api\//gi, 'https://api.zaaac.vip/')
+      },
+      normalizeHtmlAssetUrls(html) {
+        if (!html) {
+          return html
+        }
+
+        return html
+          .replace(/(["'])\/dev-api\//gi, '$1https://api.zaaac.vip/dev-api/')
+          .replace(/(["'])\/stage-api\//gi, '$1https://api.zaaac.vip/stage-api/')
+          .replace(/(["'])\/profile\/upload\//gi, '$1https://api.zaaac.vip/profile/upload/')
+          .replace(/http:\/\/api\.zaaac\.vip\//gi, 'https://api.zaaac.vip/')
+          .replace(/https:\/\/api\.zaaac\.vip\/dev-api\//gi, 'https://api.zaaac.vip/')
+          .replace(/https:\/\/api\.zaaac\.vip\/stage-api\//gi, 'https://api.zaaac.vip/')
       },
       async handleTagSelectionChange(values) {
-        await this.resolveCreatedOptions({
+        this.tagResolutionPromise = this.resolveCreatedOptions({
           values,
           optionList: this.tagOptions,
           labelKey: 'tagName',
           valueKey: 'tagId',
           creatingNamesKey: 'creatingTagNames',
           createOption: async (name) => {
-            const response = await addTag({ tagName: name })
-            return {
-              tagId: response.data,
-              tagName: name
-            }
+            await addTag({ tagName: name })
+            return this.findTagOptionByName(name)
           },
           assignValues: (resolvedValues) => {
             this.form.tagIds = resolvedValues
           }
         })
+        await this.tagResolutionPromise
       },
       async handleTypeSelectionChange(values) {
-        await this.resolveCreatedOptions({
+        this.typeResolutionPromise = this.resolveCreatedOptions({
           values,
           optionList: this.typeOptions,
           labelKey: 'typeName',
           valueKey: 'typeId',
           creatingNamesKey: 'creatingTypeNames',
           createOption: async (name) => {
-            const response = await addType({ typeName: name })
-            return {
-              typeId: response.data,
-              typeName: name
-            }
+            await addType({ typeName: name })
+            return this.findTypeOptionByName(name)
           },
           assignValues: (resolvedValues) => {
             this.form.typeIds = resolvedValues
           }
         })
+        await this.typeResolutionPromise
+      },
+      async normalizeAssociationsBeforeSubmit() {
+        try {
+          await Promise.all([
+            this.tagResolutionPromise,
+            this.typeResolutionPromise
+          ].filter(Boolean))
+
+          if (Array.isArray(this.form.tagIds) && this.form.tagIds.some(value => typeof value === 'string' && Number.isNaN(Number(value)))) {
+            await this.handleTagSelectionChange(this.form.tagIds)
+          }
+
+          if (Array.isArray(this.form.typeIds) && this.form.typeIds.some(value => typeof value === 'string' && Number.isNaN(Number(value)))) {
+            await this.handleTypeSelectionChange(this.form.typeIds)
+          }
+
+          this.form.tagIds = this.toValidIdArray(this.form.tagIds)
+          this.form.typeIds = this.toValidIdArray(this.form.typeIds)
+          return true
+        } catch (error) {
+          const message = error && error.message ? error.message : 'Failed to resolve tags or categories before submit'
+          this.$message.error(message)
+          return false
+        }
+      },
+      toValidIdArray(values) {
+        if (!Array.isArray(values)) {
+          return []
+        }
+
+        return Array.from(new Set(values
+          .map(value => {
+            if (value === null || value === undefined || value === '') {
+              return null
+            }
+
+            const id = Number(value)
+            return Number.isFinite(id) ? id : null
+          })
+          .filter(value => value !== null)))
+      },
+      async refreshTagOptions() {
+        const response = await listTag({})
+        this.tagOptions = Array.isArray(response.rows) ? response.rows : []
+      },
+      async refreshTypeOptions() {
+        const response = await listType({})
+        this.typeOptions = Array.isArray(response.rows) ? response.rows : []
+      },
+      async findTagOptionByName(name) {
+        await this.refreshTagOptions()
+        const option = this.tagOptions.find(item => (item.tagName || '').trim().toLowerCase() === name.trim().toLowerCase())
+        if (!option || option.tagId === null || option.tagId === undefined) {
+          throw new Error(`Failed to resolve tag "${name}"`)
+        }
+        return option
+      },
+      async findTypeOptionByName(name) {
+        await this.refreshTypeOptions()
+        const option = this.typeOptions.find(item => (item.typeName || '').trim().toLowerCase() === name.trim().toLowerCase())
+        if (!option || option.typeId === null || option.typeId === undefined) {
+          throw new Error(`Failed to resolve category "${name}"`)
+        }
+        return option
       },
       async resolveCreatedOptions({ values, optionList, labelKey, valueKey, creatingNamesKey, createOption, assignValues }) {
         const list = Array.isArray(values) ? values.slice() : []
@@ -828,7 +1033,6 @@
           this[creatingNamesKey].push(name.toLowerCase())
           try {
             const createdOption = await createOption(name)
-            optionList.push(createdOption)
             resolvedValues.push(createdOption[valueKey])
             this.$modal.msgSuccess(`Created "${name}"`)
           } finally {
@@ -852,6 +1056,35 @@
   .blogFilesInfoName {
     text-align: center;
     padding-top: 5px;
+  }
+  .attachment-preview-cell {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 0;
+  }
+  .attachment-preview-image,
+  .attachment-preview-file {
+    width: 160px;
+    height: 160px;
+    border-radius: 18px;
+    border: 1px solid rgba(23, 32, 51, 0.08);
+    background: #f7f8fb;
+    overflow: hidden;
+  }
+  .attachment-preview-image {
+    display: block;
+  }
+  .attachment-preview-file {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .attachment-preview-file__icon {
+    width: 120px;
+    height: 120px;
+    object-fit: contain;
   }
   .tabBlock {
     min-height: 220px;

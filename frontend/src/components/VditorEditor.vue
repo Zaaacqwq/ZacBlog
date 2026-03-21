@@ -7,6 +7,7 @@
 <script>
 import Vditor from 'vditor'
 import 'vditor/dist/index.css'
+import { getToken } from '@/utils/auth'
 
 export default {
   name: 'VditorEditor',
@@ -18,6 +19,10 @@ export default {
     height: {
       type: [String, Number],
       default: 400
+    },
+    fileSize: {
+      type: Number,
+      default: 10
     }
   },
   data() {
@@ -81,6 +86,20 @@ export default {
         preview: {
           actions: []
         },
+        upload: {
+          accept: 'image/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip,.7z,.txt,.md',
+          fieldName: 'file',
+          headers: {
+            Authorization: `Bearer ${getToken()}`
+          },
+          max: this.fileSize * 1024 * 1024,
+          multiple: false,
+          url: `${process.env.VUE_APP_BASE_API}/common/upload`,
+          success: (editorElement, responseText) => this.handleUploadSuccess(responseText),
+          error: (message) => {
+            this.$message.error(message || 'Failed to upload image')
+          }
+        },
         input: (value) => {
           // mark this change as internal to avoid resetting content in the watcher
           this._internalEdit = true
@@ -128,6 +147,72 @@ export default {
           this.vditor.setValue(val)
         }
       } catch (e) {}
+    },
+    handleUploadSuccess(responseText) {
+      let response
+      try {
+        response = typeof responseText === 'string' ? JSON.parse(responseText) : responseText
+      } catch (e) {
+        this.$message.error('Failed to parse upload response')
+        return
+      }
+
+      if (!response || response.code !== 200 || !response.fileName) {
+        this.$message.error((response && response.msg) || 'Upload failed')
+        return
+      }
+
+      const fileUrl = this.normalizeAssetUrl(
+        response.fileName.indexOf('http') === 0
+          ? response.fileName
+          : `${process.env.VUE_APP_BASE_API}${response.fileName}`
+      )
+
+      this.$emit('upload-success', {
+        fileId: response.fileId,
+        fileName: response.fileName,
+        fileOriginName: response.fileOriginName,
+        fileSuffix: response.fileSuffix,
+        fileSize: response.fileSize,
+        url: fileUrl
+      })
+
+      const markdown = this.buildUploadMarkdown({
+        fileName: response.fileOriginName || response.fileName,
+        fileSuffix: response.fileSuffix,
+        url: fileUrl
+      })
+
+      if (this.vditor && typeof this.vditor.insertValue === 'function') {
+        this.vditor.focus()
+        this.vditor.insertValue(markdown)
+      } else if (this.vditor && typeof this.vditor.insertMD === 'function') {
+        this.vditor.focus()
+        this.vditor.insertMD(markdown)
+      } else {
+        this.$emit('input', `${this.getMarkdown()}${markdown}`)
+      }
+    },
+    buildUploadMarkdown({ fileName, fileSuffix, url }) {
+      const safeName = fileName || 'file'
+      const suffix = `.${(fileSuffix || '').toLowerCase()}`
+      const imageExtensions = ['.apng', '.bmp', '.gif', '.ico', '.jpg', '.jpeg', '.jfif', '.png', '.svg', '.webp']
+
+      if (imageExtensions.includes(suffix)) {
+        return `![${safeName}](${url})\n`
+      }
+
+      return `[${safeName}](${url})\n`
+    },
+    normalizeAssetUrl(url) {
+      if (!url) {
+        return url
+      }
+
+      return url
+        .replace(/^http:\/\/api\.zaaac\.vip/i, 'https://api.zaaac.vip')
+        .replace(/^\/dev-api/i, 'https://api.zaaac.vip')
+        .replace(/^\/stage-api/i, 'https://api.zaaac.vip')
     }
   },
   watch: {
