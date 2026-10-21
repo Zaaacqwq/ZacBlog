@@ -1,6 +1,8 @@
 # 所有可变配置都从环境变量读取；这里只允许出现占位符和无害的本地默认值，不能写真实密码或密钥。
 server:
   port: ${SERVER_PORT:8080}
+  # 线上在 nginx 后面：信任内网代理传来的 X-Forwarded-For，取真实客户端 IP（限流、黑名单用）
+  forward-headers-strategy: native
 
 spring:
   application:
@@ -14,6 +16,8 @@ spring:
     locations: classpath:db/migration
     # 线上库已有旧表：首次接入时以当前结构为基线
     baseline-on-migrate: true
+    # 线上库的旧结构就是 V1__baseline.sql，记基线后从 V2 开始执行
+    baseline-version: 1
   servlet:
     multipart:
       max-file-size: 10MB
@@ -21,9 +25,18 @@ spring:
 
 blog:
   jwt:
-    # 必须通过环境变量 JWT_SECRET 提供，没有默认值
+    # 必须通过环境变量 JWT_SECRET 提供（至少 32 字节），没有默认值
     secret: ${JWT_SECRET:}
+    ttl: ${JWT_TTL:7d}
   upload-path: ${UPLOAD_PATH:/home/ZacBlog/zaaac/uploadPath}
+  # 旧库时间按这个时区存储，接口输出时带上偏移量
+  time-zone: ${BLOG_TIME_ZONE:Asia/Shanghai}
+  # 可以登录后台的 sys_user.user_id（若依的超级管理员是 1）；旧注册读者不能登录
+  admin-user-ids: ${ADMIN_USER_IDS:1}
+  rate-limit:
+    login-per-minute: ${RATE_LIMIT_LOGIN_PER_MINUTE:5}
+    post-interval: ${RATE_LIMIT_POST_INTERVAL:30s}
+    posts-per-day: ${RATE_LIMIT_POSTS_PER_DAY:20}
 
 management:
   endpoints:
