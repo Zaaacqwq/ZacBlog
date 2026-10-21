@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # 回滚：zacblog-rollback.sh [--frontend-only]
-#   - 前端：$FRONTEND_PREV 存在时恢复成 $FRONTEND_DIR
+#   - 前端：web/current 指回 zacblog-frontend.sh 记下的上一个 release（$WEB_STATE_FILE）
 #   - 后端：按 zacblog-start.sh 记下的回滚目标恢复
 #       app <jar>  current.jar 指回 <jar>，restart zacblog-server
 #       legacy     停 zacblog-server、删掉 current.jar，启动旧的 zacblog-backend（首次切换失败时）
@@ -13,17 +13,15 @@ SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 . "$SCRIPT_DIR/zacblog-common.sh"
 
 restore_frontend() {
-  if [ ! -d "$FRONTEND_PREV" ]; then
-    log "没有 ${FRONTEND_PREV}，前端保持不变"
+  local prev
+  prev=$(cat "$WEB_STATE_FILE" 2>/dev/null || echo none)
+  if [ "$prev" = none ] || [ ! -d "$prev" ]; then
+    log "没有可用的前端回滚记录，前端保持不变"
     return 0
   fi
-  local failed
-  failed=$(mktemp -d "$(dirname "$FRONTEND_DIR")/.frontend.failed.XXXXXX")
-  if [ -e "$FRONTEND_DIR" ]; then
-    mv "$FRONTEND_DIR" "$failed/frontend"
-  fi
-  mv "$FRONTEND_PREV" "$FRONTEND_DIR"
-  rm -rf "$failed"
+  swap_link "$WEB_CURRENT" "$prev"
+  # 记录只用一次，避免重复回滚把前端来回切
+  rm -f "$WEB_STATE_FILE"
   log "前端已恢复为部署前的版本"
 }
 

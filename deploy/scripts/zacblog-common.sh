@@ -4,14 +4,17 @@
 # 以部署用户 zacblog 运行。它只能免密执行 deploy/bootstrap-root.sh 写进 sudoers 的几条命令：
 #   systemctl start|stop|restart|is-active zacblog-server
 #   systemctl start|stop zacblog-backend
+#   systemctl enable|disable zacblog-server|zacblog-backend（切换时用，部署脚本本身不调用）
+# zacblog 不能写 /home/ZacBlog 本身和 backend/（root 所有），只能写 server/、web/、scripts/、
+# incoming/、backups/、zaaac/。所以发布前后端都是“放进 releases/ + 原子替换软链接”。
 # 所有路径和命令都可以用环境变量覆盖（deploy/test/run.sh 就是这样在临时目录里模拟服务器的）。
 
 : "${ZACBLOG_HOME:=/home/ZacBlog}"
-: "${ENV_FILE:=$ZACBLOG_HOME/zacblog.env}"
 
 # 新后端（zacblog-server.service）：WorkingDirectory 是 server/，绝不能是 backend/
 #（backend/config/application.yml 是旧后端的外置配置，Spring Boot 会自动加载工作目录下的 config/）
 : "${SERVER_DIR:=$ZACBLOG_HOME/server}"
+: "${ENV_FILE:=$SERVER_DIR/zacblog.env}"
 : "${RELEASES_DIR:=$SERVER_DIR/releases}"
 : "${CURRENT_JAR:=$SERVER_DIR/current.jar}"
 : "${APP_LOG:=$SERVER_DIR/app.log}"
@@ -26,8 +29,12 @@
 # 旧后端没有 actuator：端口上有任意 HTTP 响应就算起来了
 : "${LEGACY_HEALTH_URL:=http://127.0.0.1:8080/}"
 
-: "${FRONTEND_DIR:=$ZACBLOG_HOME/frontend}"
-: "${FRONTEND_PREV:=$FRONTEND_DIR.prev}"
+# 前端：/home/ZacBlog/frontend 是 root 所有的软链接 → web/current → web/releases/<版本>
+: "${WEB_DIR:=$ZACBLOG_HOME/web}"
+: "${WEB_RELEASES_DIR:=$WEB_DIR/releases}"
+: "${WEB_CURRENT:=$WEB_DIR/current}"
+: "${WEB_STATE_FILE:=$WEB_DIR/.rollback-target}"
+: "${WEB_RELEASES_KEEP:=5}"
 : "${BACKUP_DIR:=$ZACBLOG_HOME/backups}"
 : "${BACKUP_KEEP:=10}"
 
@@ -95,12 +102,28 @@ env_file_get() {
   return "$found"
 }
 
-# 原子地把 current.jar 指向 $1（先建临时软链接再 rename 覆盖）
-point_current_to() {
-  local tmp="$CURRENT_JAR.tmp.$$"
-  ln -sfn "$1" "$tmp"
-  mv -f "$tmp" "$CURRENT_JAR"
-  log "current.jar → $1"
+# swap_link <软链接> <目标>：原子地让软链接指向新目标（先建临时软链接再 rename 覆盖）。
+# 软链接指向目录时普通 mv 会把临时链接挪进目录里，所以 GNU 用 -T，BSD/macOS 用 -h。
+swap_link() {
+  local link=$1 target=$2 tmp="$1.tmp.$$"
+  ln -sfn "$target" "$tmp"
+  if mv --version >/dev/null 2>&1; then
+    mv -fT "$tmp" "$link"
+  else
+    mv -fh "$tmp" "$link"
+  fi
+  log "${link##*/} → $target"
+}
+point_current_to() { swap_link "$CURRENT_JAR" "$1"; }
+
+# write_state <文件> <内容>：先写临时文件再 rename，写失败不会截断原记录
+write_state() {
+  local tmp="$1.tmp.$$"
+  if printf '%s\n' "$2" > "$tmp" && mv -f "$tmp" "$1"; then
+    return 0
+  fi
+  rm -f "$tmp" 2>/dev/null || true
+  return 1
 }
 
 # wait_health <url> <strict|any>

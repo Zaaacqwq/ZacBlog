@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # systemctl 桩：模拟 zacblog-server / zacblog-backend 两个服务（定义与 bootstrap-root.sh 和现网一致）。
-# 进程直接后台启动，pid 记在 $SYSTEMD_STUB_DIR/<服务>.pid。
+# 进程直接后台启动；enable/disable 只记一个标记文件，pid 记在 $SYSTEMD_STUB_DIR/<服务>.pid。
 set -euo pipefail
 dir=${SYSTEMD_STUB_DIR:?}
 home=${ZACBLOG_HOME:?}
@@ -18,26 +18,18 @@ unit=${args[1]:-}
 unit=${unit%.service}
 pidfile="$dir/$unit.pid"
 
-# 和 systemd 的 EnvironmentFile 一样逐行读 KEY=VALUE（值里可以有 &，不能 source）
-load_env_file() {
-  local line
-  while IFS= read -r line || [ -n "$line" ]; do
-    case "$line" in '' | '#'*) continue ;; esac
-    export "${line%%=*}=${line#*=}"
-  done < "$1"
-}
-
 active() { [ -f "$pidfile" ] && kill -0 "$(cat "$pidfile")" 2>/dev/null; }
 
 start() {
   active && return 0
   case "$unit" in
     zacblog-server)
-      # User=zacblog WorkingDirectory=server EnvironmentFile=zacblog.env，日志追加到 server/app.log
-      [ -e "$home/server/current.jar" ] || { echo "current.jar missing" >&2; return 1; }
-      (cd "$home/server" && load_env_file "$home/zacblog.env" &&
-        exec "$stubs/java" -Xms256m -Xmx768m -jar "$home/server/current.jar" \
-          </dev/null >> "$home/server/app.log" 2>&1) &
+      # 和真实 unit 一样执行 bootstrap-root.sh 安装的启动器（User=zacblog、WorkingDirectory=server/）；
+      # 启动器自己读 server/zacblog.env、把日志追加到 server/app.log
+      launcher="$dir/zacblog-server-run"
+      bash "$stubs/../../bootstrap-root.sh" --print-launcher > "$launcher"
+      (cd "$home/server" && ZACBLOG_SERVER_DIR="$home/server" ZACBLOG_JAVA="$stubs/java" \
+        exec bash "$launcher" </dev/null) &
       ;;
     zacblog-backend)
       (cd "$home/backend" &&
@@ -65,6 +57,8 @@ case "$verb" in
   start) start ;;
   stop) stop ;;
   restart) stop && start ;;
+  enable) touch "$dir/$unit.enabled" ;;
+  disable) rm -f "$dir/$unit.enabled" ;;
   is-active)
     if active; then [ "$quiet" = 1 ] || echo active; exit 0; fi
     [ "$quiet" = 1 ] || echo inactive

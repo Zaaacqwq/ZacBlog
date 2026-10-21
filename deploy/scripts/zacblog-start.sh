@@ -45,9 +45,7 @@ else
   target=none
 fi
 # 先写临时文件再 rename：写失败时不会截断上一次的回滚记录
-state_tmp="$STATE_FILE.tmp.$$"
-if ! printf '%s\n' "$target" > "$state_tmp" || ! mv -f "$state_tmp" "$STATE_FILE"; then
-  rm -f "$state_tmp" 2>/dev/null || true
+if ! write_state "$STATE_FILE" "$target"; then
   log "ERROR: 无法写入回滚记录 $STATE_FILE" >&2
   exit 3
 fi

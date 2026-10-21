@@ -80,9 +80,17 @@ jobs:
       - name: Prepare SSH key
         env:
           SSH_KEY_B64: ${{ secrets.SSH_KEY_B64 }}
+          # production 环境变量：服务器的 host key（known_hosts 格式，主人已核对指纹）
+          SSH_KNOWN_HOSTS: ${{ vars.SSH_KNOWN_HOSTS }}
         run: |
           set -euo pipefail
+          if [ -z "$SSH_KNOWN_HOSTS" ]; then
+            echo "::error::production 环境缺少变量 SSH_KNOWN_HOSTS，拒绝在不校验服务器身份的情况下连接"
+            exit 1
+          fi
           install -m 700 -d ~/.ssh
+          printf '%s\n' "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          chmod 644 ~/.ssh/known_hosts
           printf '%s' "$SSH_KEY_B64" | base64 -d > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
           cat > ~/.ssh/config <<EOF
@@ -92,7 +100,8 @@ jobs:
             User $SSH_USER
             IdentityFile ~/.ssh/deploy_key
             IdentitiesOnly yes
-            StrictHostKeyChecking accept-new
+            StrictHostKeyChecking yes
+            UserKnownHostsFile ~/.ssh/known_hosts
             ServerAliveInterval 30
           EOF
           ssh prod 'echo "SSH OK: $(whoami)"'

@@ -8,7 +8,9 @@ shift
 case "$*" in
   "systemctl start zacblog-server" | "systemctl stop zacblog-server" | \
     "systemctl restart zacblog-server" | "systemctl is-active zacblog-server" | \
-    "systemctl start zacblog-backend" | "systemctl stop zacblog-backend")
+    "systemctl enable zacblog-server" | "systemctl disable zacblog-server" | \
+    "systemctl start zacblog-backend" | "systemctl stop zacblog-backend" | \
+    "systemctl enable zacblog-backend" | "systemctl disable zacblog-backend")
     exec "$@"
     ;;
   *)
