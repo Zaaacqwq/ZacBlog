@@ -49,23 +49,27 @@ public class AuthService {
     }
 
     public LoginResult login(String username, String password, String captchaId, String captchaCode, String ip) {
-        int limit = props.rateLimit().loginPerMinute();
-        long wait = rateLimiter.tryAcquire(List.of(
-                new RateLimiter.Rule("login-ip:" + ip, limit, Duration.ofMinutes(1)),
-                new RateLimiter.Rule("login-user:" + username.toLowerCase(Locale.ROOT), limit, Duration.ofMinutes(1))));
-        if (wait > 0) {
-            throw ApiException.tooManyRequests(wait);
-        }
-        if (!captcha.verify(captchaId, captchaCode)) {
-            throw ApiException.badRequest("验证码错误或已过期");
-        }
+        // 先按数据库的比较规则解析账号：旧库 user_name 是 utf8mb4_general_ci，admin / ADMIN / ádmin / "admin "
+        // 都会命中同一行，所以账号维度的限流按 user_id 累计，不能按用户输入的字符串
         Optional<UserRow> user = jdbc.sql("""
                 SELECT user_id, user_name, password FROM sys_user
                 WHERE user_name = :username AND del_flag = '0' AND status = '0'
                 """)
                 .param("username", username)
                 .query((rs, i) -> new UserRow(rs.getLong("user_id"), rs.getString("user_name"), rs.getString("password")))
-                .optional();
+                .list().stream().findFirst();
+        String accountKey = user.map(u -> "id:" + u.userId())
+                .orElseGet(() -> "name:" + username.strip().toLowerCase(Locale.ROOT));
+        int limit = props.rateLimit().loginPerMinute();
+        long wait = rateLimiter.tryAcquire(List.of(
+                new RateLimiter.Rule("login-ip:" + ip, limit, Duration.ofMinutes(1)),
+                new RateLimiter.Rule("login-user:" + accountKey, limit, Duration.ofMinutes(1))));
+        if (wait > 0) {
+            throw ApiException.tooManyRequests(wait);
+        }
+        if (!captcha.verify(captchaId, captchaCode)) {
+            throw ApiException.badRequest("验证码错误或已过期");
+        }
         String hash = user.map(UserRow::password).filter(h -> h != null && !h.isEmpty()).orElse(dummyHash);
         boolean matches = passwordEncoder.matches(password, hash);
         if (user.isEmpty() || !matches || !props.adminUserIds().contains(user.get().userId())) {

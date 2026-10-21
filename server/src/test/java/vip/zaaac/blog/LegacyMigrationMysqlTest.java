@@ -44,6 +44,12 @@ class LegacyMigrationMysqlTest {
     @Autowired
     private MockMvc mvc;
 
+    @Autowired
+    private vip.zaaac.blog.auth.CaptchaService captchaService;
+
+    @Autowired
+    private org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
+
     @Test
     void baselinesLegacySchemaAndAppliesOnlyNewMigrations() {
         List<String> history = jdbc.sql("SELECT CONCAT(version, ':', type) FROM flyway_schema_history ORDER BY installed_rank")
@@ -88,6 +94,35 @@ class LegacyMigrationMysqlTest {
                 }))
                 .andExpect(jsonPath("$.data").value(2));
         mvc.perform(get("/public/site")).andExpect(jsonPath("$.data.messageCount").value(2));
+    }
+
+    /**
+     * 旧库 user_name 是 utf8mb4_general_ci：大小写、重音、尾随空格不同的写法会命中同一账号，
+     * 账号维度的登录限流必须共享同一份额度。
+     */
+    @Test
+    void loginRateLimitIsSharedAcrossCollationEquivalentUsernames() throws Exception {
+        jdbc.sql("UPDATE sys_user SET password = :hash WHERE user_id = 1")
+                .param("hash", passwordEncoder.encode("test-only-password-123")).update();
+        String[] variants = {"admin", "ADMIN", "\u00e1dmin", "admin ", "Admin"};
+        for (int i = 0; i < variants.length; i++) {
+            login("10.9.1." + i, variants[i], "wrong-password").andExpect(status().isUnauthorized());
+        }
+        // 第 6 次：换一个新 IP、再换一种写法，也应该被账号限流挡住
+        login("10.9.1.99", "aDmIn", "test-only-password-123").andExpect(status().isTooManyRequests());
+    }
+
+    private org.springframework.test.web.servlet.ResultActions login(String ip, String username, String password)
+            throws Exception {
+        String json = mvc.perform(get("/auth/captcha")).andReturn().getResponse().getContentAsString();
+        String id = com.jayway.jsonpath.JsonPath.read(json, "$.data.captchaId");
+        return mvc.perform(post("/auth/login").with(r -> {
+                    r.setRemoteAddr(ip);
+                    return r;
+                }).contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                        {"username":"%s","password":"%s","captchaId":"%s","captchaCode":"%s"}"""
+                        .formatted(username, password, id, captchaService.peekAnswer(id))));
     }
 
     private List<String> columns(String table) {

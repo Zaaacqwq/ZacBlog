@@ -12,7 +12,8 @@ public record PageQuery(int pageNum, int pageSize) {
         return new PageQuery(pageNum == null ? 1 : pageNum, pageSize == null ? 10 : pageSize);
     }
 
-    public int offset() {
-        return (pageNum - 1) * pageSize;
+    /** 用 long 计算，pageNum 很大时不会溢出成负数（超出范围的页只是返回空列表） */
+    public long offset() {
+        return (pageNum - 1L) * pageSize;
     }
 }

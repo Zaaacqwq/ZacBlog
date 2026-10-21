@@ -72,7 +72,7 @@ server 的所有路由都挂在根路径，**不带 `/api` 前缀**：
 限流的默认规则（进程内计数，重启清零；阈值可通过环境变量调整）：
 
 - 发表评论/留言（两者合计）：同一 IP 每 30 秒 1 条（`RATE_LIMIT_POST_INTERVAL`）、每 24 小时 20 条（`RATE_LIMIT_POSTS_PER_DAY`）。
-- `/auth/login`：同一 IP、同一用户名各自每分钟最多 5 次（`RATE_LIMIT_LOGIN_PER_MINUTE`），不论成功失败都计数。
+- `/auth/login`：同一 IP、同一账号（按数据库解析出的 `user_id` 计，`admin` / `ADMIN` 等等价写法共享额度）各自每分钟最多 5 次（`RATE_LIMIT_LOGIN_PER_MINUTE`），不论成功失败都计数。
 
 ## 5. 数据模型（响应字段）
 

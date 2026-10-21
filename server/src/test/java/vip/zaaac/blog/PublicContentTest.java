@@ -48,6 +48,20 @@ class PublicContentTest extends IntegrationTestSupport {
     }
 
     @Test
+    void hugePageNumberReturnsEmptyPageInsteadOfError() throws Exception {
+        mvc.perform(get("/public/articles").param("pageNum", "2147483647").param("pageSize", "10"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.total").value(3))
+                .andExpect(jsonPath("$.data.rows", hasSize(0)));
+        mvc.perform(get("/public/messages").param("pageNum", "2147483647").param("pageSize", "100"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.rows", hasSize(0)));
+        mvc.perform(get("/public/notices").param("pageNum", "2147483647"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.rows", hasSize(0)));
+    }
+
+    @Test
     void recommendOrdersByViewsAndSkipsDrafts() throws Exception {
         mvc.perform(get("/public/articles/recommend").param("limit", "2"))
                 .andExpect(jsonPath("$.data[*].id", contains(2, 1)));
