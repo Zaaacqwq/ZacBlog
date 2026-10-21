@@ -31,7 +31,9 @@ docs/api.md                 接口契约
 
 数据访问用 **Spring Data JDBC**（`spring-boot-starter-data-jdbc`）：简单的增删改查用 Repository，复杂查询用 `JdbcClient` / `NamedParameterJdbcTemplate` 手写 SQL。不引入 JPA/Hibernate，也不引入 MyBatis。
 
-路由不带 `/api` 前缀，前缀约定见 `docs/api.md`。安全配置在 `vip.zaaac.blog.config.SecurityConfig`，默认拒绝一切；只有 `/actuator/health` 对外开放。
+路由不带 `/api` 前缀，前缀约定见 `docs/api.md`。安全配置在 `vip.zaaac.blog.config.SecurityConfig`：`/public/**`、`/auth/**`、`/profile/**`、`/actuator/health` 匿名，`/admin/**` 需要 JWT（`hasRole("ADMIN")`），其余拒绝。
+
+Flyway 版本号：T2 用 V1–V9，T3（后台）从 V10 起；V2+ 只能新增，规则见 `server/src/main/resources/db/migration/README.md`。
 
 环境变量：
 
@@ -42,6 +44,11 @@ docs/api.md                 接口契约
 | `DB_USERNAME` / `DB_PASSWORD` | 空 | |
 | `JWT_SECRET` | 空 | 必须设置 |
 | `UPLOAD_PATH` | `/home/ZacBlog/zaaac/uploadPath` | 上传目录，`/profile/**` 从这里读 |
+| `JWT_TTL` | `7d` | token 有效期 |
+| `ADMIN_USER_IDS` | `1` | 能登录后台的 `sys_user.user_id`，逗号分隔 |
+| `BLOG_TIME_ZONE` | `Asia/Shanghai` | 旧库 datetime 列的时区 |
+| `RATE_LIMIT_LOGIN_PER_MINUTE` | `5` | 登录限流（按 IP、按用户名各算） |
+| `RATE_LIMIT_POST_INTERVAL` / `RATE_LIMIT_POSTS_PER_DAY` | `30s` / `20` | 匿名评论+留言按 IP 限流 |
 
 ```bash
 cd server
