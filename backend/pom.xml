@@ -18,32 +18,62 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <java.version>1.8</java.version>
         <maven-jar-plugin.version>3.1.1</maven-jar-plugin.version>
-        <druid.version>1.2.8</druid.version>
+        <druid.version>1.2.28</druid.version>
         <bitwalker.version>1.21</bitwalker.version>
         <swagger.version>3.0.0</swagger.version>
         <kaptcha.version>2.3.2</kaptcha.version>
         <mybatis-spring-boot.version>2.2.0</mybatis-spring-boot.version>
-        <pagehelper.boot.version>1.4.0</pagehelper.boot.version>
-        <fastjson.version>1.2.78</fastjson.version>
+        <pagehelper.boot.version>1.4.7</pagehelper.boot.version>
+        <fastjson.version>1.2.83</fastjson.version>
         <oshi.version>5.8.2</oshi.version>
         <jna.version>5.9.0</jna.version>
-        <commons.io.version>2.11.0</commons.io.version>
-        <commons.fileupload.version>1.4</commons.fileupload.version>
+        <commons.io.version>2.22.0</commons.io.version>
+        <commons.fileupload.version>1.6.0</commons.fileupload.version>
         <commons.collections.version>3.2.2</commons.collections.version>
         <poi.version>4.1.2</poi.version>
         <velocity.version>2.3</velocity.version>
         <jwt.version>0.9.1</jwt.version>
+        <tomcat.version>9.0.123</tomcat.version>
+        <snakeyaml.version>1.33</snakeyaml.version>
+        <jackson.databind.version>2.12.7.1</jackson.databind.version>
     </properties>
 	
     <!-- 依赖声明 -->
     <dependencyManagement>
         <dependencies>
 
+            <!-- 安全补丁：覆盖 SpringBoot BOM 中有已知漏洞的版本（须在 BOM 之前声明） -->
+            <dependency>
+                <groupId>org.apache.tomcat.embed</groupId>
+                <artifactId>tomcat-embed-core</artifactId>
+                <version>${tomcat.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.tomcat.embed</groupId>
+                <artifactId>tomcat-embed-el</artifactId>
+                <version>${tomcat.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.tomcat.embed</groupId>
+                <artifactId>tomcat-embed-websocket</artifactId>
+                <version>${tomcat.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.yaml</groupId>
+                <artifactId>snakeyaml</artifactId>
+                <version>${snakeyaml.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-databind</artifactId>
+                <version>${jackson.databind.version}</version>
+            </dependency>
+
             <!-- SpringBoot的依赖配置-->
             <dependency>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-dependencies</artifactId>
-                <version>2.5.6</version>
+                <version>2.5.15</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
