@@ -2,6 +2,20 @@
 
 本文以服务器的实际情况为准；仓库根目录的 `ZacBlog_Deploy_Doc.md` 已过时，不要按它操作。
 
+## 设计依据（ZB-7 执行中主人确认，取代任务原文的部分要求）
+
+ZB-7 原始描述假设"zacblog 用户存在、sudo 要密码、后端用 screen + restart_backend.sh 启动、不能用 root/systemd"。
+主人核实服务器后在任务中补充了实际情况（见下节）并定下新设计，以下几条原要求因此被替换：
+
+| 原要求 | 现在 |
+| --- | --- |
+| 不能用 root、systemd；脚本里不能有 sudo、systemctl | 后端由 systemd 管理；部署脚本只用 sudoers 白名单里的 6 条 `sudo -n systemctl …`（测试的 sudo 桩会拒绝其他命令） |
+| 用 screen 启停，回滚时按 restart_backend.sh 启动旧 jar | 旧后端本来就是 `zacblog-backend.service`（root），没有 screen；回滚为 `systemctl start zacblog-backend` |
+| 沿用现有 zacblog 用户 | 该用户已不存在，由 `deploy/bootstrap-root.sh` 重新创建（uid/gid 1001），由主人审过后以 root 手动执行一次 |
+| `source` 环境变量文件 | 逐行解析（文件同时是 systemd `EnvironmentFile`，`DB_URL` 里的 `&` 不能被 bash source） |
+
+其余要求不变：部署前备份、失败自动回滚（jar 和前端）、上传目录和环境变量文件不动、workflow 只有 `workflow_dispatch` 且不含明文密钥、不改 nginx、不安装软件。
+
 ## 服务器现状
 
 | 项 | 情况 |
@@ -58,7 +72,7 @@ bash deploy/bootstrap-root.sh --print
 ssh vps "bash -s -- '$(cat ~/.ssh/zacblog_deploy.pub)'" < deploy/bootstrap-root.sh
 ```
 
-注意：公钥会**替换** `/home/ZacBlog/.ssh/authorized_keys` 的全部内容；对应私钥的 base64 放到 GitHub Environment `production` 的 `SSH_KEY_B64`，`SSH_USER` 填 `zacblog`。
+注意：公钥会**替换** `/home/ZacBlog/.ssh/authorized_keys` 的全部内容（替换前会备份为同目录下的 `authorized_keys.bak.<时间戳>`）；对应私钥的 base64 放到 GitHub Environment `production` 的 `SSH_KEY_B64`，`SSH_USER` 填 `zacblog`。
 
 ## 环境变量文件格式
 

@@ -112,6 +112,12 @@ tmp_keys=$(mktemp "$HOME_DIR/.ssh/.authorized_keys.XXXXXX")
 printf '%s\n' "$pubkey" > "$tmp_keys"
 chmod 600 "$tmp_keys"
 chown "$DEPLOY_USER:$DEPLOY_USER" "$tmp_keys"
+# 替换前留一份带时间戳的备份，误操作时可以从服务器控制台恢复原来的登录入口
+if [ -f "$HOME_DIR/.ssh/authorized_keys" ]; then
+  keys_bak="$HOME_DIR/.ssh/authorized_keys.bak.$(date '+%Y%m%d-%H%M%S')"
+  cp -p "$HOME_DIR/.ssh/authorized_keys" "$keys_bak"
+  log "原 authorized_keys 已备份为 $keys_bak"
+fi
 mv -f "$tmp_keys" "$HOME_DIR/.ssh/authorized_keys"
 log "已替换 $HOME_DIR/.ssh/authorized_keys"
 
