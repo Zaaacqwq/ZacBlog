@@ -116,6 +116,8 @@ bash /home/ZacBlog/scripts/zacblog-deploy.sh <jar> <web-dist.tgz>
 
 回滚同时把 `frontend.prev` 恢复成 `frontend`，最后再做一次健康检查。
 
+如果 `zacblog-start.sh` 在改动后端之前就失败了（新 jar 缺失、环境变量文件不对、回滚记录写不进去等），它以退出码 3 退出，`zacblog-deploy.sh` 只恢复前端，并报告"后端没有改动"，不会误报已回滚。回滚记录先写临时文件再 rename，写失败不会截断上一次的记录。
+
 ## 手动回滚
 
 ```bash

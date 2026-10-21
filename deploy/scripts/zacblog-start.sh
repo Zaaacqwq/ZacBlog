@@ -17,6 +17,10 @@ SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 # shellcheck source=zacblog-common.sh
 . "$SCRIPT_DIR/zacblog-common.sh"
 
+# 在安装回滚 trap 之前，后端还没有任何改动：这段里任何失败（包括 set -e 触发的）都按 3 退出，
+# 让 zacblog-deploy.sh 只恢复前端，而不是误报“已回滚”
+trap 'rc=$?; [ "$rc" -eq 0 ] || exit 3' EXIT
+
 new_jar=${1:-}
 if [ -z "$new_jar" ] || [ ! -f "$new_jar" ]; then
   log "ERROR: 新 jar 不存在：${new_jar:-（未指定）}" >&2
@@ -40,7 +44,13 @@ elif [ -f "$LEGACY_JAR" ]; then
 else
   target=none
 fi
-printf '%s\n' "$target" > "$STATE_FILE"
+# 先写临时文件再 rename：写失败时不会截断上一次的回滚记录
+state_tmp="$STATE_FILE.tmp.$$"
+if ! printf '%s\n' "$target" > "$state_tmp" || ! mv -f "$state_tmp" "$STATE_FILE"; then
+  rm -f "$state_tmp" 2>/dev/null || true
+  log "ERROR: 无法写入回滚记录 $STATE_FILE" >&2
+  exit 3
+fi
 log "回滚目标：$target"
 
 # 从这里开始会改动后端，任何失败都要回滚

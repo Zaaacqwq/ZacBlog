@@ -228,6 +228,25 @@ check "8080 上仍是旧后端" eq "$(version)" legacy
 chmod 600 "$H/zacblog.env"
 stop_all
 
+# ---------------------------------------------------------------- 场景 6
+new_server state-file-unwritable
+LEGACY_PID=$(cat "$SYSTEMD_STUB_DIR/zacblog-backend.pid")
+echo 'app /previous/release.jar' > "$H/server/.rollback-target"
+# 让回滚记录的临时文件写不进去（server/ 只读），模拟权限或磁盘问题
+chmod 555 "$H/server"
+deploy zacblog-server-v2.jar UP v2 v2-frontend
+chmod 755 "$H/server"
+check "部署失败（退出码非 0）" test "$RC" -ne 0
+check "输出说明后端前置检查失败、前端已恢复" grep -q '前端已恢复，后端没有改动' "$WORK/$CASE/deploy-v2.out"
+check "没有误报“已回滚”" bash -c "! grep -q '已回滚到部署前的版本' '$WORK/$CASE/deploy-v2.out'"
+check "前端恢复为部署前的版本" frontend_is legacy-frontend
+check "frontend.prev 已用于恢复" test ! -e "$H/frontend.prev"
+check "旧后端没有被重启" eq "$(cat "$SYSTEMD_STUB_DIR/zacblog-backend.pid")" "$LEGACY_PID"
+check "没有执行任何 sudo 命令" test ! -s "$STUB_LOG_DIR/sudo.log"
+check "原回滚记录没有被截断" eq "$(cat "$H/server/.rollback-target")" 'app /previous/release.jar'
+common_checks
+stop_all
+
 # ---------------------------------------------------------------- bootstrap-root.sh
 echo "== bootstrap-root.sh --print（不需要 root）"
 BOOT_OUT="$WORK/bootstrap.out"

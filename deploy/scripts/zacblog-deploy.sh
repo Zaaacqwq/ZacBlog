@@ -26,9 +26,9 @@ bash "$SCRIPT_DIR/zacblog-start.sh" "$jar" || rc=$?
 case "$rc" in
   0) log "部署完成" ;;
   3)
-    log "后端前置检查失败，恢复前端"
-    bash "$SCRIPT_DIR/zacblog-rollback.sh" --frontend-only || true
-    exit 1
+    log "后端前置检查失败（后端没有改动），恢复前端"
+    bash "$SCRIPT_DIR/zacblog-rollback.sh" --frontend-only || die "前端恢复失败，需要人工处理"
+    die "部署中止：后端前置检查失败，前端已恢复，后端没有改动"
     ;;
   1) die "部署失败，已回滚到部署前的版本" ;;
   *) die "部署失败，回滚也失败（start 退出码 ${rc}），需要人工处理" ;;
