@@ -6,8 +6,10 @@ key: ZB
 default_branch: main
 requires: [java, maven, node]
 env:
-  PATH_PREPEND: [/opt/homebrew/bin]
-  vars: {}
+  # 与 VPS 一致用 JDK 17（本机默认的 Homebrew openjdk 是更新的版本）
+  PATH_PREPEND: [/opt/homebrew/opt/openjdk@17/bin, /opt/homebrew/bin]
+  vars:
+    JAVA_HOME: /opt/homebrew/opt/openjdk@17
 setup: []
 verify:
   - name: server-verify
@@ -19,6 +21,5 @@ verify:
 protected_paths:
   # CI 和部署相关的改动由主人单独过目
   - .github/workflows/**
-  - .github/workflows/deploy-*.yml
   - deploy/**
   - .swarm/**
