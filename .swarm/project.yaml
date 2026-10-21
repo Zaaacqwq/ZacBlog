@@ -1,0 +1,25 @@
+# Swarm 的 verify 对齐 .github/workflows/ci.yml 中不依赖 Docker 的 job：
+# server 的 mvn verify（H2）和 web 的 lint/test/build。
+# CI 的 server-mysql-it（Testcontainers MySQL）需要 Docker，只在 CI 跑，不放进 verify。
+name: ZacBlog
+key: ZB
+default_branch: main
+requires: [java, maven, node]
+env:
+  # 与 VPS 一致用 JDK 17（本机默认的 Homebrew openjdk 是更新的版本）
+  PATH_PREPEND: [/opt/homebrew/opt/openjdk@17/bin, /opt/homebrew/bin]
+  vars:
+    JAVA_HOME: /opt/homebrew/opt/openjdk@17
+setup: []
+verify:
+  - name: server-verify
+    run: cd server && mvn -B verify
+    timeout_ms: 1200000
+  - name: web-verify
+    run: cd web && npm ci && npm run lint && npm test -- --run && npm run build
+    timeout_ms: 900000
+protected_paths:
+  # CI 和部署相关的改动由主人单独过目
+  - .github/workflows/**
+  - deploy/**
+  - .swarm/**
