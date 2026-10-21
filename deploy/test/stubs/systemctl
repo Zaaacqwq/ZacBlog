@@ -1,0 +1,74 @@
+#!/usr/bin/env bash
+# systemctl 桩：模拟 zacblog-server / zacblog-backend 两个服务（定义与 bootstrap-root.sh 和现网一致）。
+# 进程直接后台启动，pid 记在 $SYSTEMD_STUB_DIR/<服务>.pid。
+set -euo pipefail
+dir=${SYSTEMD_STUB_DIR:?}
+home=${ZACBLOG_HOME:?}
+stubs=$(cd "$(dirname "$0")" && pwd)
+mkdir -p "$dir"
+printf '%s\n' "$*" >> "$STUB_LOG_DIR/systemctl.log"
+
+quiet=0
+args=()
+for a in "$@"; do
+  if [ "$a" = --quiet ]; then quiet=1; else args+=("$a"); fi
+done
+verb=${args[0]:-}
+unit=${args[1]:-}
+unit=${unit%.service}
+pidfile="$dir/$unit.pid"
+
+# 和 systemd 的 EnvironmentFile 一样逐行读 KEY=VALUE（值里可以有 &，不能 source）
+load_env_file() {
+  local line
+  while IFS= read -r line || [ -n "$line" ]; do
+    case "$line" in '' | '#'*) continue ;; esac
+    export "${line%%=*}=${line#*=}"
+  done < "$1"
+}
+
+active() { [ -f "$pidfile" ] && kill -0 "$(cat "$pidfile")" 2>/dev/null; }
+
+start() {
+  active && return 0
+  case "$unit" in
+    zacblog-server)
+      # User=zacblog WorkingDirectory=server EnvironmentFile=zacblog.env，日志追加到 server/app.log
+      [ -e "$home/server/current.jar" ] || { echo "current.jar missing" >&2; return 1; }
+      (cd "$home/server" && load_env_file "$home/zacblog.env" &&
+        exec "$stubs/java" -Xms256m -Xmx768m -jar "$home/server/current.jar" \
+          </dev/null >> "$home/server/app.log" 2>&1) &
+      ;;
+    zacblog-backend)
+      (cd "$home/backend" &&
+        exec "$stubs/java" -Xms512m -Xmx1024m -jar "$home/backend/zaaac-admin.jar" --server.port=8080 \
+          </dev/null >> "$home/backend/app.log" 2>&1) &
+      ;;
+    *) echo "Unit $unit.service not found." >&2; return 5 ;;
+  esac
+  echo $! > "$pidfile"
+}
+
+stop() {
+  active || { rm -f "$pidfile"; return 0; }
+  local pid
+  pid=$(cat "$pidfile")
+  kill "$pid" 2>/dev/null || true
+  for _ in $(seq 50); do
+    kill -0 "$pid" 2>/dev/null || break
+    sleep 0.1
+  done
+  rm -f "$pidfile"
+}
+
+case "$verb" in
+  start) start ;;
+  stop) stop ;;
+  restart) stop && start ;;
+  is-active)
+    if active; then [ "$quiet" = 1 ] || echo active; exit 0; fi
+    [ "$quiet" = 1 ] || echo inactive
+    exit 3
+    ;;
+  *) echo "systemctl stub: unsupported $*" >&2; exit 1 ;;
+esac
