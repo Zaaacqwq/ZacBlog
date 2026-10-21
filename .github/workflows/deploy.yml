@@ -1,0 +1,130 @@
+name: Deploy
+
+# 先只支持手动触发；切换完成（T7）后再改成 push 触发。
+# 服务器上的流程见 docs/deploy.md：备份 → 发布前端 → 启动新后端 + 健康检查，失败自动回滚。
+on:
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: build (server jar + web dist)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven
+          cache-dependency-path: server/pom.xml
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - name: Build server
+        working-directory: server
+        run: mvn -B package
+
+      - name: Build web
+        working-directory: web
+        run: |
+          npm ci
+          npm run build
+
+      - name: Package artifacts
+        run: |
+          set -euo pipefail
+          mkdir -p dist-deploy
+          jar=$(ls server/target/zacblog-server-*.jar)
+          cp "$jar" "dist-deploy/zacblog-server-${GITHUB_SHA::12}.jar"
+          tar -czf dist-deploy/web-dist.tgz -C web/dist .
+          ls -l dist-deploy
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: deploy-bundle
+          path: dist-deploy/
+          retention-days: 7
+
+  deploy:
+    name: deploy to production
+    needs: build
+    runs-on: ubuntu-latest
+    environment: production
+    env:
+      SSH_HOST: ${{ secrets.SSH_HOST }}
+      SSH_PORT: ${{ secrets.SSH_PORT }}
+      SSH_USER: ${{ secrets.SSH_USER }}
+      REMOTE_HOME: /home/ZacBlog
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: deploy/scripts
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: deploy-bundle
+          path: dist-deploy
+
+      - name: Prepare SSH key
+        env:
+          SSH_KEY_B64: ${{ secrets.SSH_KEY_B64 }}
+          # production 环境变量：服务器的 host key（known_hosts 格式，主人已核对指纹）
+          SSH_KNOWN_HOSTS: ${{ vars.SSH_KNOWN_HOSTS }}
+        run: |
+          set -euo pipefail
+          if [ -z "$SSH_KNOWN_HOSTS" ]; then
+            echo "::error::production 环境缺少变量 SSH_KNOWN_HOSTS，拒绝在不校验服务器身份的情况下连接"
+            exit 1
+          fi
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          chmod 644 ~/.ssh/known_hosts
+          printf '%s' "$SSH_KEY_B64" | base64 -d > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          cat > ~/.ssh/config <<EOF
+          Host prod
+            HostName $SSH_HOST
+            Port $SSH_PORT
+            User $SSH_USER
+            IdentityFile ~/.ssh/deploy_key
+            IdentitiesOnly yes
+            StrictHostKeyChecking yes
+            UserKnownHostsFile ~/.ssh/known_hosts
+            ServerAliveInterval 30
+          EOF
+          ssh prod 'echo "SSH OK: $(whoami)"'
+
+      - name: Upload scripts and artifacts
+        run: |
+          set -euo pipefail
+          ssh prod "mkdir -p $REMOTE_HOME/scripts $REMOTE_HOME/incoming"
+          scp deploy/scripts/zacblog-*.sh "prod:$REMOTE_HOME/scripts/"
+          ssh prod "chmod 755 $REMOTE_HOME/scripts/zacblog-*.sh"
+          scp dist-deploy/* "prod:$REMOTE_HOME/incoming/"
+
+      - name: Backup, publish frontend, start, health check (auto rollback)
+        run: |
+          set -euo pipefail
+          jar=$(basename dist-deploy/zacblog-server-*.jar)
+          ssh prod "bash $REMOTE_HOME/scripts/zacblog-deploy.sh $REMOTE_HOME/incoming/$jar $REMOTE_HOME/incoming/web-dist.tgz"
+          ssh prod "rm -f $REMOTE_HOME/incoming/$jar $REMOTE_HOME/incoming/web-dist.tgz"
+
+      - name: Show app.log tail
+        if: failure()
+        run: ssh prod "tail -n 100 $REMOTE_HOME/server/app.log" || true
+
+      - name: Remove SSH key
+        if: always()
+        run: rm -f ~/.ssh/deploy_key

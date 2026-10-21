@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+# java 桩：记录参数和“是否拿到了 DB_PASSWORD 环境变量”，然后换成 fake_server.py。
+set -euo pipefail
+jar='' prev=''
+for a in "$@"; do
+  [ "$prev" != -jar ] || jar=$a
+  prev=$a
+done
+printf '%s\n' "$*" >> "$STUB_LOG_DIR/java-args.log"
+if [ -n "${DB_PASSWORD:-}" ]; then pw=yes; else pw=no; fi
+printf '%s db_password_in_env=%s\n' "${jar##*/}" "$pw" >> "$STUB_LOG_DIR/java-env.log"
+echo "fake java: $jar"
+exec python3 -I "$(dirname "$0")/fake_server.py" -jar "$jar"

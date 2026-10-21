@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+# sudo 桩：只放行 deploy/bootstrap-root.sh 写进 sudoers 的命令（且必须带 -n），其他一律拒绝。
+# 这样测试能发现脚本用了 sudoers 没允许的命令。
+set -euo pipefail
+printf '%s\n' "$*" >> "$STUB_LOG_DIR/sudo.log"
+[ "${1:-}" = -n ] || { echo "sudo stub: 必须用 sudo -n" >&2; exit 1; }
+shift
+case "$*" in
+  "systemctl start zacblog-server" | "systemctl stop zacblog-server" | \
+    "systemctl restart zacblog-server" | "systemctl is-active zacblog-server" | \
+    "systemctl enable zacblog-server" | "systemctl disable zacblog-server" | \
+    "systemctl start zacblog-backend" | "systemctl stop zacblog-backend" | \
+    "systemctl enable zacblog-backend" | "systemctl disable zacblog-backend")
+    exec "$@"
+    ;;
+  *)
+    echo "sudo: a password is required (stub: '$*' 不在 sudoers 允许范围内)" >&2
+    echo "DENIED $*" >> "$STUB_LOG_DIR/sudo.log"
+    exit 1
+    ;;
+esac

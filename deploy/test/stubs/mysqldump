@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+# mysqldump 桩：记录参数和是否拿到 MYSQL_PWD；MYSQLDUMP_STUB_FAIL=1 时模拟失败。
+set -euo pipefail
+printf '%s\n' "$*" >> "$STUB_LOG_DIR/mysqldump-args.log"
+if [ "${MYSQL_PWD:-}" = "${EXPECTED_DB_PASSWORD:-}" ]; then pw=ok; else pw=wrong; fi
+echo "mysql_pwd=$pw" >> "$STUB_LOG_DIR/mysqldump-env.log"
+if [ "${MYSQLDUMP_STUB_FAIL:-0}" = 1 ]; then
+  echo "mysqldump: Got error: 2003: Can't connect to MySQL server (stub)" >&2
+  exit 2
+fi
+echo "-- fake dump of ${*: -1}"
+echo "CREATE TABLE t (id int);"

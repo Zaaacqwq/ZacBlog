@@ -1,0 +1,68 @@
+#!/usr/bin/env bash
+# systemctl 桩：模拟 zacblog-server / zacblog-backend 两个服务（定义与 bootstrap-root.sh 和现网一致）。
+# 进程直接后台启动；enable/disable 只记一个标记文件，pid 记在 $SYSTEMD_STUB_DIR/<服务>.pid。
+set -euo pipefail
+dir=${SYSTEMD_STUB_DIR:?}
+home=${ZACBLOG_HOME:?}
+stubs=$(cd "$(dirname "$0")" && pwd)
+mkdir -p "$dir"
+printf '%s\n' "$*" >> "$STUB_LOG_DIR/systemctl.log"
+
+quiet=0
+args=()
+for a in "$@"; do
+  if [ "$a" = --quiet ]; then quiet=1; else args+=("$a"); fi
+done
+verb=${args[0]:-}
+unit=${args[1]:-}
+unit=${unit%.service}
+pidfile="$dir/$unit.pid"
+
+active() { [ -f "$pidfile" ] && kill -0 "$(cat "$pidfile")" 2>/dev/null; }
+
+start() {
+  active && return 0
+  case "$unit" in
+    zacblog-server)
+      # 和真实 unit 一样执行 bootstrap-root.sh 安装的启动器（User=zacblog、WorkingDirectory=server/）；
+      # 启动器自己读 server/zacblog.env、把日志追加到 server/app.log
+      launcher="$dir/zacblog-server-run"
+      bash "$stubs/../../bootstrap-root.sh" --print-launcher > "$launcher"
+      (cd "$home/server" && ZACBLOG_SERVER_DIR="$home/server" ZACBLOG_JAVA="$stubs/java" \
+        exec bash "$launcher" </dev/null) &
+      ;;
+    zacblog-backend)
+      (cd "$home/backend" &&
+        exec "$stubs/java" -Xms512m -Xmx1024m -jar "$home/backend/zaaac-admin.jar" --server.port=8080 \
+          </dev/null >> "$home/backend/app.log" 2>&1) &
+      ;;
+    *) echo "Unit $unit.service not found." >&2; return 5 ;;
+  esac
+  echo $! > "$pidfile"
+}
+
+stop() {
+  active || { rm -f "$pidfile"; return 0; }
+  local pid
+  pid=$(cat "$pidfile")
+  kill "$pid" 2>/dev/null || true
+  for _ in $(seq 50); do
+    kill -0 "$pid" 2>/dev/null || break
+    sleep 0.1
+  done
+  rm -f "$pidfile"
+}
+
+case "$verb" in
+  start) start ;;
+  stop) stop ;;
+  restart) stop && start ;;
+  enable) touch "$dir/$unit.enabled" ;;
+  disable) rm -f "$dir/$unit.enabled" ;;
+  is-active)
+    if active; then [ "$quiet" = 1 ] || echo active; exit 0; fi
+    [ "$quiet" = 1 ] || echo inactive
+    exit 3
+    ;;
+  *) echo "systemctl stub: unsupported $*" >&2; exit 1 ;;
+esac
