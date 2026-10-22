@@ -27,7 +27,6 @@ DEPLOY_UID=1001
 HOME_DIR=/home/ZacBlog
 SERVER_DIR=$HOME_DIR/server
 WEB_DIR=$HOME_DIR/web
-JAVA=/usr/bin/java
 LAUNCHER_DIR=/usr/local/lib/zacblog
 LAUNCHER=$LAUNCHER_DIR/zacblog-server-run
 UNIT_PATH=/etc/systemd/system/zacblog-server.service

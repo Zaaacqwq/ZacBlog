@@ -9,5 +9,14 @@ done
 printf '%s\n' "$*" >> "$STUB_LOG_DIR/java-args.log"
 if [ -n "${DB_PASSWORD:-}" ]; then pw=yes; else pw=no; fi
 printf '%s db_password_in_env=%s\n' "${jar##*/}" "$pw" >> "$STUB_LOG_DIR/java-env.log"
+# 新后端（current.jar）：数据库密码和 mysql 桩里的不一致时健康检查返回 DOWN；
+# java-down-once 存在时这一次启动返回 DOWN（用完即删），用来模拟轮换后启动失败
+if [ "${jar##*/}" = current.jar ]; then
+  store="$STUB_LOG_DIR/mysql-password"
+  if { [ -f "$store" ] && [ "${DB_PASSWORD:-}" != "$(cat "$store")" ]; } ||
+    rm "$STUB_LOG_DIR/java-down-once" 2>/dev/null; then
+    export FAKE_FORCE_DOWN=1
+  fi
+fi
 echo "fake java: $jar"
 exec python3 -I "$(dirname "$0")/fake_server.py" -jar "$jar"

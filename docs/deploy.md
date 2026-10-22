@@ -114,19 +114,51 @@ ssh vps "bash -s -- '$(cat ~/.ssh/zacblog_deploy.pub)'" < deploy/bootstrap-root.
 
 ## 环境变量文件格式
 
-`/home/ZacBlog/server/zacblog.env` 给启动器和备份脚本用，每行一个 `KEY=VALUE`（与 systemd `EnvironmentFile` 格式兼容）：
+`/home/ZacBlog/server/zacblog.env` 给启动器和备份脚本用，由 `server-secrets.yml` 生成（见下节），不要手写。每行一个 `KEY=VALUE`（与 systemd `EnvironmentFile` 格式兼容）：
 
 ```
-DB_URL=jdbc:mysql://127.0.0.1:3306/zaaac_blog?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai
+SERVER_ADDRESS=127.0.0.1
+DB_URL=jdbc:mysql://<DB_HOST>:<DB_PORT>/<DB_NAME>?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai
 DB_USERNAME=...
 DB_PASSWORD=...
 JWT_SECRET=...
 UPLOAD_PATH=/home/ZacBlog/zaaac/uploadPath
 ```
 
+- `SERVER_ADDRESS=127.0.0.1`：新后端只监听本机（和旧后端一样），由 nginx 反代。
 - 值不需要引号；`&` 之类可以直接写。脚本是逐行解析的，**不会**用 bash `source` 执行它。
-- 值里不要写反斜杠、引号和 `$`；首尾成对的引号会被去掉。
+- 值里不能有换行和反斜杠，也不能首尾都是引号（`zacblog-secrets.sh` 会拒绝这样的 secret）。
 - 备份脚本从 `DB_URL` 解析主机、端口、库名，密码通过 `MYSQL_PWD` 环境变量交给 mysqldump，不出现在命令行参数里。
+
+## 环境变量文件和密码轮换（`server-secrets.yml`）
+
+GitHub Actions `Server secrets`（`workflow_dispatch`，`environment: production`）。secrets 全部放在 Environment `production`（不用仓库级 secrets）：
+
+| secret | 用途 |
+| --- | --- |
+| `SSH_KEY_B64` `SSH_HOST` `SSH_PORT` `SSH_USER` | 部署用的 SSH（和 `deploy.yml` 共用），`SSH_USER` 是 `zacblog` |
+| `DB_HOST` `DB_PORT` `DB_NAME` `DB_USERNAME` | 数据库连接信息，拼成 `DB_URL` |
+| `DB_PASSWORD_CURRENT` | 当前数据库密码，用来登录 |
+| `DB_PASSWORD_NEW` | 轮换后的数据库密码 |
+| `JWT_SECRET_NEW` | 新后端的 JWT 密钥（至少 256 位随机值） |
+
+workflow 把这些值经 ssh 的 **stdin** 交给服务器上的 `scripts/zacblog-secrets.sh`（不进命令行参数，也不打印），并对每个值 `::add-mask::`。服务器上只有 mysql 客户端通过 `MYSQL_PWD` 拿到密码；SQL 也走 stdin，mysql 的报错不输出（语法错误会回显 SQL 片段）。
+
+- `rotate_db_password=false`（`write-env`）：先用 `DB_PASSWORD_CURRENT` 登录 MySQL 确认能连上，再写环境变量文件（600，先写临时文件再 rename）。`DB_PASSWORD_CURRENT` 已经登录不了而 `DB_PASSWORD_NEW` 可以时（说明已经轮换过），写 `DB_PASSWORD_NEW`；两个都不行就不写。**不重启服务**。
+- `rotate_db_password=true`（`rotate`）：只能在切换完成后运行——旧后端 `zacblog-backend` 还在运行、或 `zacblog-server` 没在运行、或当前健康检查不通过时直接退出，什么都不改。步骤：
+  1. 用 `DB_PASSWORD_CURRENT` 登录，`ALTER USER CURRENT_USER() IDENTIFIED BY <DB_PASSWORD_NEW>`，再确认新密码能登录；
+  2. 备份环境变量文件，把新密码写进去；
+  3. `sudo -n systemctl restart zacblog-server` + 健康检查；
+  4. 任何一步失败：密码 ALTER 回原值、恢复环境变量文件、再重启并做健康检查（ALTER 本身就失败时什么都没改，也不重启）；
+  5. 成功后确认旧密码已经登录不了（还能登录时以退出码 4 报错：多半是同名用户有多条 `user@host`）。
+  
+  已经轮换过（`CURRENT` 登录不了、`NEW` 可以）时重跑：不再 ALTER，只保证环境变量文件用的是新密码。
+
+  这里没有调用 `zacblog-start.sh`：它是"发布一个新 jar"，失败时会调 `zacblog-rollback.sh`，后者还会把前端切回上一次部署前的版本。轮换只需要用同一个 jar 重启，所以直接 `restart` + 同一个健康检查函数。
+
+轮换之后，旧后端 `backend/config/application.yml` 里还是旧密码，**不能再回滚到旧后端**（回滚到新后端的上一个 release 不受影响）。GitHub 上的 `DB_PASSWORD_CURRENT` 不用改：脚本会自动识别"已轮换"。
+
+`DB counts`（`.github/workflows/db-counts.yml`，只读）：用同一组 secrets 登录 MySQL，输出 `cms_blog`（全部 / 已发布）、`cms_comment`（未删除）、`cms_message`（未删除）、`sys_notice`（全部 / 正常）的数量，只有数字。切换前后各跑一次对比。
 
 ## 部署流程
 
@@ -163,12 +195,23 @@ bash /home/ZacBlog/scripts/zacblog-rollback.sh            # 后端回到上次�
 bash /home/ZacBlog/scripts/zacblog-rollback.sh --frontend-only
 ```
 
+## 切换上线（ZB-8）
+
+前提：主人已经执行过 `deploy/bootstrap-root.sh`，production 环境里有上表的 secrets 和变量 `SSH_KNOWN_HOSTS`。每一步都由主人在 GitHub 上触发并批准。
+
+1. `DB counts`：切换前快照；同时用旧的公开接口（`https://api.zaaac.vip/cms/...`）记下文章、留言数量。
+2. `Server secrets`，`rotate_db_password=false`：生成 `server/zacblog.env`。
+3. `Deploy`：备份 → 发布前端 → 停旧后端、启动新后端 → 健康检查，失败自动回滚到旧后端。
+4. `DB counts` 再跑一次，和第 1 步一致；用新接口 `https://blog.zaaac.vip/api/public/...` 核对，并手动走查前台、后台、旧 URL 跳转、旧图片地址、匿名评论、拉黑。
+5. `Server secrets`，`rotate_db_password=true`：轮换数据库密码。
+6. 稳定后改开机自启（见上面「开机自启」）。旧后端停用后，可以删掉 `/root/.ssh/authorized_keys` 里旧的部署 key。
+
 ## 本地测试
 
 ```bash
 bash deploy/test/run.sh
 ```
 
-在临时目录里模拟 `/home/ZacBlog`（`/home/ZacBlog` 本身和 `backend/` 设为只读，模拟归 root），用桩代替 `systemctl`、`sudo`（只放行上面 sudoers 允许的命令）、`mysqldump` 和 `java`（启动一个按“jar”内容返回 UP/DOWN 的本地 HTTP 服务）。`zacblog-server` 的桩会执行 bootstrap 生成的真实启动器。覆盖：首次切换成功、健康检查失败回滚到上一个 release、首次切换失败回滚到旧后端、备份失败中止、环境变量文件缺失或权限不对、回滚记录写不进去，以及前后端旧 release 的清理。不需要 Docker、root、MySQL；装了 shellcheck 会顺带检查脚本。
+在临时目录里模拟 `/home/ZacBlog`（`/home/ZacBlog` 本身和 `backend/` 设为只读，模拟归 root），用桩代替 `systemctl`、`sudo`（只放行上面 sudoers 允许的命令）、`mysqldump` 和 `java`（启动一个按“jar”内容返回 UP/DOWN 的本地 HTTP 服务）。`zacblog-server` 的桩会执行 bootstrap 生成的真实启动器。`mysql` 也有桩（记住一个账号的密码，支持 `ALTER USER`），新后端的桩在环境变量里的数据库密码和它不一致时健康检查返回 DOWN。覆盖：首次切换成功、健康检查失败回滚到上一个 release、首次切换失败回滚到旧后端、备份失败中止、环境变量文件缺失或权限不对、回滚记录写不进去、前后端旧 release 的清理；`zacblog-secrets.sh` 的 write-env、counts、切换前拒绝 rotate、ALTER 被拒绝、新密码重启失败后恢复、轮换成功、重跑幂等，以及密钥不出现在参数、日志和输出里。CI（`ci.yml` 的 `deploy-scripts`）和 Swarm verify 都会跑它。不需要 Docker、root、MySQL；装了 shellcheck 会顺带检查脚本。
 
 所有脚本的路径和命令都可以用环境变量覆盖（见 `deploy/scripts/zacblog-common.sh` 开头），例如 `HEALTH_TIMEOUT=180`。
