@@ -11,7 +11,8 @@ export interface Call {
   body: unknown
 }
 
-type Handler = (call: Call) => { status?: number; data?: unknown; msg?: string; headers?: Record<string, string> } | undefined
+type Reply = { status?: number; data?: unknown; msg?: string; headers?: Record<string, string> } | undefined
+type Handler = (call: Call) => Reply | Promise<Reply>
 
 /** 按 “METHOD /path” 匹配的假 fetch；未匹配的请求返回 404 */
 export function mockApi(handler: Handler) {
@@ -21,7 +22,7 @@ export function mockApi(handler: Handler) {
     const body = typeof init?.body === 'string' ? JSON.parse(init.body) : init?.body
     const call = { method: init?.method ?? 'GET', url, body }
     calls.push(call)
-    const res = handler(call)
+    const res = await handler(call)
     const status = res?.status ?? (res ? 200 : 404)
     return new Response(JSON.stringify({ code: status, msg: res?.msg ?? (status === 200 ? '操作成功' : '出错了'), data: res?.data ?? null }), {
       status,

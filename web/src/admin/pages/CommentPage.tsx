@@ -1,7 +1,7 @@
 import { ReloadOutlined, SearchOutlined } from '@ant-design/icons'
 import { App, Button, DatePicker, Form, Input, Modal, Popconfirm, Space, Table, Tag, Typography } from 'antd'
 import type { Dayjs } from 'dayjs'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { adminApi, errorText, formatTime, type AdminComment, type CommentKind } from '../api'
 import { usePaged } from '../usePaged'
@@ -13,21 +13,25 @@ interface Filters {
   range?: [Dayjs | null, Dayjs | null] | null
 }
 
-/** 评论管理和留言管理共用；?reader= 可从读者管理跳过来按读者筛选 */
+/**
+ * 评论管理和留言管理共用；?reader= 可从读者管理跳过来按读者筛选。
+ * reader 参数变化（例如从读者页带参数进来，再点标签页回到不带参数的地址）时整体重新挂载，
+ * 输入框和分页查询条件一起重置。
+ */
 export default function CommentPage({ kind }: { kind: CommentKind }) {
+  const [params] = useSearchParams()
+  const reader = params.get('reader') ?? undefined
+  return <CommentTable key={reader ?? ''} kind={kind} initialReader={reader} />
+}
+
+function CommentTable({ kind, initialReader }: { kind: CommentKind; initialReader?: string }) {
   const label = kind === 'comments' ? '评论' : '留言'
   const { message } = App.useApp()
-  const [params] = useSearchParams()
   const [form] = Form.useForm<Filters>()
   const [replying, setReplying] = useState<AdminComment | null>(null)
   const [reply, setReply] = useState('')
   const [sending, setSending] = useState(false)
-  const initialReader = params.get('reader') ?? undefined
   const table = usePaged<AdminComment>((q) => adminApi.comments(kind, q), { reader: initialReader })
-
-  useEffect(() => {
-    form.setFieldsValue({ reader: initialReader })
-  }, [form, initialReader])
 
   const onSearch = (v: Filters) => {
     table.search({
@@ -72,7 +76,7 @@ export default function CommentPage({ kind }: { kind: CommentKind }) {
 
   return (
     <div className="app-container">
-      <Form form={form} layout="inline" className="search-form" onFinish={onSearch}>
+      <Form form={form} layout="inline" className="search-form" onFinish={onSearch} initialValues={{ reader: initialReader }}>
         <Form.Item name="keyword" label="内容">
           <Input placeholder={`${label}内容包含`} allowClear />
         </Form.Item>

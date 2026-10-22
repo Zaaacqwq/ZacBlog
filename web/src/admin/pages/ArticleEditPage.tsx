@@ -32,14 +32,20 @@ const EMPTY: FormValues = {
   essay: false,
 }
 
-export default function ArticleEditPage() {
+/** 按文章 id 重新挂载编辑器：标签页从文章 A 切到文章 B 时不会复用 A 的表单和加载状态 */
+export default function ArticleEditRoute() {
   const { id } = useParams()
-  const articleId = id ? Number(id) : null
+  return <ArticleEditor key={id ?? 'new'} articleId={id ? Number(id) : null} />
+}
+
+function ArticleEditor({ articleId }: { articleId: number | null }) {
   const navigate = useNavigate()
   const { message } = App.useApp()
   const [form] = Form.useForm<FormValues>()
   const [loading, setLoading] = useState(articleId !== null)
   const [saving, setSaving] = useState(false)
+  // 编辑已有文章时，加载失败就不允许保存，避免把空表单写回去
+  const [loadFailed, setLoadFailed] = useState(false)
   const [categories, setCategories] = useState<NamedItem[]>([])
   const [tags, setTags] = useState<NamedItem[]>([])
   const [files, setFiles] = useState<FileInfo[]>([])
@@ -60,9 +66,11 @@ export default function ArticleEditPage() {
 
   useEffect(() => {
     if (articleId === null) return
+    let alive = true
     adminApi
       .article(articleId)
       .then((a) => {
+        if (!alive || a.id !== articleId) return
         form.setFieldsValue({
           title: a.title,
           summary: a.summary ?? '',
@@ -76,12 +84,23 @@ export default function ArticleEditPage() {
           essay: a.essay,
         })
         setFiles(a.files ?? [])
+        setLoading(false)
       })
-      .catch((err) => message.error(errorText(err)))
-      .finally(() => setLoading(false))
+      .catch((err) => {
+        if (!alive) return
+        message.error(errorText(err))
+        setLoadFailed(true)
+        setLoading(false)
+      })
+    return () => {
+      alive = false
+    }
   }, [articleId, form, message])
 
+  const canSave = !loading && !loadFailed && !saving
+
   const save = async (status: ArticleBody['status']) => {
+    if (!canSave) return
     let values: FormValues
     try {
       values = await form.validateFields()
@@ -226,10 +245,10 @@ export default function ArticleEditPage() {
           </Form.Item>
 
           <Space>
-            <Button type="primary" loading={saving} onClick={() => save('published')}>
+            <Button type="primary" loading={saving} disabled={!canSave && !saving} onClick={() => save('published')}>
               发布
             </Button>
-            <Button loading={saving} onClick={() => save('draft')}>
+            <Button loading={saving} disabled={!canSave && !saving} onClick={() => save('draft')}>
               暂存
             </Button>
             <Button onClick={() => navigate('/admin/articles')}>返回</Button>
