@@ -11,3 +11,7 @@ if (dom) {
     }
   }
 }
+
+// jsdom 没有实现滚动，调用会打印 “Not implemented”
+window.scrollTo = () => {}
+Element.prototype.scrollIntoView = () => {}
