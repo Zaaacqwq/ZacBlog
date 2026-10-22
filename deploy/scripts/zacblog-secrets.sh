@@ -43,16 +43,24 @@ esac
 
 # ---- 读 stdin
 DB_HOST='' DB_PORT='' DB_NAME='' DB_USERNAME='' DB_PASSWORD_CURRENT='' DB_PASSWORD_NEW='' JWT_SECRET_NEW=''
+# 报错只说行号和固定的键名，不回显输入：多行 secret 的续行会被当成单独一行，回显就会泄漏片段。
+# 每个键只能出现一次（续行碰巧以 KEY= 开头时也能发现）；任何一行不合格都在动手之前退出。
+seen=' '
+lineno=0
 while IFS= read -r line || [ -n "$line" ]; do
+  lineno=$((lineno + 1))
   line=${line%$'\r'}
   [ -n "$line" ] || continue
   key=${line%%=*}
   val=${line#*=}
+  case "$line" in *=*) ;; *) pre "stdin 第 ${lineno} 行格式不对（多行 secret？），没有做任何改动" ;; esac
   case "$key" in
     DB_HOST | DB_PORT | DB_NAME | DB_USERNAME | DB_PASSWORD_CURRENT | DB_PASSWORD_NEW | JWT_SECRET_NEW)
+      case "$seen" in *" $key "*) pre "stdin 里 ${key} 出现了不止一次（多行 secret？），没有做任何改动" ;; esac
+      seen="$seen$key "
       printf -v "$key" '%s' "$val"
       ;;
-    *) pre "stdin 里有未知的键：$key" ;;
+    *) pre "stdin 第 ${lineno} 行不是已知的键（多行 secret？），没有做任何改动" ;;
   esac
 done
 

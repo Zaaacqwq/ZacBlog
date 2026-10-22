@@ -324,6 +324,24 @@ SUM=$(env_sum)
 secrets write-env
 check "重跑 write-env 成功且文件不变" bash -c "[ '$RC' = 0 ] && [ \"\$(cksum < '$H/server/zacblog.env')\" = '$SUM' ]"
 
+# 多行 secret：续行不能被回显，也不能改动任何状态（三种续行：无 =、未知键、和已有键重名）
+CONT='test-only-secret-continuation'
+MYSQL_CALLS=$(wc -l < "$STUB_LOG_DIR/mysql-args.log")
+for cont in "$CONT" "$CONT=x" "DB_HOST=$CONT"; do
+  for m in write-env rotate counts; do
+    RC=0
+    printf 'DB_HOST=127.0.0.1\nDB_PORT=3306\nDB_NAME=zaaac_blog\nDB_USERNAME=zacblog\nDB_PASSWORD_CURRENT=%s\n%s\nDB_PASSWORD_NEW=%s\nJWT_SECRET_NEW=%s\n' \
+      "$PW" "$cont" "$PW_NEW" "$JWT_NEW" |
+      bash "$H/scripts/zacblog-secrets.sh" "$m" > "$WORK/$CASE/multiline.out" 2>&1 || RC=$?
+    check "多行 secret（${m}）被拒绝（退出码 3）" eq "$RC" 3
+    check "多行 secret（${m}）的续行没有被回显" bash -c "! grep -qF -- '$CONT' '$WORK/$CASE/multiline.out'"
+  done
+done
+check "多行 secret：没有连过 MySQL" eq "$(wc -l < "$STUB_LOG_DIR/mysql-args.log")" "$MYSQL_CALLS"
+check "多行 secret：环境变量文件没变" eq "$(env_sum)" "$SUM"
+check "多行 secret：数据库密码没变" eq "$(db_pw)" "$PW"
+rm -f "$WORK/$CASE/multiline.out"
+
 secrets rotate
 check "切换前 rotate 被拒绝（退出码 3）" eq "$RC" 3
 check "输出说明旧后端还在运行" grep -q '旧后端 zacblog-backend 还在运行' "$WORK/$CASE/secrets-rotate-$((N - 1)).out"
