@@ -1,6 +1,9 @@
 import { render, screen } from '@testing-library/react'
 import { RouterProvider, createMemoryRouter } from 'react-router-dom'
 import { routes } from './routes'
+import { PRELOAD_TIMEOUT, preloadAdminRoutes } from './test/preloadAdmin'
+
+beforeAll(preloadAdminRoutes, PRELOAD_TIMEOUT)
 
 function renderAt(path: string) {
   const router = createMemoryRouter(routes, { initialEntries: [path] })
@@ -24,7 +27,7 @@ describe('routes', () => {
   it('sends anonymous visitors of the admin to the login page', async () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('{}', { status: 500 })))
     renderAt('/admin')
-    expect(await screen.findByText('Zac Admin System', undefined, { timeout: 5000 })).toBeInTheDocument()
+    expect(await screen.findByText('Zac Admin System')).toBeInTheDocument()
     vi.unstubAllGlobals()
   })
 })

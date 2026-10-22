@@ -1,5 +1,8 @@
 import { screen, waitFor } from '@testing-library/react'
 import { mockApi, renderAt } from './helpers'
+import { PRELOAD_TIMEOUT, preloadAdminRoutes } from '../../test/preloadAdmin'
+
+beforeAll(preloadAdminRoutes, PRELOAD_TIMEOUT)
 
 afterEach(() => vi.unstubAllGlobals())
 beforeEach(() => {

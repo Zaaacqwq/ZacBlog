@@ -1,6 +1,9 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react'
 import { clearToken, getToken, setToken } from '../../shared/token'
 import { mockApi, renderAt, route } from './helpers'
+import { PRELOAD_TIMEOUT, preloadAdminRoutes } from '../../test/preloadAdmin'
+
+beforeAll(preloadAdminRoutes, PRELOAD_TIMEOUT)
 
 const CAPTCHA = { captchaId: 'c1', image: 'data:image/png;base64,AAAA' }
 const DASHBOARD = {
