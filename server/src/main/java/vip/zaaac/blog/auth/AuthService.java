@@ -71,7 +71,10 @@ public class AuthService {
             throw ApiException.badRequest("验证码错误或已过期");
         }
         String hash = user.map(UserRow::password).filter(h -> h != null && !h.isEmpty()).orElse(dummyHash);
-        boolean matches = passwordEncoder.matches(password, hash);
+        // BCrypt 只看前 72 字节：更长的输入一律算密码错误，否则"正确密码 + 任意后缀"也能登录。
+        // 仍然做一次 BCrypt 比较，保持响应时间一致
+        boolean tooLong = password.getBytes(java.nio.charset.StandardCharsets.UTF_8).length > 72;
+        boolean matches = passwordEncoder.matches(tooLong ? "" : password, hash) && !tooLong;
         if (user.isEmpty() || !matches || !props.adminUserIds().contains(user.get().userId())) {
             throw new ApiException(HttpStatus.UNAUTHORIZED, "用户名或密码错误");
         }

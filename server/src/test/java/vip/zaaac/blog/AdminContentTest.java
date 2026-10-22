@@ -233,6 +233,30 @@ class AdminContentTest extends IntegrationTestSupport {
         login("10.6.0.2", "test-only-new-password").andExpect(status().isOk());
     }
 
+    @Test
+    void multiBytePasswordIsLimitedTo72Utf8Bytes() throws Exception {
+        // 25 个汉字：25 个字符满足 6–64，但 UTF-8 是 75 字节，超过 BCrypt 上限 → 400 而不是 500
+        String tooLong = "密".repeat(25);
+        mvc.perform(json(put("/admin/profile/password").with(admin()),
+                        "{\"oldPassword\":\"%s\",\"newPassword\":\"%s\"}".formatted(ADMIN_PASSWORD, tooLong)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value(400));
+        // 超长的旧密码同样是 400
+        mvc.perform(json(put("/admin/profile/password").with(admin()),
+                        "{\"oldPassword\":\"%s\",\"newPassword\":\"test-only-new-password\"}".formatted(tooLong)))
+                .andExpect(status().isBadRequest());
+
+        // 24 个汉字正好 72 字节：允许，改完能用它登录
+        String exactly72 = "密".repeat(24);
+        mvc.perform(json(put("/admin/profile/password").with(admin()),
+                        "{\"oldPassword\":\"%s\",\"newPassword\":\"%s\"}".formatted(ADMIN_PASSWORD, exactly72)))
+                .andExpect(status().isOk());
+        login("10.6.1.1", ADMIN_PASSWORD).andExpect(status().isUnauthorized());
+        login("10.6.1.2", exactly72).andExpect(status().isOk());
+        // 登录时输入超长密码也只是账号密码错误
+        login("10.6.1.3", tooLong).andExpect(status().isUnauthorized());
+    }
+
     private org.springframework.test.web.servlet.ResultActions login(String ip, String password) throws Exception {
         String json = mvc.perform(get("/auth/captcha")).andReturn().getResponse().getContentAsString();
         String captchaId = JsonPath.read(json, "$.data.captchaId");

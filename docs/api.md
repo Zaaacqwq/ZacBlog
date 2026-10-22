@@ -167,7 +167,7 @@ FileInfo { id: number; name: string; url: string; size: number; createdAt: strin
 | GET | `/auth/captcha` | `data`: `{ captchaId: string; image: string }`，`image` 是 `data:image/png;base64,...`，内容是算术题（如 `3 + 4 = ?`，答案是非负整数）。5 分钟有效、只能用一次（答错也作废，需重新获取） |
 | POST | `/auth/login` | 请求体 `{ username, password, captchaId, captchaCode }`。成功 `data`: `{ token: string; expiresAt: string }`。验证码错 400，账号密码错 401，太频繁 429 |
 
-能登录的是 `sys_user` 里 `user_id` 在 `ADMIN_USER_IDS`（默认 `1`，即若依的超级管理员）中、状态正常的账号，密码按旧版 BCrypt 哈希校验；旧注册读者不能登录。
+能登录的是 `sys_user` 里 `user_id` 在 `ADMIN_USER_IDS`（默认 `1`，即若依的超级管理员）中、状态正常的账号，密码按旧版 BCrypt 哈希校验（UTF-8 超过 72 字节的密码一律按密码错误处理，因为 BCrypt 只看前 72 字节）；旧注册读者不能登录。
 
 token 是 HS256 JWT，密钥来自环境变量 `JWT_SECRET`（至少 32 字节，未设置时 server 启动失败），有效期默认 7 天（`JWT_TTL`）。登出由 web 端删除本地 token 完成，server 不维护会话。
 
@@ -182,7 +182,7 @@ token 是 HS256 JWT，密钥来自环境变量 `JWT_SECRET`（至少 32 字节�
 | 方法 | 路径 | 说明 |
 | --- | --- | --- |
 | GET | `/admin/me` | 当前用户 `{ username, nickname, avatarUrl }`（只读） |
-| PUT | `/admin/profile/password` | `{ oldPassword, newPassword }`。旧密码错、新密码与旧密码相同、新密码不在 6–64 字符之间都返回 400（不是 401，web 端不要因此退出登录）。新密码以 BCrypt 存储，旧密码立即失效；已签发的 token 在过期前仍然有效 |
+| PUT | `/admin/profile/password` | `{ oldPassword, newPassword }`。旧密码错、新密码与旧密码相同、新密码不在 6–64 字符之间或 UTF-8 编码后超过 72 字节（BCrypt 上限，例如 25 个汉字）都返回 400（不是 401，web 端不要因此退出登录）。新密码以 BCrypt 存储，旧密码立即失效；已签发的 token 在过期前仍然有效 |
 
 不提供头像、昵称等资料修改。
 

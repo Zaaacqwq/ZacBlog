@@ -26,7 +26,9 @@ public class AdminProfileController {
     public record Me(String username, String nickname, String avatarUrl) {
     }
 
-    /** BCrypt 只取前 72 字节，新密码限制在 64 个字符以内 */
+    /** BCrypt 最多处理 72 字节：新密码除了 6–64 个字符，UTF-8 编码后还不能超过 72 字节 */
+    static final int BCRYPT_MAX_BYTES = 72;
+
     public record PasswordRequest(@NotBlank String oldPassword, @NotBlank @Size(min = 6, max = 64) String newPassword) {
     }
 
@@ -46,8 +48,13 @@ public class AdminProfileController {
             @AuthenticationPrincipal AdminUser admin) {
         String hash = jdbc.sql("SELECT password FROM sys_user WHERE user_id = :id")
                 .param("id", admin.userId()).query(String.class).optional().orElseThrow(ApiException::notFound);
-        if (hash == null || hash.isEmpty() || !passwordEncoder.matches(req.oldPassword(), hash)) {
+        // 超过 72 字节的输入不可能是现有密码，直接按旧密码错误处理，不交给 BCrypt（会抛异常）
+        if (hash == null || hash.isEmpty() || utf8Length(req.oldPassword()) > BCRYPT_MAX_BYTES
+                || !passwordEncoder.matches(req.oldPassword(), hash)) {
             throw ApiException.badRequest("旧密码错误");
+        }
+        if (utf8Length(req.newPassword()) > BCRYPT_MAX_BYTES) {
+            throw ApiException.badRequest("新密码过长：UTF-8 编码后不能超过 72 字节");
         }
         if (req.oldPassword().equals(req.newPassword())) {
             throw ApiException.badRequest("新密码不能与旧密码相同");
@@ -59,6 +66,10 @@ public class AdminProfileController {
                 .param("id", admin.userId())
                 .update();
         return ApiResponse.ok(null);
+    }
+
+    private static int utf8Length(String s) {
+        return s.getBytes(java.nio.charset.StandardCharsets.UTF_8).length;
     }
 
     @GetMapping("/admin/me")
