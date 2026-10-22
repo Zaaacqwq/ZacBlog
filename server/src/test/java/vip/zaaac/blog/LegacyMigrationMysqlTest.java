@@ -56,7 +56,7 @@ class LegacyMigrationMysqlTest {
                 .query(String.class).list();
         assertThat(history.get(0)).isEqualTo("1:BASELINE");
         assertThat(history).noneMatch(h -> h.equals("1:SQL")).anyMatch(h -> h.startsWith("2:"))
-                .anyMatch(h -> h.startsWith("10:"));
+                .anyMatch(h -> h.startsWith("10:")).anyMatch(h -> h.equals("11:SQL"));
 
         // V2 新增的列和表
         assertThat(columns("cms_comment")).contains("author_name", "author_email", "author_ip", "user_agent");

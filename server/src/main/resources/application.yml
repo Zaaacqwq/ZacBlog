@@ -13,7 +13,9 @@ spring:
     password: ${DB_PASSWORD:}
   flyway:
     enabled: true
-    locations: classpath:db/migration
+    # db/migration 是两种数据库通用的脚本；db/vendor/{vendor}（mysql / h2）放只适用于一种数据库的脚本，
+    # 版本号与通用脚本共用一个序列。不能放在 db/migration 下面：Flyway 会递归扫描，两份同版本脚本会冲突
+    locations: classpath:db/migration,classpath:db/vendor/{vendor}
     # 线上库已有旧表：首次接入时以当前结构为基线
     baseline-on-migrate: true
     # 线上库的旧结构就是 V1__baseline.sql，记基线后从 V2 开始执行
