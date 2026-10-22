@@ -1,0 +1,376 @@
+/* 后台外观沿用旧若依后台（frontend/src/layout、assets/styles/sidebar.scss、views/login.vue） */
+.admin-root {
+  min-height: 100vh;
+  font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', 'PingFang SC', 'Microsoft YaHei', Arial, sans-serif;
+  color: #1b202b;
+}
+
+.app-wrapper {
+  --sidebar-width: 286px;
+  --sidebar-collapse-width: 64px;
+  position: relative;
+  min-height: 100vh;
+  width: 100%;
+  background:
+    radial-gradient(circle at top left, rgba(183, 146, 82, 0.16), transparent 20%),
+    linear-gradient(180deg, #f6f1e8 0%, #eef1f5 40%, #ecf1f7 100%);
+}
+
+/* 侧栏 */
+.sidebar-container {
+  position: fixed;
+  top: 12px;
+  bottom: 12px;
+  left: 12px;
+  z-index: 1001;
+  width: var(--sidebar-width);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: linear-gradient(180deg, rgba(56, 60, 68, 0.96) 0%, rgba(40, 44, 52, 0.98) 100%);
+  border: 1px solid rgba(248, 244, 234, 0.08);
+  border-radius: 28px;
+  box-shadow: 0 24px 60px rgba(0, 14, 36, 0.28);
+  transition: width 0.28s;
+}
+.hideSidebar .sidebar-container {
+  width: var(--sidebar-collapse-width);
+}
+.sidebar-logo-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  height: 72px;
+  flex: none;
+  padding: 0 16px;
+  text-decoration: none;
+}
+.sidebar-logo {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  filter: brightness(0) invert(0.95);
+}
+.sidebar-title {
+  margin: 0;
+  color: #f8f4ea;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+.sidebar-menu {
+  flex: 1;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+.sidebar-container .ant-menu-dark,
+.sidebar-container .ant-menu-dark .ant-menu-sub {
+  background: transparent;
+  border-inline-end: none;
+}
+.sidebar-container .ant-menu-dark .ant-menu-item {
+  width: calc(100% - 24px);
+  height: 44px;
+  line-height: 44px;
+  margin: 6px auto;
+  border-radius: 16px;
+  color: rgba(235, 240, 255, 0.72);
+}
+.sidebar-container .ant-menu-dark .ant-menu-item a {
+  color: inherit;
+}
+.sidebar-container .ant-menu-dark .ant-menu-item:hover,
+.sidebar-container .ant-menu-dark .ant-menu-item-selected {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #f8f4ea;
+}
+.sidebar-container .ant-menu-dark.ant-menu-inline-collapsed > .ant-menu-item {
+  width: 48px;
+  margin: 6px auto;
+  padding-inline: calc(50% - 8px);
+}
+
+/* 主区域 */
+.main-container {
+  min-height: 100vh;
+  margin-left: calc(var(--sidebar-width) + 24px);
+  padding: 16px 16px 24px 0;
+  transition: margin-left 0.28s;
+}
+.hideSidebar .main-container {
+  margin-left: calc(var(--sidebar-collapse-width) + 24px);
+}
+.fixed-header {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.navbar {
+  height: 64px;
+  display: flex;
+  align-items: center;
+  background: rgba(255, 252, 245, 0.76);
+  border: 1px solid rgba(23, 32, 51, 0.08);
+  border-radius: 22px;
+  backdrop-filter: blur(18px);
+  box-shadow: 0 18px 48px rgba(18, 27, 43, 0.08);
+}
+.hamburger-container {
+  height: 100%;
+  padding: 0 18px;
+  border: none;
+  background: none;
+  font-size: 20px;
+  color: #4b5361;
+  cursor: pointer;
+  border-radius: 22px 0 0 22px;
+  transition: background 0.3s;
+}
+.hamburger-container:hover {
+  background: rgba(0, 0, 0, 0.025);
+}
+.breadcrumb-container {
+  font-size: 14px;
+}
+.breadcrumb-container .no-redirect {
+  color: #97a8be;
+}
+.right-menu {
+  margin-left: auto;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  padding-right: 16px;
+}
+.avatar-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: #4b5361;
+  font-size: 14px;
+}
+.avatar-wrapper .ant-avatar {
+  border-radius: 10px;
+}
+
+/* 标签页 */
+.tags-view-container {
+  height: 54px;
+  padding: 8px 14px 0;
+  background: linear-gradient(180deg, rgba(242, 244, 248, 0.96) 0%, rgba(231, 235, 241, 0.84) 100%);
+  border: 1px solid rgba(23, 32, 51, 0.08);
+  border-radius: 20px 20px 14px 14px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7), 0 16px 36px rgba(18, 27, 43, 0.06);
+}
+.tags-view-wrapper {
+  height: 100%;
+  white-space: nowrap;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+}
+.tags-view-item {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 38px;
+  margin-top: 8px;
+  margin-left: 6px;
+  padding: 0 16px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #5a6474;
+  text-decoration: none;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.52) 0%, rgba(236, 240, 245, 0.9) 100%);
+  border: 1px solid rgba(23, 32, 51, 0.08);
+  border-bottom: none;
+  border-radius: 16px 16px 0 0;
+  transition: transform 0.18s ease, background 0.18s ease, color 0.18s ease;
+}
+.tags-view-item:first-of-type {
+  margin-left: 0;
+}
+.tags-view-item:hover {
+  color: #1d2433;
+  transform: translateY(-1px);
+}
+.tags-view-item.active {
+  color: #111827;
+  background: rgba(255, 252, 245, 0.98);
+  box-shadow: 0 -1px 0 rgba(255, 255, 255, 0.82), 0 16px 24px rgba(18, 27, 43, 0.08);
+}
+.tag-close {
+  font-size: 10px;
+  border-radius: 50%;
+  padding: 2px;
+}
+.tag-close:hover {
+  background: #b4bccc;
+  color: #fff;
+}
+
+.app-main {
+  margin-top: 16px;
+}
+
+/* 页面容器 */
+.app-container {
+  padding: 20px;
+  background: rgba(255, 252, 245, 0.92);
+  border: 1px solid rgba(23, 32, 51, 0.06);
+  border-radius: 20px;
+  box-shadow: 0 16px 36px rgba(18, 27, 43, 0.05);
+}
+.app-container + .app-container {
+  margin-top: 16px;
+}
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.search-form {
+  margin-bottom: 8px;
+  row-gap: 12px;
+}
+
+/* 仪表盘 */
+.panel-group .card-panel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 22px 24px;
+  background: rgba(255, 252, 245, 0.92);
+  border: 1px solid rgba(23, 32, 51, 0.06);
+  border-radius: 20px;
+  box-shadow: 0 16px 36px rgba(18, 27, 43, 0.05);
+}
+.card-panel-icon {
+  font-size: 44px;
+}
+.card-panel-text {
+  color: rgba(0, 0, 0, 0.45);
+  font-size: 15px;
+  text-align: right;
+}
+.card-panel-num {
+  display: block;
+  margin-top: 6px;
+  font-size: 22px;
+  font-weight: 700;
+  color: #1b202b;
+}
+.chart-wrapper h3 {
+  margin: 0 0 12px;
+  font-size: 15px;
+}
+.chart-legend {
+  display: flex;
+  gap: 16px;
+  font-size: 12px;
+  color: #5a6474;
+  margin-bottom: 8px;
+}
+.chart-legend i {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  margin-right: 4px;
+}
+
+/* Markdown 编辑器 */
+.md-editor {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.md-editor textarea {
+  font-family: 'SFMono-Regular', Menlo, Consolas, monospace;
+  font-size: 13px;
+}
+.md-preview {
+  min-height: 420px;
+  max-height: 640px;
+  overflow: auto;
+  padding: 8px 16px;
+  border: 1px solid #d9d9d9;
+  border-radius: 8px;
+  background: #fff;
+  line-height: 1.7;
+}
+.md-preview img {
+  max-width: 100%;
+}
+.md-preview pre {
+  padding: 12px;
+  background: #f6f8fa;
+  border-radius: 6px;
+  overflow: auto;
+}
+
+/* 登录页（views/login.vue） */
+.login {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-size: cover;
+  background-position: center;
+}
+.login-form {
+  width: 400px;
+  padding: 25px 25px 5px;
+  background: #fff;
+  border-radius: 6px;
+}
+.login-form .title {
+  margin: 0 auto 30px;
+  text-align: center;
+  color: #707070;
+  font-size: 18px;
+  font-weight: 700;
+}
+.login-form .ant-input-affix-wrapper {
+  height: 38px;
+}
+.login-code {
+  display: flex;
+  gap: 12px;
+}
+.login-code .ant-input-affix-wrapper {
+  flex: 0 0 63%;
+}
+.login-code-img {
+  height: 38px;
+  flex: 1;
+  cursor: pointer;
+  object-fit: contain;
+  border: none;
+  padding: 0;
+  background: none;
+}
+.login-code-img img {
+  height: 38px;
+  max-width: 100%;
+}
+.el-login-footer {
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  height: 40px;
+  line-height: 40px;
+  text-align: center;
+  color: #fff;
+  font-family: Arial, sans-serif;
+  font-size: 12px;
+  letter-spacing: 1px;
+}

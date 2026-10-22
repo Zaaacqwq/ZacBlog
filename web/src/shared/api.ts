@@ -18,14 +18,20 @@ export interface PageResult<T> {
 export class ApiError extends Error {
   readonly status: number
   readonly code: number
+  /** 429 时响应头 Retry-After 的秒数 */
+  readonly retryAfter: number | null
 
-  constructor(status: number, code: number, msg: string) {
+  constructor(status: number, code: number, msg: string, retryAfter: number | null = null) {
     super(msg)
     this.name = 'ApiError'
     this.status = status
     this.code = code
+    this.retryAfter = retryAfter
   }
 }
+
+/** 401 时在 window 上派发此事件，后台布局监听后跳回登录页 */
+export const UNAUTHORIZED_EVENT = 'zacblog:unauthorized'
 
 export interface RequestOptions extends Omit<RequestInit, 'body'> {
   query?: Record<string, string | number | boolean | undefined | null>
@@ -61,8 +67,17 @@ export async function request<T>(path: string, options: RequestOptions = {}): Pr
   const json = (await res.json().catch(() => null)) as ApiResponse<T> | null
 
   if (!res.ok || !json || json.code !== 200) {
-    if (res.status === 401) clearToken()
-    throw new ApiError(res.status, json?.code ?? res.status, json?.msg ?? res.statusText)
+    if (res.status === 401) {
+      clearToken()
+      window.dispatchEvent(new Event(UNAUTHORIZED_EVENT))
+    }
+    const retryAfter = Number(res.headers.get('Retry-After'))
+    throw new ApiError(
+      res.status,
+      json?.code ?? res.status,
+      json?.msg ?? res.statusText,
+      Number.isFinite(retryAfter) && retryAfter > 0 ? retryAfter : null,
+    )
   }
   return json.data
 }
