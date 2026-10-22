@@ -1,6 +1,9 @@
 import { fireEvent, screen, waitFor, within } from '@testing-library/react'
 import { clearToken, setToken } from '../../shared/token'
 import { mockApi, renderAt, route, type Call } from './helpers'
+import { FIRST_RENDER_TIMEOUT, PRELOAD_TIMEOUT, preloadAdminRoutes } from '../../test/preloadAdmin'
+
+beforeAll(preloadAdminRoutes, PRELOAD_TIMEOUT)
 
 const readers = [
   { email: 'anon@example.com', nickname: '匿名读者', commentCount: 2, messageCount: 1, lastActiveAt: '2026-10-20T10:00:00+08:00', blocked: false },
@@ -47,7 +50,7 @@ describe('reader management', () => {
     expect(within(await rowOf('old@example.com')).getByText('已拉黑')).toBeInTheDocument()
     // 没有邮箱的旧读者不能按邮箱拉黑
     expect(within(await rowOf('user:42')).getByRole('button', { name: '拉黑' })).toBeDisabled()
-  })
+  }, FIRST_RENDER_TIMEOUT)
 
   it('blocks a reader with a reason', async () => {
     renderAt('/admin/readers')

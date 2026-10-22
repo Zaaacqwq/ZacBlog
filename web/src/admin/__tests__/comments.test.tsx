@@ -1,6 +1,9 @@
 import { act, screen, waitFor } from '@testing-library/react'
 import { clearToken, setToken } from '../../shared/token'
 import { mockApi, renderAt, route, type Call } from './helpers'
+import { FIRST_RENDER_TIMEOUT, PRELOAD_TIMEOUT, preloadAdminRoutes } from '../../test/preloadAdmin'
+
+beforeAll(preloadAdminRoutes, PRELOAD_TIMEOUT)
 
 let calls: Call[]
 
@@ -31,5 +34,5 @@ describe('comment list reader filter', () => {
     await waitFor(() => expect(listCalls().length).toBeGreaterThanOrEqual(2))
     await waitFor(() => expect(listCalls().at(-1)?.url).not.toContain('reader='))
     expect((screen.getByPlaceholderText('邮箱或 user:id') as HTMLInputElement).value).toBe('')
-  })
+  }, FIRST_RENDER_TIMEOUT)
 })

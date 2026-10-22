@@ -1,6 +1,9 @@
 import { act, fireEvent, screen, waitFor } from '@testing-library/react'
 import { clearToken, setToken } from '../../shared/token'
 import { mockApi, renderAt, route, type Call } from './helpers'
+import { FIRST_RENDER_TIMEOUT, PRELOAD_TIMEOUT, preloadAdminRoutes } from '../../test/preloadAdmin'
+
+beforeAll(preloadAdminRoutes, PRELOAD_TIMEOUT)
 
 const article = (id: number, title: string) => ({
   id,
@@ -76,7 +79,7 @@ describe('article editor', () => {
     expect(put).toHaveLength(1)
     expect(route(put[0])).toBe('PUT /api/admin/articles/2')
     expect(put[0].body).toMatchObject({ title: '文章B', contentMarkdown: '# 文章B' })
-  })
+  }, FIRST_RENDER_TIMEOUT)
 
   it('does not allow saving while loading or after the load failed', async () => {
     renderAt('/admin/articles/1/edit')
