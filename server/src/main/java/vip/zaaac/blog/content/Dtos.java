@@ -21,6 +21,7 @@ public final class Dtos {
             String coverUrl,
             @JsonInclude(JsonInclude.Include.NON_NULL) String contentMarkdown,
             @JsonInclude(JsonInclude.Include.NON_NULL) String contentHtml,
+            @JsonInclude(JsonInclude.Include.NON_NULL) String contentType,
             Long categoryId,
             String categoryName,
             List<TagRef> tags,

@@ -36,9 +36,9 @@ public class ArticleService {
     static final String TYPE_ARTICLE = "1";
     static final String TYPE_ESSAY = "2";
     private static final Duration VIEW_DEDUP_WINDOW = Duration.ofMinutes(10);
-    private static final String LIST_COLUMNS = """
+    static final String LIST_COLUMNS = """
             b.id, b.title, b.blog_desc, b.blog_pic_type, b.blog_pic, b.blog_pic_link, b.type, b.`top`,
-            b.status, b.views, b.create_time, b.update_time""";
+            b.status, b.views, b.create_time, b.update_time, b.content_type""";
 
     public record ListFilter(Long categoryId, Long tagId, String keyword, Boolean essay) {
     }
@@ -122,13 +122,18 @@ public class ArticleService {
     }
 
     public List<FileInfo> files(long articleId) {
+        return files("cms_blog_file", "blog_id", articleId);
+    }
+
+    /** 文章或公告的附件。表名和列名是常量，不来自用户输入 */
+    List<FileInfo> files(String linkTable, String ownerColumn, long ownerId) {
         return jdbc.sql("""
                 SELECT f.file_id, f.file_origin_name, f.file_path, f.file_size_info, f.create_time
-                FROM cms_blog_file bf JOIN sys_file_info f ON f.file_id = bf.file_id
-                WHERE bf.blog_id = :id AND f.del_flag = 'N'
+                FROM %s bf JOIN sys_file_info f ON f.file_id = bf.file_id
+                WHERE bf.%s = :id AND f.del_flag = 'N'
                 ORDER BY f.file_id
-                """)
-                .param("id", articleId)
+                """.formatted(linkTable, ownerColumn))
+                .param("id", ownerId)
                 .query((rs, i) -> new FileInfo(rs.getLong("file_id"), rs.getString("file_origin_name"),
                         rs.getString("file_path"), parseSize(rs.getString("file_size_info")), times.read(rs, "create_time")))
                 .list();
@@ -139,7 +144,7 @@ public class ArticleService {
                 .param("id", id).query(Long.class).optional().orElseThrow(ApiException::notFound);
     }
 
-    private Article mapArticle(ResultSet rs, boolean withContent) throws SQLException {
+    Article mapArticle(ResultSet rs, boolean withContent) throws SQLException {
         String cover = "1".equals(rs.getString("blog_pic_type")) ? rs.getString("blog_pic") : rs.getString("blog_pic_link");
         return new Article(
                 rs.getLong("id"),
@@ -148,6 +153,7 @@ public class ArticleService {
                 Sql.emptyToNull(cover),
                 withContent ? orEmpty(Sql.blobText(rs, "content_markdown")) : null,
                 withContent ? orEmpty(Sql.blobText(rs, "content")) : null,
+                withContent ? contentType(rs.getString("content_type")) : null,
                 null, null, List.of(),
                 "1".equals(rs.getString("top")),
                 TYPE_ESSAY.equals(rs.getString("type")),
@@ -160,7 +166,7 @@ public class ArticleService {
     }
 
     /** 批量补上分类、标签和评论数 */
-    private List<Article> enrich(List<Article> articles) {
+    List<Article> enrich(List<Article> articles) {
         if (articles.isEmpty()) {
             return articles;
         }
@@ -194,7 +200,7 @@ public class ArticleService {
         for (Article a : articles) {
             TagRef category = categories.get(a.id());
             result.add(new Article(a.id(), a.title(), a.summary(), a.coverUrl(), a.contentMarkdown(), a.contentHtml(),
-                    category == null ? null : category.id(), category == null ? null : category.name(),
+                    a.contentType(), category == null ? null : category.id(), category == null ? null : category.name(),
                     tags.getOrDefault(a.id(), List.of()), a.top(), a.essay(), a.status(), a.views(),
                     comments.getOrDefault(a.id(), 0L), a.createdAt(), a.updatedAt(), a.files()));
         }
@@ -217,10 +223,16 @@ public class ArticleService {
                 .toList();
     }
 
-    private static Article withFiles(Article a, List<FileInfo> files) {
+    static Article withFiles(Article a, List<FileInfo> files) {
         return new Article(a.id(), a.title(), a.summary(), a.coverUrl(), a.contentMarkdown(), a.contentHtml(),
+                a.contentType(),
                 a.categoryId(), a.categoryName(), a.tags(), a.top(), a.essay(), a.status(), a.views(),
                 a.commentCount(), a.createdAt(), a.updatedAt(), files);
+    }
+
+    /** 旧库 content_type：'1' 富文本（Quill）、'3' 纯 HTML → html；'2'（Cherry）、'4'（Vditor）→ markdown */
+    static String contentType(String legacy) {
+        return "1".equals(legacy) || "3".equals(legacy) ? "html" : "markdown";
     }
 
     private static String orEmpty(String s) {
@@ -234,7 +246,7 @@ public class ArticleService {
     private static final Pattern SIZE = Pattern.compile("([0-9.]+)\\s*([KMG]?B)?", Pattern.CASE_INSENSITIVE);
 
     /** 旧库的 file_size_info 是 "1.63 MB" 这样的文本，换算成字节（近似值） */
-    static long parseSize(String text) {
+    public static long parseSize(String text) {
         if (text == null) {
             return 0;
         }
