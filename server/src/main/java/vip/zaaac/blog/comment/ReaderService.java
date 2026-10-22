@@ -37,7 +37,10 @@ public class ReaderService {
             """;
 
     /**
-     * 按读者聚合。计数只算未删除的；最近时间和最近昵称算上已删除的，这样评论都被删掉的读者仍在列表里，可以拉黑。
+     * 按读者聚合。拉黑标记不 JOIN reader_block：线上 MySQL 里 reader_block（V2 新表，跟随库默认
+     * utf8mb4_0900_ai_ci）和旧表（utf8mb4_general_ci）排序规则不同，两边的列直接比较会报
+     * Illegal mix of collations。所以先把黑名单邮箱读出来，作为参数 :blockedEmails 传入（列和参数比较没有这个问题）。
+     * 计数只算未删除的；最近时间和最近昵称算上已删除的，这样评论都被删掉的读者仍在列表里，可以拉黑。
      */
     private static final String AGGREGATE = "WITH posts AS (" + POSTS.formatted(AdminCommentService.READER_KEY, "C", "cms_comment")
             + " UNION ALL " + POSTS.formatted(AdminCommentService.READER_KEY, "M", "cms_message") + """
@@ -53,8 +56,7 @@ public class ReaderService {
               FROM posts WHERE reader_key IS NOT NULL
             ), readers AS (
               SELECT a.reader_key, l.nickname, a.comment_count, a.message_count, a.last_time,
-                     CASE WHEN EXISTS (SELECT 1 FROM reader_block rb WHERE LOWER(rb.email) = a.reader_key)
-                          THEN 1 ELSE 0 END AS blocked
+                     CASE WHEN a.reader_key IN (:blockedEmails) THEN 1 ELSE 0 END AS blocked
               FROM agg a JOIN latest l ON l.reader_key = a.reader_key AND l.rn = 1
             )
             """;
@@ -85,6 +87,7 @@ public class ReaderService {
         StringBuilder where = new StringBuilder(" WHERE 1 = 1");
         Map<String, Object> params = new HashMap<>();
         params.put("adminIds", adminIds());
+        params.put("blockedEmails", blockedEmails());
         if (keyword != null && !keyword.isBlank()) {
             where.append(" AND (reader_key LIKE :keyword OR LOWER(nickname) LIKE :keyword)");
             params.put("keyword", "%" + keyword.trim().toLowerCase(Locale.ROOT)
@@ -186,6 +189,15 @@ public class ReaderService {
             throw ApiException.badRequest(duplicateMsg);
         }
         return keys.getKey().longValue();
+    }
+
+    /** 小写、去空格后的黑名单邮箱；IN () 不能为空，空时放一个不可能是读者标识的空串 */
+    private List<String> blockedEmails() {
+        List<String> emails = jdbc.sql("SELECT email FROM reader_block").query(String.class).list().stream()
+                .map(e -> e.trim().toLowerCase(Locale.ROOT))
+                .distinct()
+                .toList();
+        return emails.isEmpty() ? List.of("") : emails;
     }
 
     private List<Long> adminIds() {

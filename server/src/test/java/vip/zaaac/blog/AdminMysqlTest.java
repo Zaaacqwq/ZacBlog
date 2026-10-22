@@ -31,6 +31,7 @@ import vip.zaaac.blog.auth.JwtService;
  * 后台查询在真实 MySQL 上的回归测试。旧表（db/legacy/legacy_schema.sql）是 utf8mb4_general_ci，
  * mysql:8.0 容器的库默认是 utf8mb4_0900_ai_ci（与线上一致），V2 新建的黑名单表默认跟随库：
  * 跨新旧表的“列 = 列”比较在这里会报 Illegal mix of collations，H2 测试发现不了。
+ * 两个用例共用一个容器，各自用不同的邮箱和 IP，并在结束时清理自己的数据，执行顺序不影响结果。
  * 需要 Docker，只在 CI 的 mysql-it job 里跑：mvn -B verify -Pmysql-it
  */
 @Tag("mysql")
@@ -66,15 +67,36 @@ class AdminMysqlTest {
                 .content("{\"nickname\":\"%s\",\"email\":\"%s\",\"content\":\"%s\"}".formatted(nickname, email, content)));
     }
 
+    /**
+     * 迁移不改已有表：V2 的黑名单表保持库默认排序规则，与旧表不同。下面的查询必须在这种混合状态下正常工作。
+     * 黑名单里预先放好数据（模拟升级前已有的拉黑记录，大小写不规范），读者列表要能认出来。
+     */
     @Test
-    void blockTablesUseTheLegacyCollation() {
-        String legacy = collation("cms_comment", "author_email");
-        assertThat(legacy).isEqualTo("utf8mb4_general_ci");
-        assertThat(collation("reader_block", "email")).isEqualTo(legacy);
-        assertThat(collation("ip_block", "ip")).isEqualTo(legacy);
-        assertThat(collation("keyword_block", "keyword")).isEqualTo(legacy);
-        assertThat(jdbc.sql("SELECT COUNT(*) FROM flyway_schema_history WHERE version = '11' AND success = 1")
-                .query(Long.class).single()).isEqualTo(1L);
+    void readerListHandlesExistingBlocksUnderMixedCollations() throws Exception {
+        assertThat(collation("cms_comment", "author_email")).isEqualTo("utf8mb4_general_ci");
+        assertThat(collation("reader_block", "email")).isEqualTo("utf8mb4_0900_ai_ci");
+
+        jdbc.sql("INSERT INTO reader_block (email, reason) VALUES ('Spam@Example.com', 'old block'), ('other@example.com', NULL)")
+                .update();
+        try {
+            jdbc.sql("""
+                    INSERT INTO cms_message (content, type, del_flag, author_name, author_email, author_ip, create_time) VALUES
+                      ('spam', '0', '0', '广告', 'SPAM@example.com', '10.21.0.1', '2024-01-01 10:00:00'),
+                      ('hi', '0', '0', '路人', 'ok@example.com', '10.21.0.2', '2024-01-02 10:00:00')
+                    """).update();
+            mvc.perform(admin(get("/admin/readers")).param("blocked", "true"))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.data.total").value(1))
+                    .andExpect(jsonPath("$.data.rows[0].email").value("spam@example.com"));
+            mvc.perform(admin(get("/admin/readers")).param("keyword", "example"))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.data.rows[?(@.email == 'ok@example.com')].blocked", contains(false)));
+            postPublic("/public/messages", "10.21.0.3", "广告", "spam@example.com", "再来").andExpect(status().isForbidden());
+        } finally {
+            // 两个用例共用一个容器：清掉本用例的数据，不影响另一个用例的计数
+            jdbc.sql("DELETE FROM reader_block").update();
+            jdbc.sql("DELETE FROM cms_message WHERE author_ip LIKE '10.21.%'").update();
+        }
     }
 
     /**

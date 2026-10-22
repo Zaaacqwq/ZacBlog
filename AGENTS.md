@@ -16,7 +16,6 @@ server/                     Spring Boot 3.5、Java 17、Maven 单模块，包名
   src/main/resources/
     application.yml         只有环境变量占位符
     db/migration/           Flyway 脚本 V<n>__<desc>.sql（需同时兼容 MySQL 8 和 H2 MySQL 模式）
-    db/vendor/{mysql,h2}/   只适用于一种数据库的 Flyway 脚本（两边同版本号），见 db/migration/README.md
   src/test/resources/
     application-test.yml    test profile：H2 内存库
 web/                        Vite + React 18 + TypeScript + React Router

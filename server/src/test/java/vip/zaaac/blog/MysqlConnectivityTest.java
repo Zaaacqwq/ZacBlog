@@ -39,17 +39,9 @@ class MysqlConnectivityTest {
         assertThat(jdbc.queryForObject("SELECT VERSION()", String.class)).startsWith("8.0");
     }
 
-    /**
-     * 空库：V1 按库默认（utf8mb4_0900_ai_ci）建旧表，V11 让黑名单表跟随旧表，
-     * 读者列表里 reader_block 与评论邮箱的跨表比较也不能报 Illegal mix of collations。
-     */
+    /** 空库：V1 按库默认建旧表，读者列表（含拉黑标记）在这种情况下也要正常 */
     @Test
-    void freshDatabaseKeepsBlockTablesInLineWithLegacyTables() {
-        String legacy = collation("cms_comment", "author_email");
-        assertThat(collation("reader_block", "email")).isEqualTo(legacy);
-        assertThat(collation("ip_block", "ip")).isEqualTo(legacy);
-        assertThat(collation("keyword_block", "keyword")).isEqualTo(legacy);
-
+    void readerListWorksOnFreshDatabase() {
         jdbc.update("INSERT INTO cms_message (content, type, del_flag, author_name, author_email, create_time)"
                 + " VALUES ('hi', '0', '0', '访客', 'Fresh@Example.com', NOW())");
         readers.block("fresh@example.com", null);
@@ -57,10 +49,5 @@ class MysqlConnectivityTest {
         assertThat(page.total()).isEqualTo(1);
         assertThat(page.rows().get(0).blocked()).isTrue();
         assertThat(page.rows().get(0).messageCount()).isEqualTo(1);
-    }
-
-    private String collation(String table, String column) {
-        return jdbc.queryForObject("SELECT COLLATION_NAME FROM information_schema.COLUMNS"
-                + " WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ? AND COLUMN_NAME = ?", String.class, table, column);
     }
 }
