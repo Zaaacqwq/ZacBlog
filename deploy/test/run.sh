@@ -14,7 +14,7 @@ PW='test-only-not-a-real-secret-db-password'
 
 if command -v shellcheck >/dev/null 2>&1; then
   echo "== shellcheck"
-  shellcheck -x "$SCRIPTS"/*.sh "$REPO/deploy/bootstrap-root.sh" "$HERE/run.sh" "$STUBS/java" "$STUBS/sudo" "$STUBS/systemctl" "$STUBS/mysqldump"
+  shellcheck -x -S warning "$SCRIPTS"/*.sh "$REPO/deploy/bootstrap-root.sh" "$HERE/run.sh" "$STUBS/java" "$STUBS/sudo" "$STUBS/systemctl" "$STUBS/mysqldump" "$STUBS/mysql"
 else
   echo "== shellcheck 未安装，跳过"
 fi
@@ -74,7 +74,7 @@ new_server() {
   export LEGACY_HEALTH_URL="http://127.0.0.1:$STUB_PORT/"
   export HEALTH_TIMEOUT=8 HEALTH_INTERVAL=1 BACKUP_KEEP=3 RELEASES_KEEP=2 WEB_RELEASES_KEEP=2
   export EXPECTED_DB_PASSWORD="$PW"
-  unset MYSQLDUMP_STUB_FAIL
+  unset MYSQLDUMP_STUB_FAIL MYSQL_STUB_ALTER_FAIL
   mkdir -p "$H"/{backend/config,server/releases,web/releases/legacy,backups,scripts,incoming,zaaac/uploadPath/2025} "$STUB_LOG_DIR"
   jar_file "$H/backend/zaaac-admin.jar" UP legacy
   echo 'legacy-config' > "$H/backend/config/application.yml"
@@ -251,13 +251,136 @@ deploy zacblog-server-v2.jar UP v2 v2-frontend
 chmod 755 "$H/server"
 check "部署失败（退出码非 0）" test "$RC" -ne 0
 check "输出说明后端前置检查失败、前端已恢复" grep -q '前端已恢复，后端没有改动' "$WORK/$CASE/deploy-v2.out"
-check "没有误报“已回滚”" bash -c "! grep -q '已回滚到部署前的版本' '$WORK/$CASE/deploy-v2.out'"
+check "没有误报「已回滚」" bash -c "! grep -q '已回滚到部署前的版本' '$WORK/$CASE/deploy-v2.out'"
 check "前端恢复为部署前的版本" frontend_is legacy-frontend
 check "前端回滚记录已用掉" test ! -e "$H/web/.rollback-target"
 check "旧后端没有被重启" eq "$(cat "$SYSTEMD_STUB_DIR/zacblog-backend.pid")" "$LEGACY_PID"
 check "没有执行任何 sudo 命令" test ! -s "$STUB_LOG_DIR/sudo.log"
 check "原回滚记录没有被截断" eq "$(cat "$H/server/.rollback-target")" 'app /previous/release.jar'
 common_checks
+stop_all
+
+# ---------------------------------------------------------------- zacblog-secrets.sh
+PW_NEW='test-only-not-a-real-secret-db-password-new'
+JWT_NEW='test-only-not-a-real-secret-jwt-new-0123456789abcdef0123456789abcdef'
+# secrets <write-env|rotate> [当前密码]：模拟 server-secrets.yml，经 stdin 传密钥，退出码放在 RC
+secrets() {
+  local input="$WORK/secrets-input" # 放在 $WORK/$CASE 外面：泄漏检查只扫 $WORK/$CASE
+  {
+    echo 'DB_HOST=127.0.0.1'
+    echo 'DB_PORT=3306'
+    echo 'DB_NAME=zaaac_blog'
+    echo 'DB_USERNAME=zacblog'
+    echo "DB_PASSWORD_CURRENT=${2:-$PW}"
+    echo "DB_PASSWORD_NEW=$PW_NEW"
+    echo "JWT_SECRET_NEW=$JWT_NEW"
+  } > "$input"
+  RC=0
+  bash "$H/scripts/zacblog-secrets.sh" "$1" < "$input" > "$WORK/$CASE/secrets-$1-$N.out" 2>&1 || RC=$?
+  rm -f "$input"
+  sed 's/^/       | /' "$WORK/$CASE/secrets-$1-$N.out"
+  N=$((N + 1))
+}
+N=1
+db_pw() { cat "$STUB_LOG_DIR/mysql-password"; }
+env_pw() { grep '^DB_PASSWORD=' "$H/server/zacblog.env" | cut -d= -f2-; }
+env_mode() { stat -c '%a' "$H/server/zacblog.env" 2>/dev/null || stat -f '%Lp' "$H/server/zacblog.env"; }
+env_sum() { cksum < "$H/server/zacblog.env"; }
+no_secret_leak() {
+  local v
+  for v in "$PW" "$PW_NEW" "$JWT_NEW"; do
+    # 只能出现在环境变量文件和 mysql 桩的密码存储里
+    if grep -rlF -- "$v" "$WORK/$CASE" | grep -vE '/home/server/zacblog\.env$|/stublogs/mysql-password$'; then
+      return 1
+    fi
+  done
+}
+secret_checks() {
+  check "环境变量文件权限是 600" eq "$(env_mode)" 600
+  check "没有留下临时文件和备份" test -z "$(find "$H/server" -maxdepth 1 -name 'zacblog.env?*')"
+  check "sudo 只用了 sudoers 允许的命令" bash -c "! grep -q '^DENIED' '$STUB_LOG_DIR/sudo.log' 2>/dev/null"
+  check "密钥没有出现在参数、日志和输出里" no_secret_leak
+}
+
+new_server secrets
+printf '%s' "$PW" > "$STUB_LOG_DIR/mysql-password"
+rm -f "$H/server/zacblog.env"
+secrets write-env
+check "write-env 成功" eq "$RC" 0
+check "生成的环境变量文件内容正确" eq "$(grep -v '^#' "$H/server/zacblog.env")" "SERVER_ADDRESS=127.0.0.1
+DB_URL=jdbc:mysql://127.0.0.1:3306/zaaac_blog?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai
+DB_USERNAME=zacblog
+DB_PASSWORD=$PW
+JWT_SECRET=$JWT_NEW
+UPLOAD_PATH=$H/zaaac/uploadPath"
+check "mysql 的参数里没有密码，密码只走 MYSQL_PWD" grep -q -- '--host=127.0.0.1 --port=3306 --user=zacblog' "$STUB_LOG_DIR/mysql-args.log"
+secret_checks
+secrets counts
+check "counts 成功" eq "$RC" 0
+check "counts 输出 6 项数量" eq "$(grep -c '^COUNT ' "$WORK/$CASE/secrets-counts-$((N - 1)).out")" 6
+check "counts 统计未删除的评论" grep -qE '^COUNT comments +7$' "$WORK/$CASE/secrets-counts-$((N - 1)).out"
+check "counts 的 SQL 只有 SELECT（只读）" bash -c "! grep -q alter '$STUB_LOG_DIR/mysql-alter.log' 2>/dev/null"
+SUM=$(env_sum)
+secrets write-env
+check "重跑 write-env 成功且文件不变" bash -c "[ '$RC' = 0 ] && [ \"\$(cksum < '$H/server/zacblog.env')\" = '$SUM' ]"
+
+secrets rotate
+check "切换前 rotate 被拒绝（退出码 3）" eq "$RC" 3
+check "输出说明旧后端还在运行" grep -q '旧后端 zacblog-backend 还在运行' "$WORK/$CASE/secrets-rotate-$((N - 1)).out"
+check "数据库密码没变" eq "$(db_pw)" "$PW"
+check "环境变量文件没变" eq "$(env_sum)" "$SUM"
+
+deploy zacblog-server-v2.jar UP v2 v2-frontend
+check "用生成的环境变量文件完成切换" eq "$(version)" v2
+SUM=$(env_sum)
+
+export MYSQL_STUB_ALTER_FAIL=1
+RESTARTS0=$(wc -l < "$STUB_LOG_DIR/systemctl.log")
+secrets rotate
+unset MYSQL_STUB_ALTER_FAIL
+check "ALTER USER 被拒绝时失败并恢复（退出码 1）" eq "$RC" 1
+check "数据库密码没变" eq "$(db_pw)" "$PW"
+check "环境变量文件恢复原样" eq "$(env_sum)" "$SUM"
+check "新后端仍在运行（v2）" eq "$(version)" v2
+check "什么都没改时不重启服务" bash -c "! grep -q '^restart zacblog-server' <(sed -n '$((RESTARTS0 + 1)),\$p' '$STUB_LOG_DIR/systemctl.log')"
+
+touch "$STUB_LOG_DIR/java-down-once"
+secrets rotate
+check "新密码重启后健康检查失败时恢复（退出码 1）" eq "$RC" 1
+check "输出里有已恢复原状" grep -q '已恢复原状' "$WORK/$CASE/secrets-rotate-$((N - 1)).out"
+check "数据库密码已改回原值" eq "$(db_pw)" "$PW"
+check "环境变量文件恢复原样" eq "$(env_sum)" "$SUM"
+check "恢复后新后端健康" bash -c "curl -s 'http://127.0.0.1:$STUB_PORT/actuator/health' | grep -q UP"
+secret_checks
+
+RESTARTS=$(grep -c '^restart zacblog-server' "$STUB_LOG_DIR/systemctl.log")
+secrets rotate
+check "rotate 成功" eq "$RC" 0
+check "数据库密码已改为 DB_PASSWORD_NEW" eq "$(db_pw)" "$PW_NEW"
+check "环境变量文件里是新密码" eq "$(env_pw)" "$PW_NEW"
+check "JWT_SECRET 是 JWT_SECRET_NEW" grep -qxF "JWT_SECRET=$JWT_NEW" "$H/server/zacblog.env"
+check "zacblog-server 重启过一次" eq "$(grep -c '^restart zacblog-server' "$STUB_LOG_DIR/systemctl.log")" "$((RESTARTS + 1))"
+check "重启后健康（v2）" bash -c "curl -s 'http://127.0.0.1:$STUB_PORT/actuator/health' | grep -q UP"
+check "输出确认旧密码已不能登录" grep -q '旧密码已不能登录 MySQL' "$WORK/$CASE/secrets-rotate-$((N - 1)).out"
+check "旧密码登录 MySQL 失败" bash -c "! printf 'SELECT 1;' | MYSQL_PWD='$PW' mysql >/dev/null 2>&1"
+check "改密码只通过 sudo -n systemctl restart" grep -q '^-n systemctl restart zacblog-server$' "$STUB_LOG_DIR/sudo.log"
+secret_checks
+
+SUM=$(env_sum)
+ALTERS=$(wc -l < "$STUB_LOG_DIR/mysql-alter.log")
+secrets rotate
+check "重跑 rotate：识别为已轮换，成功" eq "$RC" 0
+check "没有再次 ALTER" eq "$(wc -l < "$STUB_LOG_DIR/mysql-alter.log")" "$ALTERS"
+check "环境变量文件不变" eq "$(env_sum)" "$SUM"
+secrets write-env
+check "轮换后重跑 write-env 自动使用新密码" bash -c "[ '$RC' = 0 ] && [ \"\$(cksum < '$H/server/zacblog.env')\" = '$SUM' ]"
+secrets write-env 'test-only-wrong-password'
+printf '%s' 'test-only-other' > "$STUB_LOG_DIR/mysql-password"
+secrets write-env
+check "两个密码都登录不了时 write-env 拒绝（退出码 3）" eq "$RC" 3
+check "环境变量文件不变" eq "$(env_sum)" "$SUM"
+printf '%s' "$PW_NEW" > "$STUB_LOG_DIR/mysql-password"
+secret_checks
 stop_all
 
 # ---------------------------------------------------------------- bootstrap-root.sh

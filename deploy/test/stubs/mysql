@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+# mysql 桩：模拟一个账号的密码（存在 $STUB_LOG_DIR/mysql-password）。
+#   MYSQL_PWD 不对 → Access denied（退出码 1）
+#   stdin 是 ALTER USER CURRENT_USER() IDENTIFIED BY '...'; → 改密码（MYSQL_STUB_ALTER_FAIL=1 时模拟密码策略拒绝）
+#   SELECT '<名字>', COUNT(*) ... → 每行输出 <名字>\t7
+#   其他 SQL（SELECT 1）→ 输出 1
+# 参数记到 mysql-args.log（测试据此确认密码没有出现在命令行里）。
+set -euo pipefail
+store="$STUB_LOG_DIR/mysql-password"
+printf '%s\n' "$*" >> "$STUB_LOG_DIR/mysql-args.log"
+sql=$(cat)
+if [ ! -f "$store" ] || [ "${MYSQL_PWD:-}" != "$(cat "$store")" ]; then
+  echo "ERROR 1045 (28000): Access denied for user (stub)" >&2
+  exit 1
+fi
+prefix="ALTER USER CURRENT_USER() IDENTIFIED BY '"
+case "$sql" in
+  "$prefix"*"';")
+    if [ "${MYSQL_STUB_ALTER_FAIL:-0}" = 1 ]; then
+      echo "ERROR 1819 (HY000): Your password does not satisfy the current policy requirements (stub)" >&2
+      exit 1
+    fi
+    new=${sql#"$prefix"}
+    new=${new%"';"}
+    new=${new//\'\'/\'}
+    printf '%s' "$new" > "$store"
+    echo "alter" >> "$STUB_LOG_DIR/mysql-alter.log"
+    ;;
+  *"COUNT(*)"*)
+    printf '%s\n' "$sql" | sed -n "s/^SELECT '\([a-z_]*\)', COUNT(\*).*/\1/p" | while IFS= read -r n; do printf '%s\t7\n' "$n"; done
+    ;;
+  *) echo 1 ;;
+esac
