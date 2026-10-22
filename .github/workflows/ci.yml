@@ -28,6 +28,11 @@ jobs:
           cache: maven
           cache-dependency-path: server/pom.xml
       - run: mvn -B verify
+      # deploy.yml 按这个文件名取可执行 jar（pom 的 finalName）；改了名在 PR 里就会失败
+      - name: Check deploy jar name
+        run: |
+          test -f target/zacblog-server.jar
+          unzip -p target/zacblog-server.jar META-INF/MANIFEST.MF | grep -q '^Start-Class: vip.zaaac.blog.BlogApplication'
 
   server-mysql-it:
     name: server (MySQL integration, Testcontainers)

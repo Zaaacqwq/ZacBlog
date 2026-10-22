@@ -46,7 +46,13 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p dist-deploy
-          jar=$(ls server/target/zacblog-server-*.jar)
+          # server/pom.xml 设了 <finalName>zacblog-server</finalName>：可执行 jar 就是这个文件名
+          #（旁边的 zacblog-server.jar.original 是不含依赖的普通 jar，不能用）
+          jar=server/target/zacblog-server.jar
+          [ -f "$jar" ] || { echo "::error::没有 $jar（pom 的 finalName 改过？）"; ls -l server/target; exit 1; }
+          unzip -p "$jar" META-INF/MANIFEST.MF | grep -q '^Start-Class: vip.zaaac.blog.BlogApplication' ||
+            { echo "::error::$jar 不是 Spring Boot 可执行 jar"; exit 1; }
+          [ -f web/dist/index.html ] || { echo "::error::web/dist/index.html 不存在"; exit 1; }
           cp "$jar" "dist-deploy/zacblog-server-${GITHUB_SHA::12}.jar"
           tar -czf dist-deploy/web-dist.tgz -C web/dist .
           ls -l dist-deploy
@@ -109,15 +115,23 @@ jobs:
       - name: Upload scripts and artifacts
         run: |
           set -euo pipefail
+          # build job 只放了一个 jar；不是正好一个就停下，不去猜
+          shopt -s nullglob
+          jars=(dist-deploy/zacblog-server-*.jar)
+          if [ "${#jars[@]}" -ne 1 ] || [ ! -f dist-deploy/web-dist.tgz ]; then
+            echo "::error::产物不对：期望正好一个 zacblog-server-*.jar 和 web-dist.tgz"; ls -l dist-deploy; exit 1
+          fi
+          jar=$(basename "${jars[0]}")
+          echo "JAR=$jar" >> "$GITHUB_ENV"
           ssh prod "mkdir -p $REMOTE_HOME/scripts $REMOTE_HOME/incoming"
           scp deploy/scripts/zacblog-*.sh "prod:$REMOTE_HOME/scripts/"
           ssh prod "chmod 755 $REMOTE_HOME/scripts/zacblog-*.sh"
-          scp dist-deploy/* "prod:$REMOTE_HOME/incoming/"
+          scp "dist-deploy/$jar" dist-deploy/web-dist.tgz "prod:$REMOTE_HOME/incoming/"
 
       - name: Backup, publish frontend, start, health check (auto rollback)
         run: |
           set -euo pipefail
-          jar=$(basename dist-deploy/zacblog-server-*.jar)
+          jar=$JAR
           ssh prod "bash $REMOTE_HOME/scripts/zacblog-deploy.sh $REMOTE_HOME/incoming/$jar $REMOTE_HOME/incoming/web-dist.tgz"
           ssh prod "rm -f $REMOTE_HOME/incoming/$jar $REMOTE_HOME/incoming/web-dist.tgz"
 
