@@ -21,8 +21,10 @@ describe('routes', () => {
     expect(await screen.findByRole('heading', { name: "Zac's Blog" })).toBeInTheDocument()
   })
 
-  it('renders the admin entry', () => {
+  it('sends anonymous visitors of the admin to the login page', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('{}', { status: 500 })))
     renderAt('/admin')
-    expect(screen.getByRole('heading', { name: 'ZacBlog 管理后台' })).toBeInTheDocument()
+    expect(await screen.findByText('Zac Admin System', undefined, { timeout: 5000 })).toBeInTheDocument()
+    vi.unstubAllGlobals()
   })
 })
