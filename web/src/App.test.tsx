@@ -8,9 +8,17 @@ function renderAt(path: string) {
 }
 
 describe('routes', () => {
-  it('renders the public home page', () => {
+  beforeEach(() => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => new Response(JSON.stringify({ code: 200, msg: 'ok', data: null }), { status: 200 })),
+    )
+  })
+  afterEach(() => vi.unstubAllGlobals())
+
+  it('renders the public home page', async () => {
     renderAt('/')
-    expect(screen.getByRole('heading', { name: 'ZacBlog' })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: "Zac's Blog" })).toBeInTheDocument()
   })
 
   it('sends anonymous visitors of the admin to the login page', async () => {

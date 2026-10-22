@@ -1,9 +1,6 @@
-import { configure, render } from '@testing-library/react'
+import { render } from '@testing-library/react'
 import { RouterProvider, createMemoryRouter } from 'react-router-dom'
 import { routes } from '../../routes'
-
-// 后台页面是懒加载的，首次 import 较慢
-configure({ asyncUtilTimeout: 5000 })
 
 export interface Call {
   method: string
