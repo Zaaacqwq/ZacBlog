@@ -2,6 +2,9 @@
 # mysql 桩：模拟一个账号的密码（存在 $STUB_LOG_DIR/mysql-password）。
 #   MYSQL_PWD 不对 → Access denied（退出码 1）
 #   stdin 是 ALTER USER CURRENT_USER() IDENTIFIED BY '...'; → 改密码（MYSQL_STUB_ALTER_FAIL=1 时模拟密码策略拒绝）
+#     字符串按 MySQL 规则解析：'' → '；默认 sql_mode 下 \\ → \、\' → '（MYSQL_STUB_SQL_MODE 含
+#     NO_BACKSLASH_ESCAPES 时反斜杠是普通字符）
+#   SELECT @@SESSION.sql_mode → 输出 MYSQL_STUB_SQL_MODE（默认 ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES）
 #   SELECT '<名字>', COUNT(*) ... → 每行输出 <名字>\t7
 #   其他 SQL（SELECT 1）→ 输出 1
 # 参数记到 mysql-args.log（测试据此确认密码没有出现在命令行里）。
@@ -13,6 +16,7 @@ if [ ! -f "$store" ] || [ "${MYSQL_PWD:-}" != "$(cat "$store")" ]; then
   echo "ERROR 1045 (28000): Access denied for user (stub)" >&2
   exit 1
 fi
+mode=${MYSQL_STUB_SQL_MODE:-ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES}
 prefix="ALTER USER CURRENT_USER() IDENTIFIED BY '"
 case "$sql" in
   "$prefix"*"';")
@@ -20,12 +24,29 @@ case "$sql" in
       echo "ERROR 1819 (HY000): Your password does not satisfy the current policy requirements (stub)" >&2
       exit 1
     fi
-    new=${sql#"$prefix"}
-    new=${new%"';"}
-    new=${new//\'\'/\'}
-    printf '%s' "$new" > "$store"
+    lit=${sql#"$prefix"}
+    lit=${lit%"';"}
+    # 值经环境变量交给 python，不进参数
+    STUB_LIT=$lit STUB_MODE=$mode python3 -I -c '
+import os, sys
+s, nbe = os.environ["STUB_LIT"], "NO_BACKSLASH_ESCAPES" in os.environ["STUB_MODE"]
+out, i = [], 0
+while i < len(s):
+    c = s[i]
+    if c == "\\" and not nbe and i + 1 < len(s):
+        out.append(s[i + 1]); i += 2
+    elif c == "\x27":
+        if s[i + 1:i + 2] != "\x27":
+            sys.exit("stub: 字符串里有未转义的单引号")
+        out.append(c); i += 2
+    else:
+        out.append(c); i += 1
+sys.stdout.write("".join(out))
+' > "$store.tmp" || { echo "ERROR 1064 (42000): syntax error (stub)" >&2; rm -f "$store.tmp"; exit 1; }
+    mv -f "$store.tmp" "$store"
     echo "alter" >> "$STUB_LOG_DIR/mysql-alter.log"
     ;;
+  "SELECT @@SESSION.sql_mode;") echo "$mode" ;;
   *"COUNT(*)"*)
     printf '%s\n' "$sql" | sed -n "s/^SELECT '\([a-z_]*\)', COUNT(\*).*/\1/p" | while IFS= read -r n; do printf '%s\t7\n' "$n"; done
     ;;

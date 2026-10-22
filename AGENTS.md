@@ -1,6 +1,6 @@
 # AGENTS.md
 
-ZacBlog v2：`server/`（Spring Boot 3 后端）+ `web/`（React 前端）。旧的若依代码 `frontend/`、`backend/` 仍在仓库里，**不要修改**，等迁移完成后统一删除。
+ZacBlog v2：`server/`（Spring Boot 3 后端）+ `web/`（React 前端），部署脚本在 `deploy/`。旧的若依代码已在 ZB-8 切换上线后删除（在 git 历史里）。
 
 ## 硬性规定
 
@@ -23,8 +23,14 @@ web/                        Vite + React 18 + TypeScript + React Router
   src/admin/routes.tsx      后台路由（T5）
   src/shared/               共享代码：api client（api.ts）、token 存储（token.ts）
   src/routes.tsx            只负责拼装上面两组路由
+deploy/                     部署：scripts/（服务器上以 zacblog 运行）、bootstrap-root.sh 和
+                            root-after-cutover.sh（一次性 root 脚本，主人执行）、test/run.sh（本地桩测试）
 docs/api.md                 接口契约
+docs/deploy.md              服务器布局、部署/回滚/密码轮换流程（只写路径和流程，不写值）
 .github/workflows/ci.yml    CI
+.github/workflows/deploy.yml          部署：push 到 main 且 server/**、web/** 有改动时触发，也可手动
+.github/workflows/server-secrets.yml  生成服务器环境变量文件 / 轮换数据库密码（手动）
+.github/workflows/db-counts.yml       只读统计内容数量（手动）
 ```
 
 ## server
@@ -83,4 +89,7 @@ npm run build                 # tsc + vite build，产物在 web/dist
 ```bash
 cd server && mvn -B verify
 cd web && npm ci && npm run lint && npm test -- --run && npm run build
+bash deploy/test/run.sh       # 部署脚本；不需要 Docker、root、MySQL，装了 shellcheck 会顺带检查
 ```
+
+macOS 自带的 bash 3.2 会把紧跟在 `$VAR` 后面的全角字符（`，`、`（`）当成变量名的一部分，脚本里的中文日志一律写 `${VAR}`。

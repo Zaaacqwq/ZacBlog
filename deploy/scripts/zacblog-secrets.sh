@@ -74,12 +74,12 @@ done
 [[ "$DB_NAME" =~ ^[A-Za-z0-9_]+$ ]] || pre "DB_NAME 格式不对（只允许字母、数字和 _）"
 [[ "$DB_USERNAME" =~ ^[A-Za-z0-9_.-]+$ ]] || pre "DB_USERNAME 格式不对"
 
-# 写进环境变量文件和 SQL 字符串的值：不能有换行和反斜杠（SQL 里反斜杠的含义取决于 sql_mode），
-# 也不能首尾是成对的引号（启动器会去掉它们）。报错只说是哪个键，不打印值。
+# 写进环境变量文件和 SQL 字符串的值：不能有换行，也不能首尾是成对的引号（启动器会去掉它们）。
+# 反斜杠可以有（SQL 里由 sql_quote 转义，见下）。报错只说是哪个键，不打印值。
 check_value() {
   local key=$1 v=${!1}
   case "$v" in
-    *$'\n'* | *$'\r'* | *\\*) pre "$key 里不能有换行或反斜杠" ;;
+    *$'\n'* | *$'\r'*) pre "$key 里不能有换行" ;;
     \"*\" | \'*\') pre "$key 不能首尾都是引号" ;;
   esac
 }
@@ -96,8 +96,18 @@ mysql_as() { # mysql_as <密码>，SQL 从 stdin 读
     --batch --skip-column-names --connect-timeout=10 2>/dev/null
 }
 can_login() { printf 'SELECT 1;\n' | mysql_as "$1" >/dev/null; }
-sql_quote() { # 单引号字符串字面量：' 写成 ''（与 sql_mode 无关）
-  printf "'%s'" "${1//\'/\'\'}"
+# 单引号字符串字面量。默认 sql_mode 下反斜杠是转义符，所以先把 \ 写成 \\，再把 ' 写成 ''。
+# 开了 NO_BACKSLASH_ESCAPES 时 \\ 会变成两个字符：rotate 在动手前用 backslash_escapes_ok 检查过。
+# 用 sed 而不是 ${v//…}：bash 5.2 起替换串里的反斜杠会被再解释一次，和 3.2 结果不同。
+# 值经 printf（内建命令）走管道，不进 sed 的参数。
+sql_quote() {
+  printf "'%s'" "$(printf '%s' "$1" | sed -e 's/\\/\\\\/g' -e "s/'/''/g")"
+}
+# backslash_escapes_ok <密码>：当前会话里反斜杠是不是转义符（不是 NO_BACKSLASH_ESCAPES）
+backslash_escapes_ok() {
+  local m
+  m=$(printf 'SELECT @@SESSION.sql_mode;\n' | mysql_as "$1") || return 1
+  case "$m" in *NO_BACKSLASH_ESCAPES*) return 1 ;; esac
 }
 # set_password <用来登录的密码> <新密码>
 set_password() {
@@ -212,6 +222,12 @@ fi
 svc_active "$APP_SERVICE" || pre "$APP_SERVICE 没有运行：切换完成后才能轮换数据库密码"
 require_env_file_or_pre
 wait_health "$HEALTH_URL" strict || pre "轮换前健康检查就不通过，什么都没改"
+case "$DB_PASSWORD_CURRENT$DB_PASSWORD_NEW" in
+  *\\*)
+    backslash_escapes_ok "$DB_PASSWORD_CURRENT" ||
+      pre "密码里有反斜杠，但 MySQL 开了 NO_BACKSLASH_ESCAPES（或查不到 sql_mode），什么都没改"
+    ;;
+esac
 
 backup="$ENV_FILE.before-rotate"
 cp -p "$ENV_FILE" "$backup"
