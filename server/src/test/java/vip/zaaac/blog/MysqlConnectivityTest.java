@@ -12,6 +12,10 @@ import org.testcontainers.containers.MySQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
+import vip.zaaac.blog.comment.ReaderService;
+import vip.zaaac.blog.common.PageQuery;
+import vip.zaaac.blog.common.PageResult;
+
 /**
  * 需要 Docker，只在 CI 的 mysql-it job 里跑：mvn -B verify -Pmysql-it
  */
@@ -27,8 +31,23 @@ class MysqlConnectivityTest {
     @Autowired
     private JdbcTemplate jdbc;
 
+    @Autowired
+    private ReaderService readers;
+
     @Test
     void connectsToMysql() {
         assertThat(jdbc.queryForObject("SELECT VERSION()", String.class)).startsWith("8.0");
+    }
+
+    /** 空库：V1 按库默认建旧表，读者列表（含拉黑标记）在这种情况下也要正常 */
+    @Test
+    void readerListWorksOnFreshDatabase() {
+        jdbc.update("INSERT INTO cms_message (content, type, del_flag, author_name, author_email, create_time)"
+                + " VALUES ('hi', '0', '0', '访客', 'Fresh@Example.com', NOW())");
+        readers.block("fresh@example.com", null);
+        PageResult<ReaderService.Reader> page = readers.list(null, false, true, PageQuery.of(1, 10));
+        assertThat(page.total()).isEqualTo(1);
+        assertThat(page.rows().get(0).blocked()).isTrue();
+        assertThat(page.rows().get(0).messageCount()).isEqualTo(1);
     }
 }

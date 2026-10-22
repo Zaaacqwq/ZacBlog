@@ -10,6 +10,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.RequestPostProcessor;
 
+import vip.zaaac.blog.auth.JwtService;
 import vip.zaaac.blog.common.RateLimiter;
 
 /** H2 集成测试的公共基类：每个用例前重置数据和限流计数 */
@@ -31,6 +32,18 @@ public abstract class IntegrationTestSupport {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private JwtService jwtService;
+
+    /** 管理员（user_id 1）的 Authorization 头 */
+    protected RequestPostProcessor admin() {
+        String token = jwtService.issue(1, "admin").token();
+        return req -> {
+            req.addHeader("Authorization", "Bearer " + token);
+            return req;
+        };
+    }
 
     protected static RequestPostProcessor ip(String ip) {
         return req -> {

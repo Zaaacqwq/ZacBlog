@@ -55,7 +55,8 @@ class LegacyMigrationMysqlTest {
         List<String> history = jdbc.sql("SELECT CONCAT(version, ':', type) FROM flyway_schema_history ORDER BY installed_rank")
                 .query(String.class).list();
         assertThat(history.get(0)).isEqualTo("1:BASELINE");
-        assertThat(history).noneMatch(h -> h.equals("1:SQL")).anyMatch(h -> h.startsWith("2:"));
+        assertThat(history).noneMatch(h -> h.equals("1:SQL")).anyMatch(h -> h.startsWith("2:"))
+                .anyMatch(h -> h.startsWith("10:"));
 
         // V2 新增的列和表
         assertThat(columns("cms_comment")).contains("author_name", "author_email", "author_ip", "user_agent");
