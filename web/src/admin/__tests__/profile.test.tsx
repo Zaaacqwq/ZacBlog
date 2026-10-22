@@ -33,6 +33,8 @@ describe('change password', () => {
     renderAt('/admin/profile')
     expect(await screen.findByText('修改密码')).toBeInTheDocument()
     expect(document.querySelectorAll('.app-container input')).toHaveLength(3)
+    // 个人中心不在侧栏菜单里，不能高亮任何菜单项
+    expect(document.querySelector('.ant-menu-item-selected')).toBeNull()
   })
 
   it('requires all fields', async () => {

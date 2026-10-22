@@ -105,7 +105,7 @@ export default function AdminLayout() {
 
   const crumbs = [{ title: <Link to="/admin">首页</Link> }]
   if (path !== '/admin') {
-    if (menuKey !== '/admin' && menuTitle && menuTitle !== title) {
+    if (menuKey && menuKey !== '/admin' && menuTitle && menuTitle !== title) {
       crumbs.push({ title: <Link to={menuKey}>{menuTitle}</Link> })
     }
     crumbs.push({ title: <span className="no-redirect">{title ?? '页面不存在'}</span> })
@@ -123,7 +123,7 @@ export default function AdminLayout() {
             mode="inline"
             theme="dark"
             inlineCollapsed={collapsed}
-            selectedKeys={[menuKey]}
+            selectedKeys={menuKey ? [menuKey] : []}
             items={MENU.map((m) => ({
               key: m.path,
               icon: ICONS[m.path],

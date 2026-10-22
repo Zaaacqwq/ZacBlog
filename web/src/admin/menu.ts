@@ -33,10 +33,11 @@ export function titleFor(pathname: string): string | null {
   return null
 }
 
-/** 当前路径属于哪个菜单项（新建/编辑文章归到“文章”） */
-export function menuKeyFor(pathname: string): string {
-  const hit = MENU.filter((m) => m.path !== '/admin' && pathname.startsWith(m.path))
-  return hit[0]?.path ?? '/admin'
+/** 当前路径属于哪个菜单项（新建/编辑文章归到“文章”）；个人中心等不在菜单里的页面返回 null */
+export function menuKeyFor(pathname: string): string | null {
+  if (pathname === '/admin') return '/admin'
+  const hit = MENU.find((m) => m.path !== '/admin' && (pathname === m.path || pathname.startsWith(`${m.path}/`)))
+  return hit?.path ?? null
 }
 
 /** 登录页地址，登录成功后回到 redirect */

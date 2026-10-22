@@ -1,4 +1,8 @@
 /* 后台外观沿用旧若依后台（frontend/src/layout、assets/styles/sidebar.scss、views/login.vue） */
+/* 去掉浏览器默认的 body 外边距，否则登录页和布局四周会有一圈白边 */
+body:has(.admin-root) {
+  margin: 0;
+}
 .admin-root {
   min-height: 100vh;
   font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', 'PingFang SC', 'Microsoft YaHei', Arial, sans-serif;
@@ -39,25 +43,43 @@
 .sidebar-logo-link {
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   gap: 12px;
-  height: 72px;
+  height: 92px;
   flex: none;
-  padding: 0 16px;
+  padding: 8px 16px 0;
   text-decoration: none;
+  box-sizing: border-box;
 }
+.hideSidebar .sidebar-logo-link {
+  justify-content: center;
+  padding: 8px 0 0;
+}
+/* 图片四周留白很多，旧后台展开时按 64px、折叠时按 88px 显示 */
 .sidebar-logo {
-  width: 32px;
-  height: 32px;
+  display: block;
+  width: 64px;
+  height: 64px;
+  margin-right: -4px;
+  flex: 0 0 auto;
   object-fit: contain;
-  filter: brightness(0) invert(0.95);
+  filter: brightness(0) invert(1);
+}
+.hideSidebar .sidebar-logo {
+  width: 88px;
+  height: 88px;
+  margin-right: 0;
+  object-fit: cover;
 }
 .sidebar-title {
   margin: 0;
-  color: #f8f4ea;
-  font-size: 16px;
-  font-weight: 600;
-  letter-spacing: 0.5px;
+  color: #fff;
+  font-family: 'Avenir Next', 'Segoe UI', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
   white-space: nowrap;
 }
 .sidebar-menu {
