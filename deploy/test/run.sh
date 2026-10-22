@@ -14,11 +14,11 @@ PW='test-only-not-a-real-secret-db-password'
 
 if command -v shellcheck >/dev/null 2>&1; then
   echo "== shellcheck"
-  shellcheck -x -S warning "$SCRIPTS"/*.sh "$REPO/deploy/bootstrap-root.sh" "$HERE/run.sh" "$STUBS/java" "$STUBS/sudo" "$STUBS/systemctl" "$STUBS/mysqldump" "$STUBS/mysql"
+  shellcheck -x -S warning "$SCRIPTS"/*.sh "$REPO/deploy/bootstrap-root.sh" "$REPO/deploy/root-after-cutover.sh" "$HERE/run.sh" "$STUBS/java" "$STUBS/sudo" "$STUBS/systemctl" "$STUBS/mysqldump" "$STUBS/mysql"
 else
   echo "== shellcheck 未安装，跳过"
 fi
-for f in "$SCRIPTS"/*.sh "$REPO/deploy/bootstrap-root.sh"; do bash -n "$f"; done
+for f in "$SCRIPTS"/*.sh "$REPO/deploy/bootstrap-root.sh" "$REPO/deploy/root-after-cutover.sh"; do bash -n "$f"; done
 
 WORK=$(mktemp -d "${TMPDIR:-/tmp}/zacblog-deploy-test.XXXXXX")
 WORK=$(cd "$WORK" && pwd -P)
@@ -400,6 +400,92 @@ check "环境变量文件不变" eq "$(env_sum)" "$SUM"
 printf '%s' "$PW_NEW" > "$STUB_LOG_DIR/mysql-password"
 secret_checks
 stop_all
+
+# ---------------------------------------------------------------- 密码里有反斜杠和单引号
+new_server secrets-escape
+printf '%s' "$PW" > "$STUB_LOG_DIR/mysql-password"
+secrets write-env
+deploy zacblog-server-v2.jar UP v2 v2-frontend
+check "切换成功" eq "$(version)" v2
+# 后面只用这个新密码：\ ' \\ 和结尾的 \ 都要原样到达 MySQL
+PW_NEW='test-only-new\pw'"'"'q\\x\'
+export MYSQL_STUB_SQL_MODE='STRICT_TRANS_TABLES,NO_BACKSLASH_ESCAPES'
+SUM=$(env_sum)
+secrets rotate
+check "NO_BACKSLASH_ESCAPES 时含反斜杠的密码被拒绝（退出码 3）" eq "$RC" 3
+check "数据库密码没变" eq "$(db_pw)" "$PW"
+check "环境变量文件没变" eq "$(env_sum)" "$SUM"
+unset MYSQL_STUB_SQL_MODE
+secrets rotate
+check "默认 sql_mode 下 rotate 成功" eq "$RC" 0
+check "MySQL 收到的新密码和 secret 完全一致（反斜杠、单引号都转义对了）" eq "$(db_pw)" "$PW_NEW"
+check "环境变量文件里是同样的新密码" eq "$(env_pw)" "$PW_NEW"
+check "用新密码重启后健康" bash -c "curl -s 'http://127.0.0.1:$STUB_PORT/actuator/health' | grep -q UP"
+secret_checks
+stop_all
+
+# ---------------------------------------------------------------- root-after-cutover.sh --nginx-edit
+echo "== root-after-cutover.sh --nginx-edit（不需要 root）"
+NG="$WORK/nginx"
+mkdir -p "$NG"
+cat > "$NG/zacblog.conf" <<'CONF'
+map $http_upgrade $connection_upgrade { default upgrade; '' close; }
+
+server {
+    listen 80;
+    server_name blog.zaaac.vip;
+    return 301 https://${host}$request_uri;
+}
+
+server {
+    listen 443 ssl;
+    server_name blog.zaaac.vip;
+    root /home/ZacBlog/frontend;
+    index index.html;
+    add_header X-Frame-Options SAMEORIGIN;
+    # 注释里的花括号 { 不算
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+    location /profile/ { alias /home/ZacBlog/zaaac/uploadPath/; }
+    location /api/ { proxy_pass http://127.0.0.1:8080/; }
+    location ~ "^/x{2}$" { return 404; }
+}
+
+server {
+    listen 443 ssl;
+    server_name api.zaaac.vip;
+    location / { proxy_pass http://127.0.0.1:8080/; add_header X-Test "a;b{c}"; }
+}
+server { listen 443 ssl; server_name poker.zaaac.vip; root /srv/poker;
+}
+CONF
+edit() { RC=0; bash "$REPO/deploy/root-after-cutover.sh" --nginx-edit "$1" > "$2" 2> "$2.err" || RC=$?; }
+edit "$NG/zacblog.conf" "$NG/out1"
+check "编辑成功" eq "$RC" 0
+check "只处理了一个 server 块（443 的 blog）" eq "$(grep -c '已处理' "$NG/out1.err")" 1
+check "托管段只插入一次" eq "$(grep -c 'BEGIN zacblog-cache' "$NG/out1")" 1
+check "除了新增的托管段，没有任何改动" bash -c "diff '$NG/zacblog.conf' '$NG/out1' | grep -v '^[0-9]' | grep -qv '^> ' && exit 1 || exit 0"
+check "托管段在 blog 443 块的 server_name 之前（紧跟 server {）" bash -c "grep -B1 'BEGIN zacblog-cache' '$NG/out1' | head -1 | grep -qx 'server {'"
+check "托管段之后紧跟 listen 443" bash -c "grep -A9 'BEGIN zacblog-cache' '$NG/out1' | tail -1 | grep -q 'listen 443 ssl;'"
+check "index.html 设 no-cache" grep -qF 'if ($uri = /index.html) { set $zacblog_cache_control "no-cache"; }' "$NG/out1"
+check "/assets/ 设长期缓存 immutable" grep -qF 'if ($uri ~ ^/assets/) { set $zacblog_cache_control "public, max-age=31536000, immutable"; }' "$NG/out1"
+check "add_header 不带 always（错误响应不被长期缓存）" bash -c "grep 'add_header Cache-Control' '$NG/out1' | grep -qv always"
+check "托管段沿用块里的缩进" grep -q '^    set \$zacblog_cache_control "";$' "$NG/out1"
+edit "$NG/out1" "$NG/out2"
+check "重跑幂等（结果和第一次相同）" bash -c "[ '$RC' = 0 ] && cmp -s '$NG/out1' '$NG/out2'"
+sed 's/no-cache/no-store/' "$NG/out1" > "$NG/stale.conf"
+edit "$NG/stale.conf" "$NG/out3"
+check "旧的托管段会被整体替换" bash -c "[ '$RC' = 0 ] && cmp -s '$NG/out1' '$NG/out3'"
+printf '%s\n' 'server {' '    server_name blog.zaaac.vip;' '    root /home/ZacBlog/frontend;' '    expires 1d;' '}' > "$NG/conflict.conf"
+edit "$NG/conflict.conf" "$NG/out4"
+check "块里已有 expires / Cache-Control 时拒绝（退出码 4）" eq "$RC" 4
+grep -v 'root /home/ZacBlog/frontend' "$NG/zacblog.conf" > "$NG/noroot.conf"
+edit "$NG/noroot.conf" "$NG/out5"
+check "没有目标块时退出码 3" eq "$RC" 3
+printf '%s\n' 'server {' '    server_name blog.zaaac.vip;' '    root /home/ZacBlog/frontend;' > "$NG/broken.conf"
+edit "$NG/broken.conf" "$NG/out6"
+check "花括号不配对时拒绝（退出码 5）" eq "$RC" 5
 
 # ---------------------------------------------------------------- bootstrap-root.sh
 echo "== bootstrap-root.sh --print（不需要 root）"

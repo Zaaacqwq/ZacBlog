@@ -1,8 +1,13 @@
 name: Deploy
 
-# 先只支持手动触发；切换完成（T7）后再改成 push 触发。
+# push 到 main 且 server/ 或 web/ 有改动时自动部署（deploy job 仍要主人在 production 环境批准）；也可以手动触发。
 # 服务器上的流程见 docs/deploy.md：备份 → 发布前端 → 启动新后端 + 健康检查，失败自动回滚。
 on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - "server/**"
+      - "web/**"
   workflow_dispatch: {}
 
 permissions:

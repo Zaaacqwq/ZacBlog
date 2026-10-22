@@ -1,6 +1,6 @@
 # 部署（ZacBlog v2）
 
-本文以服务器的实际情况为准；仓库根目录的 `ZacBlog_Deploy_Doc.md` 已过时，不要按它操作。
+本文只写路径和流程，不写任何密码、密钥、主机地址的值。旧的若依代码（`frontend/`、`backend/`）和旧部署文档已在 ZB-8 从仓库删除；服务器上的 `/home/ZacBlog/backend/`、上传目录 `zaaac/uploadPath/` 没有动。
 
 ## 设计依据（ZB-7 执行中主人确认，取代任务原文的部分要求）
 
@@ -45,23 +45,21 @@ sudo -n systemctl start|stop|restart|is-active|enable|disable zacblog-server
 sudo -n systemctl start|stop|enable|disable zacblog-backend
 ```
 
-## 开机自启（ZB-8 切换时用）
+## 开机自启
 
-bootstrap 之后，旧服务 `zacblog-backend` 仍是 enable 状态，新服务 `zacblog-server` 没有 enable。部署脚本**不改**开机自启。所以只做切换、不改自启的话，机器一重启就会悄悄回到旧后端。
+ZB-8 切换完成后由 `deploy/root-after-cutover.sh`（见下面「切换后的 root 收尾」）改好，现状：
 
-- 切换成功、确认稳定后：
+| 服务 | 开机自启 |
+| --- | --- |
+| `zacblog-server` | enabled |
+| `zacblog-backend` | disabled（服务定义和 `backend/` 还在服务器上，没有删） |
 
-  ```bash
-  sudo -n systemctl disable zacblog-backend
-  sudo -n systemctl enable zacblog-server
-  ```
+部署脚本**不改**开机自启。万一要回到旧后端（数据库密码轮换后旧后端的配置里是旧密码，基本已不可用）：
 
-- 回滚到旧后端时反过来：
-
-  ```bash
-  sudo -n systemctl disable zacblog-server
-  sudo -n systemctl enable zacblog-backend
-  ```
+```bash
+sudo -n systemctl disable zacblog-server
+sudo -n systemctl enable zacblog-backend
+```
 
 ## 目录布局
 
@@ -127,7 +125,7 @@ UPLOAD_PATH=/home/ZacBlog/zaaac/uploadPath
 
 - `SERVER_ADDRESS=127.0.0.1`：新后端只监听本机（和旧后端一样），由 nginx 反代。
 - 值不需要引号；`&` 之类可以直接写。脚本是逐行解析的，**不会**用 bash `source` 执行它。
-- 值里不能有换行和反斜杠，也不能首尾都是引号（`zacblog-secrets.sh` 会拒绝这样的 secret）。
+- 值里不能有换行，也不能首尾都是引号（`zacblog-secrets.sh` 会拒绝这样的 secret）。密码里可以有反斜杠：写进 SQL 时先转义 `\` 再转义 `'`；MySQL 开了 `NO_BACKSLASH_ESCAPES` 时 rotate 会拒绝含反斜杠的密码。
 - 备份脚本从 `DB_URL` 解析主机、端口、库名，密码通过 `MYSQL_PWD` 环境变量交给 mysqldump，不出现在命令行参数里。
 
 ## 环境变量文件和密码轮换（`server-secrets.yml`）
@@ -162,7 +160,7 @@ workflow 把这些值经 ssh 的 **stdin** 交给服务器上的 `scripts/zacblo
 
 ## 部署流程
 
-GitHub Actions `Deploy`（`.github/workflows/deploy.yml`，目前只能手动触发 `workflow_dispatch`）：
+GitHub Actions `Deploy`（`.github/workflows/deploy.yml`）：push 到 `main` 且 `server/**` 或 `web/**` 有改动时自动触发，也可以手动触发（`workflow_dispatch`）。只改文档、`deploy/` 或 workflow 不会触发部署；`deploy/scripts/` 改了之后要部署就手动触发一次。deploy job 每次都要主人在 production 环境批准。
 
 1. `build` job：`mvn -B package`（含测试）、`npm ci && npm run build`，打包成 `zacblog-server-<sha>.jar` 和 `web-dist.tgz`。
 2. `deploy` job（`environment: production`，需要主人在 GitHub 上批准）：用 `vars.SSH_KNOWN_HOSTS` 写 `known_hosts`，`StrictHostKeyChecking yes`（变量为空就直接失败）；上传 `deploy/scripts/zacblog-*.sh` 到 `/home/ZacBlog/scripts/`、产物到 `/home/ZacBlog/incoming/`，然后执行：
@@ -204,7 +202,28 @@ bash /home/ZacBlog/scripts/zacblog-rollback.sh --frontend-only
 3. `Deploy`：备份 → 发布前端 → 停旧后端、启动新后端 → 健康检查，失败自动回滚到旧后端。
 4. `DB counts` 再跑一次，和第 1 步一致；用新接口 `https://blog.zaaac.vip/api/public/...` 核对，并手动走查前台、后台、旧 URL 跳转、旧图片地址、匿名评论、拉黑。
 5. `Server secrets`，`rotate_db_password=true`：轮换数据库密码。
-6. 稳定后改开机自启（见上面「开机自启」）。旧后端停用后，可以删掉 `/root/.ssh/authorized_keys` 里旧的部署 key。
+6. root 收尾：`deploy/root-after-cutover.sh`（见下节）。
+7. 清理仓库：删除旧的若依代码、提交进仓库的上传文件、`zaaac_blog.sql`、旧的 deploy-backend/deploy-frontend workflow 和旧部署文档；`Deploy` 改成 push 触发。
+
+切换结果（ZB-8）：切换前后 `DB counts` 一致（文章全部 15 / 已发布 14、评论 3、留言 15、公告 3 / 正常 3）；新接口文章 14、顶层留言 7、公告 3；旧 URL 跳转、旧图片地址、后台未登录 401 正常。
+
+## 切换后的 root 收尾（`deploy/root-after-cutover.sh`，主人执行）
+
+可以重复执行。三件事互相独立，有一项失败时最后以非 0 退出：
+
+1. **开机自启**：`zacblog-server` 正在运行且健康、`zacblog-backend` 已停时，`systemctl disable zacblog-backend` + `systemctl enable zacblog-server`，打印两者的 `is-enabled`。
+2. **列出 `/root/.ssh/authorized_keys`**：每把 key 的行号、类型、注释、指纹（不打印 key 本身），供主人认出旧的部署 key 后自己删；脚本不删。
+3. **nginx 缓存头**：旧前端时代 `index.html` 没有 `Cache-Control`，浏览器按 `Last-Modified` 启发式缓存，老访客会拿到缓存里的旧 Vue 页面。脚本：
+   - 用 `nginx -T` 找出实际加载的配置文件，只处理 `server_name` 含 `blog.zaaac.vip` 且 `root` 是 `/home/ZacBlog/frontend` 的 server 块（不止一个文件命中、或块里已有 `Cache-Control`/`expires` 时停下，不改）；
+   - 在块开头插入 `# BEGIN zacblog-cache … # END zacblog-cache` 托管段（server 级 `set`/`if` + `add_header Cache-Control $zacblog_cache_control`）：`$uri` 是 `/index.html` 时 `no-cache`（try_files 回落和目录 index 都是内部跳转，跳转后会重新执行 server 级的 set/if），`/assets/` 下 `public, max-age=31536000, immutable`；不加 `always`，错误响应不会被长期缓存；
+   - 自检：去掉托管段后必须和原文件逐字相同，所以同一文件里其他 server 块（api、poker 等）一个字都不会变；
+   - 改之前备份到 `/root/zacblog-backups/nginx-<文件名>.<时间戳>`（不放进 `sites-enabled`）；`nginx -t` 不过就恢复并退出；`reload` 后 curl 核对 `/`、`/index.html`、一个不存在的前端路由、一个 `/assets/*.js` 的 `Cache-Control`，以及 `/api/public/site` 是 200，不对就恢复备份、再 reload 并退出。
+   - 注意：块里某个 `location` 自己有 `add_header` 时，nginx 不会继承 server 级的 `add_header`；如果 `location /` 是这样，核对会失败并自动恢复，需要人工把头加进那个 location。
+
+```bash
+bash deploy/root-after-cutover.sh --nginx-edit <配置文件>   # 不需要 root，先在本地看改后的样子
+ssh vps "bash -s" < deploy/root-after-cutover.sh
+```
 
 ## 本地测试
 
@@ -212,6 +231,6 @@ bash /home/ZacBlog/scripts/zacblog-rollback.sh --frontend-only
 bash deploy/test/run.sh
 ```
 
-在临时目录里模拟 `/home/ZacBlog`（`/home/ZacBlog` 本身和 `backend/` 设为只读，模拟归 root），用桩代替 `systemctl`、`sudo`（只放行上面 sudoers 允许的命令）、`mysqldump` 和 `java`（启动一个按“jar”内容返回 UP/DOWN 的本地 HTTP 服务）。`zacblog-server` 的桩会执行 bootstrap 生成的真实启动器。`mysql` 也有桩（记住一个账号的密码，支持 `ALTER USER`），新后端的桩在环境变量里的数据库密码和它不一致时健康检查返回 DOWN。覆盖：首次切换成功、健康检查失败回滚到上一个 release、首次切换失败回滚到旧后端、备份失败中止、环境变量文件缺失或权限不对、回滚记录写不进去、前后端旧 release 的清理；`zacblog-secrets.sh` 的 write-env、counts、切换前拒绝 rotate、ALTER 被拒绝、新密码重启失败后恢复、轮换成功、重跑幂等，以及密钥不出现在参数、日志和输出里。CI（`ci.yml` 的 `deploy-scripts`）和 Swarm verify 都会跑它。不需要 Docker、root、MySQL；装了 shellcheck 会顺带检查脚本。
+在临时目录里模拟 `/home/ZacBlog`（`/home/ZacBlog` 本身和 `backend/` 设为只读，模拟归 root），用桩代替 `systemctl`、`sudo`（只放行上面 sudoers 允许的命令）、`mysqldump` 和 `java`（启动一个按“jar”内容返回 UP/DOWN 的本地 HTTP 服务）。`zacblog-server` 的桩会执行 bootstrap 生成的真实启动器。`mysql` 也有桩（记住一个账号的密码，支持 `ALTER USER`），新后端的桩在环境变量里的数据库密码和它不一致时健康检查返回 DOWN。覆盖：首次切换成功、健康检查失败回滚到上一个 release、首次切换失败回滚到旧后端、备份失败中止、环境变量文件缺失或权限不对、回滚记录写不进去、前后端旧 release 的清理；`zacblog-secrets.sh` 的 write-env、counts、切换前拒绝 rotate、ALTER 被拒绝、新密码重启失败后恢复、轮换成功、重跑幂等、多行 secret、密码里的反斜杠和单引号，以及密钥不出现在参数、日志和输出里；`root-after-cutover.sh --nginx-edit` 的插入位置、只动目标块、幂等、冲突和解析失败。CI（`ci.yml` 的 `deploy-scripts`）和 Swarm verify 都会跑它。不需要 Docker、root、MySQL；装了 shellcheck 会顺带检查脚本。
 
 所有脚本的路径和命令都可以用环境变量覆盖（见 `deploy/scripts/zacblog-common.sh` 开头），例如 `HEALTH_TIMEOUT=180`。

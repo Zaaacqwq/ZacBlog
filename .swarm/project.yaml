@@ -22,7 +22,7 @@ verify:
     run: bash deploy/test/run.sh
     timeout_ms: 300000
 protected_paths:
-  # CI 和部署相关的改动由主人单独过目
+  # CI 和部署相关的改动由主人单独过目（旧的 frontend/、backend/ 已在 ZB-8 删除，不再需要保护）
   - .github/workflows/**
   - deploy/**
   - .swarm/**
