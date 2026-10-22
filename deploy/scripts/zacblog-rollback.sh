@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # 回滚：zacblog-rollback.sh [--frontend-only]
-#   - 前端：web/current 指回 zacblog-frontend.sh 记下的上一个 release（$WEB_STATE_FILE）
+#   - 前端：web/current 指回 zacblog-frontend.sh 记下的上一个 release（${WEB_STATE_FILE}）
 #   - 后端：按 zacblog-start.sh 记下的回滚目标恢复
 #       app <jar>  current.jar 指回 <jar>，restart zacblog-server
 #       legacy     停 zacblog-server、删掉 current.jar，启动旧的 zacblog-backend（首次切换失败时）
