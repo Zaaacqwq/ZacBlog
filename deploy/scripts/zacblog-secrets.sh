@@ -6,12 +6,12 @@
 # stdin 需要的键：DB_HOST DB_PORT DB_NAME DB_USERNAME DB_PASSWORD_CURRENT DB_PASSWORD_NEW JWT_SECRET_NEW
 #
 # write-env：
-#   用 DB_PASSWORD_CURRENT 登录 MySQL 确认能连上，再写 $ENV_FILE（600）。
+#   用 DB_PASSWORD_CURRENT 登录 MySQL 确认能连上，再写 ${ENV_FILE}（600）。
 #   如果 CURRENT 已经登录不了、NEW 可以（说明已经轮换过），就写 NEW，这样轮换后重跑也不会把站点弄坏。
 #   两个都登录不了就不写。不重启服务（文件内容有变化且服务在运行时会提示）。
 # rotate（只能在切换完成后、zacblog-server 正在运行时执行）：
 #   1. 用 CURRENT 登录，ALTER USER CURRENT_USER() IDENTIFIED BY NEW
-#   2. 确认 NEW 能登录，把 NEW 写进 $ENV_FILE（原文件先备份）
+#   2. 确认 NEW 能登录，把 NEW 写进 ${ENV_FILE}（原文件先备份）
 #   3. restart zacblog-server + 健康检查；确认 CURRENT 已经登录不了
 #   4. 1–3 任何一步失败：密码 ALTER 回 CURRENT、恢复环境变量文件、再重启并做健康检查
 #   CURRENT 登录不了而 NEW 可以时视为已经轮换过：只保证环境变量文件用的是 NEW，不再 ALTER。
