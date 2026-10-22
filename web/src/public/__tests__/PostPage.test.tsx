@@ -117,6 +117,60 @@ describe('PostPage', () => {
     expect(screen.getByPlaceholderText('回复 @读者甲')).toBeInTheDocument()
   })
 
+  describe('locating ?commentId= beyond the first page', () => {
+    // 25 个楼层，按时间倒序：第 1 页 id 125..116，第 2 页 115..106，第 3 页 105..101
+    function floor(id: number) {
+      const reply = { ...comments.rows[0].children[0], id: id * 10, parentId: id, content: `回复 ${id}` }
+      return { ...comments.rows[0], id, content: `楼层 ${id}`, children: id === 110 ? [reply] : [] }
+    }
+    function pagedComments() {
+      return (url: URL) => {
+        const pageNum = Number(url.searchParams.get('pageNum'))
+        const ids = Array.from({ length: 25 }, (_, i) => 125 - i).slice((pageNum - 1) * 10, pageNum * 10)
+        return ok({ rows: ids.map(floor), total: 25 })
+      }
+    }
+
+    it('loads the page that holds a top-level comment', async () => {
+      mockApi({ 'GET /api/public/articles/5': article(), 'GET /api/public/articles/5/comments': pagedComments() })
+      renderAt('/posts/5?commentId=112')
+
+      expect(await screen.findByText('楼层 112')).toBeInTheDocument()
+      expect(document.getElementById('comment-112')).toHaveClass('highlighted')
+      expect(screen.queryByText('楼层 125')).not.toBeInTheDocument()
+      expect(screen.getByRole('button', { name: '2' })).toHaveAttribute('aria-current', 'page')
+    })
+
+    it('loads the page that holds a reply inside a later floor', async () => {
+      mockApi({ 'GET /api/public/articles/5': article(), 'GET /api/public/articles/5/comments': pagedComments() })
+      renderAt('/posts/5?commentId=1100')
+
+      expect(await screen.findByText(/回复 110/)).toBeInTheDocument()
+      expect(document.getElementById('comment-1100')).toHaveClass('highlighted')
+      expect(screen.getByRole('button', { name: '2' })).toHaveAttribute('aria-current', 'page')
+    })
+
+    it('falls back to the first page when the comment is gone', async () => {
+      const fetchMock = mockApi({
+        'GET /api/public/articles/5': article(),
+        'GET /api/public/articles/5/comments': pagedComments(),
+      })
+      renderAt('/posts/5?commentId=999')
+
+      expect(await screen.findByText('楼层 125')).toBeInTheDocument()
+      const commentCalls = fetchMock.mock.calls.filter(([u]) => String(u).includes('/comments'))
+      expect(commentCalls).toHaveLength(3)
+    })
+
+    it('still lets the reader page normally afterwards', async () => {
+      mockApi({ 'GET /api/public/articles/5': article(), 'GET /api/public/articles/5/comments': pagedComments() })
+      renderAt('/posts/5?commentId=103')
+      expect(await screen.findByText('楼层 103')).toBeInTheDocument()
+      fireEvent.click(screen.getByRole('button', { name: '1' }))
+      expect(await screen.findByText('楼层 125')).toBeInTheDocument()
+    })
+  })
+
   it('shows the 404 page when the article does not exist', async () => {
     mockApi({ 'GET /api/public/articles/99': () => fail(404, '文章不存在') })
     renderAt('/posts/99')

@@ -7,6 +7,8 @@ import Icon from './Icon'
 import Pagination from './Pagination'
 
 const PAGE_SIZE = 10
+/** 定位旧链接里的评论时最多翻多少页，防止评论特别多时无限请求 */
+const MAX_LOCATE_PAGES = 50
 const LIKED_KEY = 'zacblog_liked'
 
 function loadLiked(): Set<string> {
@@ -26,13 +28,18 @@ interface Props {
 }
 
 export default function CommentSection({ target, highlightId, formPlacement = 'inline' }: Props) {
-  const [pageNum, setPageNum] = useState(1)
+  // null 表示“按 highlightId 找所在的那一页”，找到后停在那一页
+  const [requestedPage, setRequestedPage] = useState<number | null>(highlightId ? null : 1)
   const [replying, setReplying] = useState<number | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
   const [liked, setLiked] = useState(loadLiked)
   const [likeCounts, setLikeCounts] = useState<Record<number, number>>({})
   const targetKey = target.kind === 'article' ? `article-${target.articleId}` : 'messages'
-  const list = useApi(`comments:${targetKey}:${pageNum}`, () => publicApi.comments(target, pageNum, PAGE_SIZE))
+  const list = useApi(
+    `comments:${targetKey}:${requestedPage ?? `locate-${highlightId}`}`,
+    () => (requestedPage === null ? locatePage(target, highlightId!) : fetchPage(target, requestedPage)),
+  )
+  const pageNum = requestedPage ?? list.data?.pageNum ?? 1
   const rows = list.data?.rows ?? []
   const total = list.data?.total ?? 0
 
@@ -44,8 +51,8 @@ export default function CommentSection({ target, highlightId, formPlacement = 'i
   function onPosted(created: Comment | null) {
     setReplying(null)
     setNotice(created ? '发表成功，谢谢！' : '已提交。')
-    if (pageNum === 1) list.reload()
-    else setPageNum(1)
+    if (requestedPage === 1) list.reload()
+    else setRequestedPage(1)
   }
 
   async function toggleLike(c: Comment) {
@@ -196,10 +203,32 @@ export default function CommentSection({ target, highlightId, formPlacement = 'i
             </li>
           ))}
         </ol>
-        <Pagination pageNum={pageNum} pageSize={PAGE_SIZE} total={total} onChange={setPageNum} />
+        <Pagination pageNum={pageNum} pageSize={PAGE_SIZE} total={total} onChange={setRequestedPage} />
       </section>
     </div>
   )
+}
+
+async function fetchPage(target: CommentTarget, pageNum: number) {
+  const data = await publicApi.comments(target, pageNum, PAGE_SIZE)
+  return { pageNum, rows: data?.rows ?? [], total: data?.total ?? 0 }
+}
+
+function containsComment(rows: Comment[], id: number): boolean {
+  return rows.some((c) => c.id === id || c.children.some((r) => r.id === id))
+}
+
+/** 逐页查找目标评论（顶层或楼中回复）所在的分页；找不到时退回第 1 页 */
+async function locatePage(target: CommentTarget, id: number) {
+  const first = await fetchPage(target, 1)
+  if (containsComment(first.rows, id)) return first
+  const pages = Math.min(Math.ceil(first.total / PAGE_SIZE), MAX_LOCATE_PAGES)
+  for (let pageNum = 2; pageNum <= pages; pageNum++) {
+    const page = await fetchPage(target, pageNum)
+    if (containsComment(page.rows, id)) return page
+    if (page.rows.length === 0) break
+  }
+  return first
 }
 
 function ComposerHeader() {
