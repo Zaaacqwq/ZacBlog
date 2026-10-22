@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor, within } from '@testing-library/react'
+import { act, fireEvent, screen, waitFor, within } from '@testing-library/react'
 import { fail, mockApi, ok, renderAt } from './helpers'
 
 afterEach(() => {
@@ -160,6 +160,21 @@ describe('PostPage', () => {
       expect(await screen.findByText('楼层 125')).toBeInTheDocument()
       const commentCalls = fetchMock.mock.calls.filter(([u]) => String(u).includes('/comments'))
       expect(commentCalls).toHaveLength(3)
+    })
+
+    it('re-locates when only ?commentId= changes on the same article', async () => {
+      mockApi({ 'GET /api/public/articles/5': article(), 'GET /api/public/articles/5/comments': pagedComments() })
+      const router = renderAt('/posts/5')
+      expect(await screen.findByText('楼层 125')).toBeInTheDocument()
+
+      await act(() => router.navigate('/posts/5?commentId=103'))
+      expect(await screen.findByText('楼层 103')).toBeInTheDocument()
+      expect(document.getElementById('comment-103')).toHaveClass('highlighted')
+      expect(screen.getByRole('button', { name: '3' })).toHaveAttribute('aria-current', 'page')
+
+      await act(() => router.navigate('/posts/5?commentId=112'))
+      expect(await screen.findByText('楼层 112')).toBeInTheDocument()
+      expect(document.getElementById('comment-112')).toHaveClass('highlighted')
     })
 
     it('still lets the reader page normally afterwards', async () => {

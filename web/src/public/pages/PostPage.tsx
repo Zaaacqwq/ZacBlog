@@ -87,7 +87,14 @@ export default function PostPage() {
             </>
           )}
         </article>
-        {article && <CommentSection target={{ kind: 'article', articleId: article.id }} highlightId={commentId} />}
+        {article && (
+          // commentId 变了就重新挂载，重新定位目标评论所在的分页
+          <CommentSection
+            key={`${article.id}:${commentId ?? ''}`}
+            target={{ kind: 'article', articleId: article.id }}
+            highlightId={commentId}
+          />
+        )}
       </TwoColumn>
     </div>
   )
