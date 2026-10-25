@@ -12,11 +12,30 @@ STUBS="$HERE/stubs"
 # 明显是假的测试值
 PW='test-only-not-a-real-secret-db-password'
 
-if command -v shellcheck >/dev/null 2>&1; then
-  echo "== shellcheck"
-  shellcheck -x -S warning "$SCRIPTS"/*.sh "$REPO/deploy/bootstrap-root.sh" "$REPO/deploy/root-after-cutover.sh" "$HERE/run.sh" "$STUBS/java" "$STUBS/sudo" "$STUBS/systemctl" "$STUBS/mysqldump" "$STUBS/mysql"
-else
-  echo "== shellcheck 未安装，跳过"
+# 第二遍（非 UTF-8 locale）由第一遍在最后启动，跳过只和文件内容有关的静态检查
+if [ -z "${ZACBLOG_TEST_LOCALE_PASS:-}" ]; then
+  if command -v shellcheck >/dev/null 2>&1; then
+    echo "== shellcheck"
+    shellcheck -x -S warning "$SCRIPTS"/*.sh "$REPO/deploy/bootstrap-root.sh" "$REPO/deploy/root-after-cutover.sh" "$HERE/run.sh" "$STUBS/java" "$STUBS/sudo" "$STUBS/systemctl" "$STUBS/mysqldump" "$STUBS/mysql"
+  else
+    echo "== shellcheck 未安装，跳过"
+  fi
+
+  # 非 UTF-8 locale 下 bash 会把 $VAR 后面紧跟的非 ASCII 字节（如全角冒号的首字节）当成变量名的一部分，
+  # set -u 时直接退出。deploy/ 下一律写 ${VAR}。按字节匹配，和当前 locale 无关。
+  echo "== \$VAR 后不能紧跟非 ASCII 字符"
+  VAR_NONASCII="\\\$[A-Za-z_][A-Za-z0-9_]*[$(printf '\200-\377')]"
+  # 先自检这个模式：能抓到 "$X" 后跟全角冒号，不误报 "${X}" 后跟全角冒号
+  if ! printf 'echo "$X\357\274\232"\n' | LC_ALL=C grep -qE "$VAR_NONASCII" ||
+    printf 'echo "${X}\357\274\232"\n' | LC_ALL=C grep -qE "$VAR_NONASCII"; then
+    echo "  FAIL 检查模式自检失败" >&2
+    exit 1
+  fi
+  if LC_ALL=C grep -rnE "$VAR_NONASCII" "$REPO/deploy"; then
+    echo "  FAIL 上面这些地方 \$VAR 后紧跟非 ASCII 字符，改成 \${VAR}" >&2
+    exit 1
+  fi
+  echo "  ok   没有"
 fi
 for f in "$SCRIPTS"/*.sh "$REPO/deploy/bootstrap-root.sh" "$REPO/deploy/root-after-cutover.sh"; do bash -n "$f"; done
 
@@ -503,6 +522,28 @@ for cmd in "start zacblog-server" "stop zacblog-server" "restart zacblog-server"
   check "sudoers 允许 systemctl $cmd" grep -q "systemctl $cmd\\(,\\|\$\\)" "$BOOT_OUT"
 done
 check "sudoers 没有放行别的命令" eq "$(grep -c 'systemctl' <(grep '^zacblog ' "$BOOT_OUT" | tr ',' '\n'))" 10
+
+# ---------------------------------------------------------------- 非 UTF-8 locale 再跑一遍
+# 服务器上非交互 ssh 可能是 LANG=en_US（非 UTF-8）。优先用一个能复现“$VAR 后紧跟全角字符被当成变量名”的
+# locale（en_US 的 ISO-8859-1 变体）；系统里没有时退回 LC_ALL=C（这时主要靠上面的静态检查兜底）。
+if [ -z "${ZACBLOG_TEST_LOCALE_PASS:-}" ]; then
+  stop_all
+  LOCALE_PASS=C
+  for l in en_US.ISO8859-1 en_US.ISO-8859-1 en_US.iso88591 en_US; do
+    # shellcheck disable=SC2016
+    if ! LC_ALL=$l bash -uc 'X=1; : "$X'$'\357\274\232''"' 2>/dev/null; then
+      LOCALE_PASS=$l
+      break
+    fi
+  done
+  echo
+  echo "======== LC_ALL=${LOCALE_PASS} 再跑一遍"
+  if LC_ALL=$LOCALE_PASS LANG=$LOCALE_PASS ZACBLOG_TEST_LOCALE_PASS=1 bash "$HERE/run.sh"; then
+    pass "LC_ALL=${LOCALE_PASS} 下全部通过"
+  else
+    fail "LC_ALL=${LOCALE_PASS} 下有失败"
+  fi
+fi
 
 echo
 if [ "$FAILS" -eq 0 ]; then

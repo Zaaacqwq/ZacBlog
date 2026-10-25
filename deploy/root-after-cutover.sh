@@ -237,8 +237,8 @@ else
   systemctl enable "$NEW_SERVICE" 2>&1 | sed 's/^/[after-cutover]   /' || FAILED=1
   old_state=$(systemctl is-enabled "$OLD_SERVICE" 2>/dev/null || true)
   new_state=$(systemctl is-enabled "$NEW_SERVICE" 2>/dev/null || true)
-  log "is-enabled $OLD_SERVICE：$old_state"
-  log "is-enabled $NEW_SERVICE：$new_state"
+  log "is-enabled ${OLD_SERVICE}：$old_state"
+  log "is-enabled ${NEW_SERVICE}：$new_state"
   if [ "$old_state" = disabled ] && [ "$new_state" = enabled ]; then
     log "开机自启已切到 $NEW_SERVICE"
   else
@@ -287,16 +287,16 @@ for f in "${conf_files[@]}"; do
   nginx_edit "$f" > /dev/null 2>&1 || rc=$?
   case "$rc" in
     0)
-      [ -z "$target" ] || { err "不止一个文件里有 $BLOG_HOST 的 server 块：$target、$f，请人工处理"; exit 1; }
+      [ -z "$target" ] || { err "不止一个文件里有 $BLOG_HOST 的 server 块：${target}、${f}，请人工处理"; exit 1; }
       target=$f
       ;;
     3) ;;
-    *) nginx_edit "$f" > /dev/null || true; err "无法处理 $f（见上面的 nginx-edit 输出），nginx 没有改动"; exit 1 ;;
+    *) nginx_edit "$f" > /dev/null || true; err "无法处理 ${f}（见上面的 nginx-edit 输出），nginx 没有改动"; exit 1 ;;
   esac
 done
 [ -n "$target" ] || { err "没有找到 server_name 含 $BLOG_HOST 且 root 是 $WEB_ROOT 的配置，nginx 没有改动"; exit 1; }
 real=$(readlink -f "$target")
-log "配置文件：$target${real:+（实际文件 $real）}"
+log "配置文件：$target${real:+（实际文件 ${real}）}"
 
 install -d -m 700 "$BACKUP_DIR"
 stamp=$(date '+%Y%m%d-%H%M%S')
@@ -310,9 +310,9 @@ restore() {
   cat "$backup" > "$real"
   if nginx -t >/dev/null 2>&1; then
     systemctl reload nginx || true
-    err "已恢复 $real（备份 $backup）并 reload"
+    err "已恢复 ${real}（备份 ${backup}）并 reload"
   else
-    err "已恢复 $real，但 nginx -t 仍不通过，需要人工处理（备份 $backup）"
+    err "已恢复 ${real}，但 nginx -t 仍不通过，需要人工处理（备份 ${backup}）"
   fi
 }
 
@@ -331,7 +331,7 @@ else
     printf '%s\n' "$test_out" | sed 's/^/[after-cutover]   /' >&2
     err "nginx -t 不通过"
     cat "$backup" > "$real"
-    err "已恢复 $real（备份 $backup），没有 reload"
+    err "已恢复 ${real}（备份 ${backup}），没有 reload"
     exit 1
   fi
   systemctl reload nginx

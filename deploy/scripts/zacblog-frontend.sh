@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # 发布前端：zacblog-frontend.sh <web-dist.tgz> [版本后缀]
 #   1. 解压到 web/releases/ 下的临时目录，检查有 index.html，再改名为 web/releases/<时间戳>[-后缀]
-#   2. 记下 web/current 当前指向的 release（$WEB_STATE_FILE，回滚用）
+#   2. 记下 web/current 当前指向的 release（${WEB_STATE_FILE}，回滚用）
 #   3. 原子替换 web/current 软链接（/home/ZacBlog/frontend → web/current 由 root 所有，nginx 跟随软链接）
 #   4. 只保留最近 WEB_RELEASES_KEEP 个 release；当前版本、回滚目标和 bootstrap 迁过来的 legacy 永远保留
 # 替换软链接之前的任何失败都不会影响线上前端。上传目录不在 web/ 里，这里不会碰到它。
